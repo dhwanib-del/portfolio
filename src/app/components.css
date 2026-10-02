@@ -586,3 +586,22 @@
 .typing-label i { display:inline-block; width:1px; height:.9em; margin-left:2px; vertical-align:-.08em; background:currentColor; animation:typing-caret .9s steps(2,end) infinite; }
 @keyframes typing-caret { 50% { opacity:0; } }
 @media(prefers-reduced-motion:reduce) { .typing-label i { animation:none; opacity:0; } }
+
+/* Partner marks stay compact beside the project title; never stretch with card media. */
+.reel-title-row { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:38px; }
+.reel-title-row .reel-title { min-width:0; margin:0; }
+.brand-mark { display:inline-flex; flex:0 0 auto; align-items:center; justify-content:center; gap:7px; min-width:0; height:34px; padding:4px 9px; border:1px solid var(--line); border-radius:10px; background:color-mix(in srgb,var(--surface) 84%,transparent); color:var(--text-2); }
+.brand-mark svg { display:block; flex:0 0 22px; width:22px; height:20px; fill:none; stroke:currentColor; stroke-width:1.65; stroke-linecap:round; stroke-linejoin:round; }
+.brand-mark small { font:600 9px/1 var(--font-nav); letter-spacing:.045em; white-space:nowrap; }
+.brand-dpss b { color:#ffcb05; font:800 22px/.9 Arial,sans-serif; letter-spacing:-.1em; }
+.brand-dpss small { color:var(--text-2); }
+.brand-gm { gap:5px; }
+.gm-roundel { display:grid; place-items:center; width:22px; height:22px; border:1.5px solid #2479c9; border-radius:50%; color:#2479c9; font:700 italic 11px/1 Arial,sans-serif; letter-spacing:-.08em; }
+.brand-openlibrary { color:#5c8b68; }
+.brand-prime { color:#4b9bd8; }
+@media(max-width:520px) {
+ .brand-mark { height:30px; padding:3px 7px; }
+ .brand-mark small { font-size:8px; }
+ .brand-mark svg { flex-basis:19px; width:19px; height:18px; }
+ .brand-dpss b { font-size:19px; }
+}
