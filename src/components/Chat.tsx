@@ -5,7 +5,12 @@ import { useCallback, useEffect, useRef, useState } from "react"
 type Msg = { role: "user" | "assistant"; content: string; href?: string; linkLabel?: string }
 type Mode = "ai" | "portfolio" | "offline"
 
-const SUGGESTIONS = ["What does Dhwani do best?", "Tell me about BRIEFS", "How does she use AI?", "Is she open to relocating?"]
+const SUGGESTIONS = [
+  { label: "Design superpower", query: "What does Dhwani do best?", n: "01" },
+  { label: "The BRIEFS story", query: "Tell me about BRIEFS", n: "02" },
+  { label: "AI, thoughtfully", query: "How does she use AI?", n: "03" },
+  { label: "Open to a move?", query: "Is she open to relocating?", n: "04" },
+]
 
 export function Chat() {
   const [mode, setMode] = useState<Mode>("portfolio")
@@ -50,14 +55,18 @@ export function Chat() {
   return (
     <section id="portfolio-chat" className="chat" role="dialog" aria-modal="false" aria-labelledby="chat-h" onKeyDown={(e) => e.key === "Escape" && close()}>
       <div className="chat-top">
-        <div>
-          <h2 id="chat-h"><span className="chat-spark" aria-hidden="true">✳</span> DhwaniGPT</h2>
-          <p>{mode === "ai" ? "AI answers grounded in the portfolio; I’ll flag what I can’t verify." : mode === "offline" ? "The assistant is offline. Email Dhwani instead." : "Portfolio-grounded answers. If I can’t verify it, I’ll say so."}</p>
+        <div className="chat-identity">
+          <span className="chat-mark" lang="hi" aria-hidden="true">ध्वनि<span>?</span></span>
+          <div className="chat-identity-copy">
+            <p className="chat-overline">A LITTLE PORTFOLIO SIDEKICK</p>
+            <h2 id="chat-h">DhwaniGPT <span className={"chat-live " + (mode === "offline" ? "is-offline" : "")} aria-hidden="true" /></h2>
+            <p>{mode === "ai" ? "AI-assisted · grounded in published work." : mode === "offline" ? "Offline for now · email Dhwani instead." : "Portfolio facts only · no guessing."}</p>
+          </div>
         </div>
         <button type="button" className="tour-x" aria-label="Close chat" onClick={close}>×</button>
       </div>
       <div className="chat-log" aria-live="polite">
-        <p className="chat-msg a">Hi! I’m DhwaniGPT. Ask about a project, my design process, or what I’m looking for.</p>
+        <p className="chat-msg a">Hey! Ask me about a project, Dhwani’s process, or what she’s looking for.</p>
         {msgs.map((m, i) => <div key={i} className={"chat-message " + (m.role === "user" ? "user" : "assistant")}>
           <p className={"chat-msg " + (m.role === "user" ? "u" : "a")}>{m.content}</p>
           {m.href && <a className="chat-source" href={m.href}>{m.linkLabel || "Open source ↗"}</a>}
@@ -67,12 +76,15 @@ export function Chat() {
         <div ref={endRef} />
       </div>
       {mode !== "offline" && msgs.length === 0 && (
-        <div className="chat-sugs">{SUGGESTIONS.map((s) => <button key={s} type="button" onClick={() => send(s)}>{s}</button>)}</div>
+        <div className="chat-sugs">
+          <p className="chat-sugs-label">PICK A THREAD <span aria-hidden="true">↘</span></p>
+          <div className="chat-sugs-grid">{SUGGESTIONS.map((s) => <button key={s.n} type="button" onClick={() => send(s.query)}><span className="chat-sug-index">{s.n}</span><span>{s.label}</span><span className="chat-sug-arrow" aria-hidden="true">↗</span></button>)}</div>
+        </div>
       )}
       {mode !== "offline" ? <form className="chat-form" onSubmit={(e) => { e.preventDefault(); send(input) }}>
         <label htmlFor="chat-in" className="sr-only">Ask about Dhwani</label>
-        <input id="chat-in" ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about Dhwani…" maxLength={600} disabled={busy} />
-        <button type="submit" className="btn btn-primary" disabled={busy || !input.trim()}>Send</button>
+        <input id="chat-in" ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask me something…" maxLength={600} disabled={busy} />
+        <button type="submit" className="btn btn-primary" disabled={busy || !input.trim()}>Send <span aria-hidden="true">↗</span></button>
       </form> : <div className="chat-form"><a className="btn btn-primary" href="mailto:dhwanib@umich.edu">Email Dhwani ↗</a></div>}
       <p className="chat-footnote">No private details, please. This chat isn’t saved.</p>
     </section>
