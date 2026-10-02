@@ -29,7 +29,7 @@ export type Project = {
   poster?: string
   nda?: boolean
   hint: string // talk-to-me cursor line
-  mark?: { src: string; alt: string }
+  brand?: "dpss" | "gm" | "openlibrary" | "primevideo"
 }
 
 export const projects: Project[] = [
@@ -40,7 +40,7 @@ export const projects: Project[] = [
     tags: ["Public safety", "Research", "AI"],
     body: "Dispatchers dig through separate tools for a building's details while the caller waits. I designed one search for it and handed off a prototype and PRD.",
     hint: "dispatchers, mid-call, no time to dig →",
-    mark: { src: "https://storage.googleapis.com/dpss-website/img/image-664e3b2b4cfd3b66bfe22f82607189d00a2104f8-1504x640-png.webp", alt: "University of Michigan DPSS" },
+    brand: "dpss",
   },
   {
     slug: "intel",
@@ -57,7 +57,7 @@ export const projects: Project[] = [
     tags: ["HMI", "Prototyping", "Figma"],
     body: "In-cab HVAC controls, prototyped in Figma and run on real screens. We tested in a 3D-printed truck cab. The details stay under NDA.",
     hint: "HVAC prototyping in a 3D-printed cab →",
-    mark: { src: "https://commons.wikimedia.org/wiki/Special:FilePath/General%20motors%20logo%20with%20wordmark.svg", alt: "General Motors" },
+    brand: "gm",
   },
   {
     slug: "prime-video",
@@ -67,7 +67,7 @@ export const projects: Project[] = [
     body: "Current capstone with Prime Video. Nothing goes here until it's cleared. Ask me about the process.",
     nda: true,
     hint: "NDA 🔒 ask me about this one",
-    mark: { src: "https://commons.wikimedia.org/wiki/Special:FilePath/Prime%20Video%20logo%20(2024).svg", alt: "Prime Video" },
+    brand: "primevideo",
   },
   {
     slug: "openlibrary",
@@ -76,7 +76,7 @@ export const projects: Project[] = [
     tags: ["Research", "Multilingual", "Accessibility"],
     body: "My first affinity map helped our team see that readers needed support they could find without leaving the book. I helped carry the research into clear partner recommendations.",
     hint: "language help in the reading flow →",
-    mark: { src: "https://openlibrary.org/static/images/pantheon.png?v=6a219981eade8cbd01cd10bb2123307c", alt: "Open Library" },
+    brand: "openlibrary",
   },
   {
     slug: "budgetcart",
