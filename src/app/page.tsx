@@ -1,7 +1,6 @@
 import { Bubble } from "@/components/Bubble"
 import { WorkReel } from "@/components/WorkReel"
 import { Experience } from "@/components/Experience"
-import { GalleryWall } from "@/components/GalleryWall"
 import { bubbleLines, experience, person, projects } from "@/content/site"
 
 export default function Home() {
@@ -26,7 +25,6 @@ export default function Home() {
 
       <Experience roles={experience} />
 
-      <GalleryWall />
 
 
       <section id="contact" className="section contact" aria-labelledby="contact-h">
