@@ -11,9 +11,9 @@ type Vibe = { id: string; name: string; a: string; b: string; c: string; accent:
 
 export const VIBES: Vibe[] = [
   { id: "ember", name: "Orange", a: "rgba(255,140,60,0.38)", b: "rgba(243,80,15,0.50)", c: "rgba(255,203,5,0.16)", accent: "#F3500F", swatch: ["#FFB36B", "#F3500F", "#5A1400"], tempo: 4.2 },
-  { id: "goblue", name: "Go Blue", a: "rgba(255,203,5,0.30)", b: "rgba(0,63,122,0.72)", c: "rgba(255,203,5,0.20)", accent: "#FFCB05", swatch: ["#FFCB05", "#0B4F9C", "#00274C"], tempo: 5.2 },
+  { id: "goblue", name: "Sky Blue", a: "rgba(125,211,252,0.32)", b: "rgba(56,189,248,0.50)", c: "rgba(2,132,199,0.22)", accent: "#38BDF8", swatch: ["#BAE6FD", "#38BDF8", "#0C4A6E"], tempo: 5.2 },
   { id: "afterhours", name: "Pink", a: "rgba(255,177,153,0.32)", b: "rgba(255,77,141,0.46)", c: "rgba(123,92,255,0.20)", accent: "#FF4D8D", swatch: ["#FFC2A8", "#FF4D8D", "#4A0E2A"], tempo: 3.6 },
-  { id: "greenroom", name: "Go Green", a: "rgba(13,153,255,0.30)", b: "rgba(27,196,125,0.45)", c: "rgba(255,255,255,0.10)", accent: "#1BC47D", swatch: ["#9DF5CF", "#1BC47D", "#063B2A"], tempo: 7.2 },
+  { id: "greenroom", name: "Yellow", a: "rgba(254,240,138,0.35)", b: "rgba(250,204,21,0.48)", c: "rgba(234,179,8,0.22)", accent: "#FACC15", swatch: ["#FEF08A", "#FACC15", "#713F12"], tempo: 6.8 },
 ]
 
 function hexRgba(hex: string, alpha: number) {
