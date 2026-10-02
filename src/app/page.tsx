@@ -1,7 +1,6 @@
 import { Bubble } from "@/components/Bubble"
 import { WorkReel } from "@/components/WorkReel"
 import { Experience } from "@/components/Experience"
-import { Kolam } from "@/components/play/Kolam"
 import { bubbleLines, experience, person, projects } from "@/content/site"
 
 export default function Home() {
@@ -21,13 +20,11 @@ export default function Home() {
         </div>
       </section>
 
-      <Kolam />
 
       <WorkReel projects={projects} eyebrow="selected work" heading="Six projects. Real outcomes, or an honest status." />
 
       <Experience roles={experience} />
 
-      <Kolam />
 
       <section id="contact" className="section contact" aria-labelledby="contact-h">
         <div className="container">
