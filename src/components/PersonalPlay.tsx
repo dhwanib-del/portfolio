@@ -1,41 +1,55 @@
-const cover = [
-  { src: "https://framerusercontent.com/images/gJHvNtldI6tyEVhuinUXMHXlU.webp?height=700&width=1000", title: "So Close To What", artist: "currently on repeat" },
-  { src: "https://framerusercontent.com/images/UCYyLPlXjj3vh1rcpUsCjJ3F48.jpeg?height=600&width=600", title: "Lunch Break", artist: "a good side A" },
-  { src: "https://framerusercontent.com/images/M5GlIOctDy88BZJWPlHYasb1WMM.jpeg?height=600&width=600", title: "Sabrina", artist: "a good side B" },
-  { src: "https://framerusercontent.com/images/hv3L3bWYTundZJIkU5PtmHOvQ.webp?height=600&width=600", title: "The next mix", artist: "still digging" },
+"use client"
+
+import { useState } from "react"
+
+// Edit this list to add records. Add cover art to public/playlist/ and set cover to its path.
+const records = [
+  { title: "On repeat", artist: "Current rotation", cover: "/playlist/record-01.jpg", color: "#f4a7bb" },
+  { title: "Side A", artist: "A song for the drive", cover: "/playlist/record-02.jpg", color: "#f2a15a" },
+  { title: "Side B", artist: "One more listen", cover: "/playlist/record-03.jpg", color: "#83a6e8" },
+  { title: "Deep cut", artist: "A new favorite", cover: "/playlist/record-04.jpg", color: "#a7c99d" },
 ]
 
-export function PersonalPlay() {
+function Record({ record, index, active, onSelect }: { record: typeof records[number]; index: number; active: boolean; onSelect: () => void }) {
+  const [missing, setMissing] = useState(false)
   return (
-    <section className="personal-play section" aria-labelledby="playlist-title">
-      <div className="container playlist-layout">
-        <div className="playlist-copy">
-          <p className="eyebrow">side b · outside the work</p>
-          <h2 id="playlist-title">Look into my <em>playlist.</em></h2>
-          <p>Music theory brain, four instruments, beginner DJ energy. I organize playlists like tiny information systems.</p>
-          <a className="playlist-link" href="https://dhwanibagrecha.com/" target="_blank" rel="noreferrer">Open the interactive DJ set ↗</a>
-          <span className="playlist-spark" aria-hidden="true">✦</span>
-        </div>
-        <div className="playlist-stage">
-          <p className="playlist-hint"><span className="equalizer" aria-hidden="true"><i/><i/><i/><i/></span> scroll to dig · hover to shine</p>
-          <div className="playlist-scroll" tabIndex={0} aria-label="Scrollable album art gallery">
-            {cover.map((item, i) => (
-              <article className={"album-card album-" + (i + 1)} key={item.title}>
-                <img src={item.src} alt="" loading="lazy" referrerPolicy="no-referrer" />
-                <div><strong>{item.title}</strong><span>{item.artist}</span></div>
-                <span className="album-spark" aria-hidden="true">✦</span>
-              </article>
-            ))}
+    <button
+      className={"record-sleeve sleeve-" + index + (active ? " is-active" : "")}
+      style={{ "--record-color": record.color } as React.CSSProperties}
+      onClick={onSelect}
+      aria-pressed={active}
+      aria-label={record.title + " by " + record.artist}
+    >
+      <span className="record-cover">
+        {!missing && <img src={record.cover} alt="" onError={() => setMissing(true)} />}
+        {missing && <span className="record-cover-placeholder" aria-hidden="true">✳</span>}
+      </span>
+      <span className="record-label"><strong>{record.title}</strong><small>{record.artist}</small></span>
+    </button>
+  )
+}
+
+export function PersonalPlay() {
+  const [active, setActive] = useState(0)
+  return (
+    <section className="record-player section" aria-labelledby="playlist-title">
+      <div className="record-player-inner container">
+        <p className="eyebrow">a little off the clock</p>
+        <h2 id="playlist-title" className="record-player-title">Look into my <em>playlist</em></h2>
+        <p className="record-player-note">A few things in rotation. Pick a record to flip the side.</p>
+        <div className="record-stage">
+          <div className="record-shelves" aria-label="Choose a record">
+            {records.map((record, index) => <Record key={record.title} record={record} index={index} active={index === active} onSelect={() => setActive(index)} />)}
           </div>
+          <button className={"vinyl-disc" + (active >= 0 ? " playing" : "")} onClick={() => setActive((active + 1) % records.length)} aria-label="Play next record">
+            <span className="vinyl-grooves" />
+            <span className="vinyl-center" style={{ "--record-color": records[active].color } as React.CSSProperties}>
+              <span className="vinyl-center-copy"><strong>{records[active].title}</strong><small>{records[active].artist}</small></span>
+            </span>
+            <span className="vinyl-shine" />
+          </button>
+          <p className="record-player-current" aria-live="polite"><span>now spinning</span> {records[active].title} · {records[active].artist}</p>
         </div>
-      </div>
-      <div className="container map-game-wrap">
-        <a className="map-game-card" href="https://dhwanibagrecha.com/about-me" target="_blank" rel="noreferrer">
-          <span className="eyebrow">a tiny game about a big world</span>
-          <strong>Where in my world is this?</strong>
-          <span>Guess a place from my life. Every wrong answer gives you a direction. <b>Play the map game ↗</b></span>
-          <span className="map-game-globe" aria-hidden="true">◎</span>
-        </a>
       </div>
     </section>
   )
