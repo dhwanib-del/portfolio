@@ -11,7 +11,7 @@ export function ChatLauncher() {\n  const [label, setLabel] = useState("")\n  us
       aria-haspopup="dialog"
       aria-controls="portfolio-chat"
     >
-      How can I help? <span aria-hidden>↗</span>
+      <span className="typing-label">{label}<i aria-hidden="true" /></span> <span aria-hidden>↗</span>
     </button>
   )
 }
