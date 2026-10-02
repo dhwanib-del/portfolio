@@ -1,6 +1,6 @@
 "use client"
-// DhwaniGPT panel (rebuilt from Dhwani's Framer DhwaniGPT). Only appears when the backend is on
-// (/api/ask GET → enabled). Opens from the tour ("Ask a question") via the "open-chat" event.
+// DhwaniGPT panel opens from the footer or quick tour. When its backend is unavailable, it
+// stays useful with an honest status and direct contact path.
 // AI-native basics: says it's AI, answers only from the portfolio, suggestion chips to start,
 // clear loading and error states, Esc closes, focus returns, replies announced politely.
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -25,7 +25,7 @@ export function Chat() {
     window.addEventListener("open-chat", on)
     return () => window.removeEventListener("open-chat", on)
   }, [])
-  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 50) }, [open])
+  useEffect(() => { if (open && enabled) setTimeout(() => inputRef.current?.focus(), 50) }, [open, enabled])
   useEffect(() => endRef.current?.scrollIntoView({ block: "end" }), [msgs, busy])
 
   const close = () => { setOpen(false); setTimeout(() => opener.current?.focus(), 0) }
@@ -46,18 +46,18 @@ export function Chat() {
     } finally { setBusy(false) }
   }, [msgs, busy])
 
-  if (!enabled || !open) return null
+  if (!open) return null
   return (
-    <div className="chat" role="dialog" aria-modal="false" aria-labelledby="chat-h" onKeyDown={(e) => e.key === "Escape" && close()}>
+    <div id="portfolio-chat" className="chat" role="dialog" aria-modal="false" aria-labelledby="chat-h" onKeyDown={(e) => e.key === "Escape" && close()}>
       <div className="chat-top">
         <div>
           <h2 id="chat-h">DhwaniGPT</h2>
-          <p>An AI that answers only from this portfolio. It can be wrong.</p>
+          <p>{enabled ? "AI answers based only on this portfolio. It can be wrong." : "The portfolio assistant is offline right now."}</p>
         </div>
         <button type="button" className="tour-x" aria-label="Close chat" onClick={close}>×</button>
       </div>
       <div className="chat-log" aria-live="polite">
-        <p className="chat-msg a">Hi! Ask me about Dhwani&apos;s work, how she uses AI, or what she&apos;s looking for.</p>
+        <p className="chat-msg a">{enabled ? "Hi! Ask me about Dhwani’s work, how she uses AI, or what she’s looking for." : "Want to talk about a project or a role? Send Dhwani a note and she’ll get back to you."}</p>
         {msgs.map((m, i) => <p key={i} className={`chat-msg ${m.role === "user" ? "u" : "a"}`}>{m.content}</p>)}
         {busy && <p className="chat-msg a"><span className="dots" aria-label="Thinking"><i /><i /><i /></span></p>}
         {err && <p className="chat-err" role="alert">{err}</p>}
@@ -66,11 +66,11 @@ export function Chat() {
       {msgs.length === 0 && (
         <div className="chat-sugs">{SUGGESTIONS.map((s) => <button key={s} type="button" onClick={() => send(s)}>{s}</button>)}</div>
       )}
-      <form className="chat-form" onSubmit={(e) => { e.preventDefault(); send(input) }}>
+      {enabled ? <form className="chat-form" onSubmit={(e) => { e.preventDefault(); send(input) }}>
         <label htmlFor="chat-in" className="sr-only">Ask about Dhwani</label>
         <input id="chat-in" ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about Dhwani…" maxLength={600} disabled={busy} />
         <button type="submit" className="btn btn-primary" disabled={busy || !input.trim()}>Send</button>
-      </form>
+      </form> : <div className="chat-form"><a className="btn btn-primary" href="mailto:dhwanib@umich.edu">Email Dhwani ↗</a></div>}
     </div>
   )
 }
