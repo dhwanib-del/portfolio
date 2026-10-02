@@ -14,7 +14,29 @@ export const VIBES: Vibe[] = [
   { id: "goblue", name: "Go Blue", a: "rgba(255,203,5,0.30)", b: "rgba(0,63,122,0.72)", c: "rgba(255,203,5,0.20)", accent: "#FFCB05", swatch: ["#FFCB05", "#0B4F9C", "#00274C"], tempo: 5.2 },
   { id: "afterhours", name: "Pink", a: "rgba(255,177,153,0.32)", b: "rgba(255,77,141,0.46)", c: "rgba(123,92,255,0.20)", accent: "#FF4D8D", swatch: ["#FFC2A8", "#FF4D8D", "#4A0E2A"], tempo: 3.6 },
   { id: "greenroom", name: "Go Green", a: "rgba(13,153,255,0.30)", b: "rgba(27,196,125,0.45)", c: "rgba(255,255,255,0.10)", accent: "#1BC47D", swatch: ["#9DF5CF", "#1BC47D", "#063B2A"], tempo: 7.2 },
+  { id: "lavender", name: "Lavender", a: "rgba(220,196,255,0.38)", b: "rgba(137,92,246,0.48)", c: "rgba(87,68,166,0.18)", accent: "#A78BFA", swatch: ["#E3D5FF", "#9A73F5", "#302052"], tempo: 5.6 },
+  { id: "ice", name: "Ice blue", a: "rgba(121,220,255,0.34)", b: "rgba(49,169,225,0.46)", c: "rgba(90,120,255,0.18)", accent: "#6DD5F5", swatch: ["#C4F1FF", "#57C7EA", "#0A3551"], tempo: 6.3 },
+  { id: "cherry", name: "Cherry", a: "rgba(255,151,174,0.32)", b: "rgba(204,44,83,0.47)", c: "rgba(117,20,53,0.2)", accent: "#F06A8B", swatch: ["#FFB6C7", "#E44D73", "#471326"], tempo: 4.7 },
+  { id: "lemon", name: "Lemon", a: "rgba(255,238,142,0.35)", b: "rgba(237,183,39,0.42)", c: "rgba(200,113,17,0.18)", accent: "#F1C94B", swatch: ["#FFF4B0", "#F2C94C", "#60440E"], tempo: 6.8 },
 ]
+
+function hexRgba(hex: string, alpha: number) {
+  const value = hex.replace("#", "")
+  const n = Number.parseInt(value.length === 3 ? value.split("").map((c) => c + c).join("") : value, 16)
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255
+  return `rgba(${r},${g},${b},${alpha})`
+}
+
+function inkFor(hex: string) {
+  const value = hex.replace("#", "")
+  const n = Number.parseInt(value.length === 3 ? value.split("").map((c) => c + c).join("") : value, 16)
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255
+  return (r * 299 + g * 587 + b * 114) / 1000 > 155 ? "#111114" : "#ffffff"
+}
+
+function makeCustomVibe(first: string, second: string): Vibe {
+  return { id: "custom", name: "Custom gradient", a: hexRgba(first, .34), b: hexRgba(second, .48), c: hexRgba(first, .18), accent: second, swatch: [first, second, "#17131f"], tempo: 5.2 }
+}
 
 function applyVibe(v: Vibe, persist: boolean) {
   const r = document.documentElement
@@ -22,6 +44,8 @@ function applyVibe(v: Vibe, persist: boolean) {
   r.style.setProperty("--vibe-b", v.b)
   r.style.setProperty("--vibe-c", v.c)
   r.style.setProperty("--vibe-accent", v.accent)
+  r.style.setProperty("--accent", v.accent)
+  r.style.setProperty("--on-accent", inkFor(v.accent))
   r.setAttribute("data-vibe", v.id)
   if (persist) try { localStorage.setItem("vibe", v.id) } catch {}
 }
@@ -50,13 +74,23 @@ export function Intro() {
   const [preview, setPreview] = useState<Vibe | null>(null)
   const [flood, setFlood] = useState<{ x: number; y: number; v: Vibe } | null>(null)
   const [menu, setMenu] = useState(false)
+  const [customColors, setCustomColors] = useState<[string, string]>(["#8B5CF6", "#F3500F"])
   const [reduced, setReduced] = useState(false)
   const lastFocus = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
-    let saved: Vibe | undefined
-    try { saved = VIBES.find((v) => v.id === localStorage.getItem("vibe")) } catch {}
-    const start = saved || VIBES[0]
+    let start = VIBES[0]
+    try {
+      const savedId = localStorage.getItem("vibe")
+      if (savedId === "custom") {
+        const stored = JSON.parse(localStorage.getItem("custom-vibe-colors") || '["#8B5CF6","#F3500F"]')
+        const colors: [string, string] = [String(stored[0]), String(stored[1])]
+        setCustomColors(colors)
+        start = makeCustomVibe(colors[0], colors[1])
+      } else {
+        start = VIBES.find((v) => v.id === savedId) || VIBES[0]
+      }
+    } catch {}
     applyVibe(start, false)
     setCurrent(start)
     setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches)
@@ -84,6 +118,20 @@ export function Intro() {
     setOpen(false)
     setTimeout(() => (document.getElementById("main") as HTMLElement | null)?.focus?.(), 50)
   }, [])
+
+  const updateCustomColor = (index: 0 | 1, value: string) => {
+    const next: [string, string] = [...customColors]
+    next[index] = value
+    setCustomColors(next)
+    const vibe = makeCustomVibe(next[0], next[1])
+    setPreview(vibe)
+    applyVibe(vibe, false)
+  }
+
+  const chooseCustom = () => {
+    try { localStorage.setItem("custom-vibe-colors", JSON.stringify(customColors)) } catch {}
+    choose(makeCustomVibe(customColors[0], customColors[1]))
+  }
 
   const choose = useCallback((v: Vibe, x?: number, y?: number) => {
     applyVibe(v, true)
@@ -170,13 +218,21 @@ export function Intro() {
       {!open && (
         <div className="vibe-chip-wrap">
           {menu && (
-            <div role="radiogroup" aria-label="Change color vibe" className="vibe-menu" onMouseLeave={() => { setPreview(null); applyVibe(current, false) }}>
-              {VIBES.map((v) => (
-                <button key={v.id} type="button" role="radio" aria-checked={current.id === v.id} aria-label={`${v.name} vibe`} title={v.name}
-                  onMouseEnter={() => hover(v)} onFocus={() => hover(v)} onClick={() => choose(v)}>
-                  <Orb v={v} size={30} active={current.id === v.id} />
-                </button>
-              ))}
+            <div className="vibe-popover" onMouseLeave={() => { setPreview(null); applyVibe(current, false) }}>
+              <div role="radiogroup" aria-label="Change color vibe" className="vibe-menu">
+                {VIBES.map((v) => (
+                  <button key={v.id} type="button" role="radio" aria-checked={current.id === v.id} aria-label={`${v.name} vibe`} title={v.name}
+                    onMouseEnter={() => hover(v)} onFocus={() => hover(v)} onClick={() => choose(v)}>
+                    <Orb v={v} size={30} active={current.id === v.id} />
+                  </button>
+                ))}
+              </div>
+              <div className="vibe-custom">
+                <div className="vibe-custom-copy"><strong>Make a gradient</strong><span>Pick two colors.</span></div>
+                <label className="vibe-color-input"><span>From</span><input aria-label="First gradient color" type="color" value={customColors[0]} onChange={(e) => updateCustomColor(0, e.target.value)} /></label>
+                <label className="vibe-color-input"><span>To</span><input aria-label="Second gradient color" type="color" value={customColors[1]} onChange={(e) => updateCustomColor(1, e.target.value)} /></label>
+                <button type="button" className="vibe-apply" onClick={chooseCustom}>Use gradient ↗</button>
+              </div>
             </div>
           )}
           <button type="button" className="vibe-chip" aria-expanded={menu} aria-label={`Change the site's color vibe. Current: ${current.name}`} onClick={() => setMenu((m) => !m)}>
