@@ -1,15 +1,14 @@
-"use client"
-// DhwaniGPT panel opens from the footer or quick tour. When its backend is unavailable, it
-// stays useful with an honest status and direct contact path.
-// AI-native basics: says it's AI, answers only from the portfolio, suggestion chips to start,
-// clear loading and error states, Esc closes, focus returns, replies announced politely.
+use client"
+
 import { useCallback, useEffect, useRef, useState } from "react"
 
-type Msg = { role: "user" | "assistant"; content: string }
+type Msg = { role: "user" | "assistant"; content: string; href?: string; linkLabel?: string }
+type Mode = "ai" | "portfolio" | "offline"
+
 const SUGGESTIONS = ["What does Dhwani do best?", "Tell me about BRIEFS", "How does she use AI?", "Is she open to relocating?"]
 
 export function Chat() {
-  const [enabled, setEnabled] = useState(false)
+  const [mode, setMode] = useState<Mode>("portfolio")
   const [open, setOpen] = useState(false)
   const [msgs, setMsgs] = useState<Msg[]>([])
   const [input, setInput] = useState("")
@@ -20,19 +19,19 @@ export function Chat() {
   const opener = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
-    fetch("/api/ask").then((r) => r.json()).then((d) => setEnabled(!!d.enabled)).catch(() => {})
+    fetch("/api/ask").then((r) => r.json()).then((d) => setMode(d.enabled ? d.mode || "portfolio" : "offline")).catch(() => setMode("offline"))
     const on = () => { opener.current = document.activeElement as HTMLElement; setOpen(true) }
     window.addEventListener("open-chat", on)
     return () => window.removeEventListener("open-chat", on)
   }, [])
-  useEffect(() => { if (open && enabled) setTimeout(() => inputRef.current?.focus(), 50) }, [open, enabled])
+  useEffect(() => { if (open) setTimeout(() => inputRef.current?.focus(), 50) }, [open])
   useEffect(() => endRef.current?.scrollIntoView({ block: "end" }), [msgs, busy])
 
   const close = () => { setOpen(false); setTimeout(() => opener.current?.focus(), 0) }
 
   const send = useCallback(async (text: string) => {
     const m = text.trim()
-    if (!m || busy) return
+    if (!m || busy || mode === "offline") return
     setInput(""); setErr("")
     const next = [...msgs, { role: "user" as const, content: m }]
     setMsgs(next); setBusy(true)
@@ -40,37 +39,41 @@ export function Chat() {
       const r = await fetch("/api/ask", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ message: m, history: msgs }) })
       const d = await r.json()
       if (!r.ok || d.error) throw new Error(d.error)
-      setMsgs([...next, { role: "assistant", content: d.reply }])
+      setMode(d.mode || mode)
+      setMsgs([...next, { role: "assistant", content: d.reply, href: d.href, linkLabel: d.linkLabel }])
     } catch {
-      setErr("I couldn't answer that right now. Try again, or contact Dhwani directly.")
+      setErr("I couldn't answer that just now. Try again, or email Dhwani.")
     } finally { setBusy(false) }
-  }, [msgs, busy])
+  }, [msgs, busy, mode])
 
   if (!open) return null
   return (
-    <div id="portfolio-chat" className="chat" role="dialog" aria-modal="false" aria-labelledby="chat-h" onKeyDown={(e) => e.key === "Escape" && close()}>
+    <section id="portfolio-chat" className="chat" role="dialog" aria-modal="false" aria-labelledby="chat-h" onKeyDown={(e) => e.key === "Escape" && close()}>
       <div className="chat-top">
         <div>
-          <h2 id="chat-h">DhwaniGPT</h2>
-          <p>{enabled ? "AI answers based only on this portfolio. It can be wrong." : "The portfolio assistant is offline right now."}</p>
+          <h2 id="chat-h"><span className="chat-spark" aria-hidden="true">✳</span> DhwaniGPT</h2>
+          <p>{mode === "ai" ? "AI answers grounded in the portfolio; I’ll flag what I can’t verify." : mode === "offline" ? "The assistant is offline. Email Dhwani instead." : "Portfolio-grounded answers. If I can’t verify it, I’ll say so."}</p>
         </div>
         <button type="button" className="tour-x" aria-label="Close chat" onClick={close}>×</button>
       </div>
       <div className="chat-log" aria-live="polite">
-        <p className="chat-msg a">{enabled ? "Hi! Ask me about Dhwani’s work, how she uses AI, or what she’s looking for." : "Want to talk about a project or a role? Send Dhwani a note and she’ll get back to you."}</p>
-        {msgs.map((m, i) => <p key={i} className={`chat-msg ${m.role === "user" ? "u" : "a"}`}>{m.content}</p>)}
+        <p className="chat-msg a">Hi! I’m DhwaniGPT. Ask about a project, my design process, or what I’m looking for.</p>
+        {msgs.map((m, i) => <div key={i} className={"chat-message " + (m.role === "user" ? "user" : "assistant")}>
+          <p className={"chat-msg " + (m.role === "user" ? "u" : "a")}>{m.content}</p>
+          {m.href && <a className="chat-source" href={m.href}>{m.linkLabel || "Open source ↗"}</a>}
+        </div>)}
         {busy && <p className="chat-msg a"><span className="dots" aria-label="Thinking"><i /><i /><i /></span></p>}
         {err && <p className="chat-err" role="alert">{err}</p>}
         <div ref={endRef} />
       </div>
-      {enabled && msgs.length === 0 && (
+      {mode !== "offline" && msgs.length === 0 && (
         <div className="chat-sugs">{SUGGESTIONS.map((s) => <button key={s} type="button" onClick={() => send(s)}>{s}</button>)}</div>
       )}
-      {enabled ? <form className="chat-form" onSubmit={(e) => { e.preventDefault(); send(input) }}>
+      {mode !== "offline" ? <form className="chat-form" onSubmit={(e) => { e.preventDefault(); send(input) }}>
         <label htmlFor="chat-in" className="sr-only">Ask about Dhwani</label>
         <input id="chat-in" ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about Dhwani…" maxLength={600} disabled={busy} />
         <button type="submit" className="btn btn-primary" disabled={busy || !input.trim()}>Send</button>
       </form> : <div className="chat-form"><a className="btn btn-primary" href="mailto:dhwanib@umich.edu">Email Dhwani ↗</a></div>}
-    </div>
+      <p className="chat-footnote">No private details, please. This chat isn’t saved.</p>
+    </section>
   )
-}
