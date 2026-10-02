@@ -15,7 +15,7 @@ function Record({ record, index, active, onSelect }: { record: typeof records[nu
   return (
     <button
       className={"record-sleeve sleeve-" + index + (active ? " is-active" : "")}
-      style={{ "--record-color": record.color } as CSSProperties}
+      style={{ "--record-color": record.color } as CSSProperties & { "--record-color": string }}
       onClick={onSelect}
       aria-pressed={active}
       aria-label={record.title + " by " + record.artist}
