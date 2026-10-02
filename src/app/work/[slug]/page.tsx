@@ -49,10 +49,12 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         </dl>
       </header>
 
-      <div className="container case-media">
-        <CaseVideo src={c.video} label="Screen recording coming soon" />
-        {c.stats && <Stats items={c.stats} />}
-      </div>
+      {(c.video || c.stats) && (
+        <div className="container case-media">
+          {c.video && <CaseVideo src={c.video} label="Screen recording coming soon" />}
+          {c.stats && <Stats items={c.stats} />}
+        </div>
+      )}
       {c.figures[0] && <Figure f={c.figures[0]} />}
 
       {c.claim && <div className="container"><Claim {...c.claim} /></div>}
