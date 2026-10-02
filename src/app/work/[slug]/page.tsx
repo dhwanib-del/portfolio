@@ -2,7 +2,8 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { cases } from "@/content/cases"
 import { projects } from "@/content/site"
-import { CaseVideo, Decision, Stats } from "@/components/case/Scenes"
+import { CaseVideo, Claim, Decision, Stats } from "@/components/case/Scenes"
+import { BriefsBeforeAfter } from "@/components/case/BeforeAfter"
 
 export function generateStaticParams() {
   return [...cases.map((c) => ({ slug: c.slug })), { slug: "prime-video" }]
@@ -54,13 +55,14 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
       </div>
       {c.figures[0] && <Figure f={c.figures[0]} />}
 
+      {c.claim && <div className="container"><Claim {...c.claim} /></div>}
+
       <div className="container case-body">
-        {c.sections.map((s) => (
-          <section key={s.heading} className="case-sec">
-            <h2>{s.heading}</h2>
-            {s.body.map((p) => <p key={p}>{p}</p>)}
-          </section>
-        ))}
+        {c.sections.slice(0, 1).map((s) => <Sec key={s.heading} s={s} />)}
+      </div>
+      {c.scene === "briefs" && <BriefsBeforeAfter />}
+      <div className="container case-body">
+        {c.sections.slice(1).map((s) => <Sec key={s.heading} s={s} />)}
         {c.decision && <Decision {...c.decision} />}
         {c.ai && (
           <aside className="case-ai" aria-label="Where AI fit">
@@ -96,5 +98,14 @@ function Figure({ f }: { f: { src: string; alt: string; caption: string; video?:
       {f.video ? <video src={f.src} muted loop playsInline autoPlay controls aria-label={f.alt} /> : <img src={f.src} alt={f.alt} loading="lazy" />}
       <figcaption>{f.caption}</figcaption>
     </figure>
+  )
+}
+
+function Sec({ s }: { s: { heading: string; body: string[] } }) {
+  return (
+    <section className="case-sec">
+      <h2>{s.heading}</h2>
+      {s.body.map((p) => <p key={p}>{p}</p>)}
+    </section>
   )
 }

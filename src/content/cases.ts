@@ -18,28 +18,38 @@ export type Case = {
   decision?: { tension: string; decision: string; why: string; rejected: string }
   stats?: { value: number; prefix?: string; suffix?: string; label: string }[]
   video?: string // e.g. /media/briefs.mp4 — the main clip under the header
+  claim?: { pre?: string; emphasis: string; post?: string } // one big sentence: the strongest moment
+  scene?: "briefs" // a drawn before/after placed after the first section
 }
 
 export const cases: Case[] = [
   {
     slug: "briefs",
     org: "BRIEFS · U-M Division of Public Safety & Security",
-    headline: "In a time-sensitive workflow, information has to be easy to find and easy to verify.",
-    hook: "Building information lived in long records. The person looking for it needed a predictable way to the right detail.",
+    headline: "The information was there. The hard part was finding it during a call.",
+    hook: "Dispatchers needed building details mid-call: who to call, how to get in, what to watch for. Those details lived in long PDFs and across more than ten tools.",
     meta: [
-      { label: "Role", value: "UX design intern: research, IA, prototype, PRD" },
+      { label: "Role", value: "UX design intern: field research, IA, prototype, PRD" },
       { label: "Team", value: "With Aaron Tucker, DPSS" },
       { label: "When", value: "Summer 2026" },
       { label: "Status", value: "Interactive prototype + PRD, not shipped" },
     ],
-    sections: [
-      { heading: "I watched dispatchers work, then structured every profile the same way.", body: ["The redesign makes each building profile easy to scan without turning every item into an alert. The most important details stay visible; the rest sits one predictable step away."] },
-      { heading: "The assistant had to show its work, not just be fast.", body: ["It answers only from approved records, shows where each answer came from, and says plainly when the records don't have it. When AI helped restructure older documents, a person reviewed every proposed change."] },
+    claim: { pre: "A dispatcher shouldn't have to ", emphasis: "scroll a PDF", post: " to find one phone number." },
+    stats: [
+      { value: 7, label: "screens at one dispatch workstation" },
+      { value: 10, suffix: "+", label: "tools in the lookup" },
+      { value: 30, suffix: "s", label: "goal to find a detail · not yet tested" },
     ],
-    ai: "AI is in the product, with guardrails: cited answers, an honest \"not in the records\", and human review before any record changes.",
-    status: "Prototype and PRD handed to DPSS. Not launched.",
-    next: "Test with dispatchers: can they find a detail, verify the answer and trust the structure under real conditions?",
-    decision: { tension: "The temptation", decision: "Make the record easy to scan instead of making everything urgent.", why: "When every field shouts, nothing does. A fixed structure lets someone find the one detail they need and trust it.", rejected: "Turning every item into an alert" },
+    sections: [
+      { heading: "I sat in the dispatch center and watched the lookup happen.", body: ["One workstation, seven screens. To answer a building question, a dispatcher found the right file in Dropbox, scrolled it by hand, then checked another system to make sure the contact was still current. Then back to the call.", "Nothing was missing. It just had no predictable place."] },
+      { heading: "So every building profile got the same five places.", body: ["Response, contacts, maps and floor plans, documents, details. Same order, every building. The few details that matter mid-call sit in a strip that stays visible while you move between sections."] },
+      { heading: "The assistant had to show its work.", body: ["Fast answers are useless if you can't check them. It answers only from approved records, links to where each answer came from, and says \"that's not in the records\" instead of guessing. When AI helped restructure old documents, a person approved every change."] },
+    ],
+    ai: "AI is in the product, with guardrails: answers cite the record, it admits when the records don't say, and nothing changes without a person approving it.",
+    status: "Prototype and PRD handed to DPSS. Not launched, and the 30-second goal hasn't been tested yet.",
+    next: "Put it in front of dispatchers: can they find a detail, check the answer, and trust the structure on a real shift?",
+    decision: { tension: "The tradeoff", decision: "Warnings only for things you act on now. Everything else stays calm and findable.", why: "When every field shouts, nothing does. A fixed structure lets someone find the one detail they need. The pinned strip costs screen space, and I chose that on purpose.", rejected: "Turning every item into an alert" },
+    scene: "briefs",
     figures: [],
   },
   {
