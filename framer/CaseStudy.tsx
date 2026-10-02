@@ -430,6 +430,7 @@ interface Props {
     clips: Clip[]
     videoPlaceholder: string
     showNext: boolean
+    casePath: string
     style?: React.CSSProperties
 }
 
@@ -438,7 +439,7 @@ interface Props {
  * @framerSupportedLayoutHeight auto
  */
 export default function CaseStudy(props: Props) {
-    const { project = "briefs", clips = [], videoPlaceholder = "Screen recording coming soon", showNext = true } = props
+    const { project = "briefs", clips = [], videoPlaceholder = "Screen recording coming soon", showNext = true, casePath = "/projects/" } = props
     const c = CASES.find((x) => x.slug === project) || CASES[0]
     const [statsRef, statsSeen] = useSeen<HTMLDListElement>()
     const [claimRef, claimSeen] = useSeen<HTMLParagraphElement>()
@@ -614,7 +615,7 @@ export default function CaseStudy(props: Props) {
                     <p><strong>Next question:</strong> {c.next}</p>
                 </section>
                 {showNext && nextCase && (
-                    <a className="cs-next" href={`/work/${next}`}>
+                    <a className="cs-next" href={`${casePath.replace(/\/?$/, "/")}${next}`}>
                         <span className="cs-eyebrow" style={{ margin: 0 }}>next</span>
                         <span className="cs-next-t">{TITLES[next]}</span>
                         <span className="cs-next-r">{nextCase.headline} →</span>
@@ -649,4 +650,5 @@ addPropertyControls(CaseStudy, {
     },
     videoPlaceholder: { type: ControlType.String, title: "No-video label", defaultValue: "Screen recording coming soon" },
     showNext: { type: ControlType.Boolean, title: "Next case link", defaultValue: true },
+    casePath: { type: ControlType.String, title: "Case pages live at", defaultValue: "/projects/" },
 })
