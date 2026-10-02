@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type CSSProperties } from "react"
 
 // Edit this list to add records. Add cover art to public/playlist/ and set cover to its path.
 const records = [
@@ -15,7 +15,7 @@ function Record({ record, index, active, onSelect }: { record: typeof records[nu
   return (
     <button
       className={"record-sleeve sleeve-" + index + (active ? " is-active" : "")}
-      style={{ "--record-color": record.color } as React.CSSProperties}
+      style={{ "--record-color": record.color } as CSSProperties}
       onClick={onSelect}
       aria-pressed={active}
       aria-label={record.title + " by " + record.artist}
