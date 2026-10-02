@@ -91,6 +91,7 @@ export function Nav() {
     <header className="nav">
       <a href="#main" className="skip-link">Skip to content</a>
       <nav aria-label="Main" className="nav-pill">
+        <Link className="nav-wordmark" href="/" aria-label="Dhwani Bagrecha home"><span lang="hi">ध्वनि</span><span className="nav-wordmark-question" aria-hidden="true">?</span></Link>
         <Lights />
         <span aria-hidden className="nav-div" />
         <ul>
@@ -109,7 +110,7 @@ export function Nav() {
       <div className="nav-bar">
         <span className="nav-brand">
           <Lights />
-          <Link href="/">dhwani</Link>
+          <Link href="/" className="nav-wordmark" aria-label="Dhwani Bagrecha home"><span lang="hi">ध्वनि</span><span className="nav-wordmark-question" aria-hidden="true">?</span></Link>
         </span>
         <span className="nav-bar-r">
           <ThemeToggle />
