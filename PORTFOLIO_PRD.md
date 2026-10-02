@@ -43,9 +43,11 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 
 
 ## Current iteration · October 2
-- [x] Cherry, Go Blue, and custom gradients recolor the gallery placeholders, map-game card, playlist background, and track-placeholder discs. Original album art keeps its real colors; the open-to-work indicator stays green because it signals availability.
+- [x] Cherry, Go Blue, and custom gradients recolor gallery placeholders, map-game art and pin, playlist background, and track-placeholder discs. Original album art keeps its real colors; the open-to-work indicator stays green because it signals availability.
 - [x] Add a first-visit typewriter greeting with a direct Ask DhwaniGPT action.
 - [x] Make DhwaniGPT answer from portfolio facts without an external model key; link project answers to case studies, protect Prime Video details, and say when a fact is not verified.
 - [x] Do not store chat history. Do not connect the portfolio to the unrelated Luma or Glimmer Supabase databases.
-- [ ] Verify Vercel build and test a project answer, an unknown question, Cherry, and a custom gradient after deploy.
+- [x] Vercel production build is READY. Verified Cherry pink and an editable blue-to-orange gradient across the About gallery and playlist; verified map art and pin inherit Cherry pink after fixing their hard-coded mint/orange colors.
+- [x] DhwaniGPT `/api/ask` GET reports portfolio mode; the BRIEFS suggestion POST returned HTTP 200 in Vercel logs.
+- [ ] Verify a visible chatbot reply and an unknown-question fallback in a normal browser session. The cloud preview returned a browser-level “This page couldn’t load” after the successful POST, so the rendered reply still needs a clean session check.
 - [ ] Optional: enable free-form model responses only after configuring a server-side model API key in Vercel. The grounded FAQ remains available without it.
