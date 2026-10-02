@@ -1,4 +1,4 @@
-use client"
+"use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
 
@@ -77,3 +77,4 @@ export function Chat() {
       <p className="chat-footnote">No private details, please. This chat isn’t saved.</p>
     </section>
   )
+}
