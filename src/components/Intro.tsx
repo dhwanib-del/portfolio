@@ -14,10 +14,6 @@ export const VIBES: Vibe[] = [
   { id: "goblue", name: "Go Blue", a: "rgba(255,203,5,0.30)", b: "rgba(0,63,122,0.72)", c: "rgba(255,203,5,0.20)", accent: "#FFCB05", swatch: ["#FFCB05", "#0B4F9C", "#00274C"], tempo: 5.2 },
   { id: "afterhours", name: "Pink", a: "rgba(255,177,153,0.32)", b: "rgba(255,77,141,0.46)", c: "rgba(123,92,255,0.20)", accent: "#FF4D8D", swatch: ["#FFC2A8", "#FF4D8D", "#4A0E2A"], tempo: 3.6 },
   { id: "greenroom", name: "Go Green", a: "rgba(13,153,255,0.30)", b: "rgba(27,196,125,0.45)", c: "rgba(255,255,255,0.10)", accent: "#1BC47D", swatch: ["#9DF5CF", "#1BC47D", "#063B2A"], tempo: 7.2 },
-  { id: "lavender", name: "Lavender", a: "rgba(220,196,255,0.38)", b: "rgba(137,92,246,0.48)", c: "rgba(87,68,166,0.18)", accent: "#A78BFA", swatch: ["#E3D5FF", "#9A73F5", "#302052"], tempo: 5.6 },
-  { id: "ice", name: "Ice blue", a: "rgba(121,220,255,0.34)", b: "rgba(49,169,225,0.46)", c: "rgba(90,120,255,0.18)", accent: "#6DD5F5", swatch: ["#C4F1FF", "#57C7EA", "#0A3551"], tempo: 6.3 },
-  { id: "cherry", name: "Cherry", a: "rgba(255,143,163,0.30)", b: "rgba(193,18,63,0.52)", c: "rgba(91,0,26,0.24)", accent: "#C1123F", swatch: ["#FF9BAE", "#C1123F", "#3A0715"], tempo: 4.7 },
-  { id: "lemon", name: "Lemon", a: "rgba(255,238,142,0.35)", b: "rgba(237,183,39,0.42)", c: "rgba(200,113,17,0.18)", accent: "#F1C94B", swatch: ["#FFF4B0", "#F2C94C", "#60440E"], tempo: 6.8 },
 ]
 
 function hexRgba(hex: string, alpha: number) {
@@ -88,7 +84,7 @@ export function Intro() {
         setCustomColors(colors)
         start = makeCustomVibe(colors[0], colors[1])
       } else {
-        start = VIBES.find((v) => v.id === savedId) || VIBES[0]
+        start = savedId === "cherry" ? VIBES.find((v) => v.id === "afterhours") || VIBES[0] : VIBES.find((v) => v.id === savedId) || VIBES[0]
       }
     } catch {}
     applyVibe(start, false)
