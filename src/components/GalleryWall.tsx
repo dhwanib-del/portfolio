@@ -41,7 +41,6 @@ function GalleryTile({ moment, index }: { moment: Moment; index: number }) {
       <div className="gallery-photo">
         <div className="gallery-placeholder" aria-hidden="true">
           <span className="gallery-placeholder-mark">{imageNumber}</span>
-          <span className="gallery-placeholder-caption">{moment.caption}</span>
         </div>
         <img
           className={loaded ? "is-loaded" : ""}
