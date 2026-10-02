@@ -49,13 +49,12 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         </dl>
       </header>
 
-      {(c.video || c.stats) && (
-        <div className="container case-media">
-          {c.video && <CaseVideo src={c.video} label="Screen recording coming soon" />}
-          {c.stats && <Stats items={c.stats} />}
-        </div>
-      )}
-      {c.figures[0] && <Figure f={c.figures[0]} />}
+      <div className="container case-media">
+        {c.video ? <CaseVideo src={c.video} label="Project walkthrough video" /> :
+          c.figures[0] ? <Figure f={c.figures[0]} /> :
+          <MediaPlaceholder path={"public/media/" + c.slug + "/hero.png"} />}
+        {c.stats && <Stats items={c.stats} />}
+      </div>
 
       {c.claim && <div className="container"><Claim {...c.claim} /></div>}
 
@@ -81,6 +80,9 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
           <h2>Where it stands</h2>
           <p>{c.status}</p>
           <p><strong>Next question:</strong> {c.next}</p>
+          {!!c.links?.length && <nav className="case-resources" aria-label="Project resources">
+            {c.links.map((link) => <a className="btn" key={link.href} href={link.href} target="_blank" rel="noreferrer">{link.label} ↗</a>)}
+          </nav>}
         </section>
         <nav className="case-next" aria-label="Next case study">
           <Link href={`/work/${next.slug}`}>
@@ -94,10 +96,19 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
   )
 }
 
-function Figure({ f }: { f: { src: string; alt: string; caption: string; video?: boolean } }) {
+function MediaPlaceholder({ path }: { path: string }) {
+  return <div className="case-media-placeholder" role="img" aria-label="Image placeholder">
+    <span className="eyebrow">Image / video slot</span>
+    <strong>Drop in the strongest project visual</strong>
+    <code>{path}</code>
+  </div>
+}
+
+function Figure({ f }: { f: { src?: string; alt: string; caption: string; video?: boolean; placeholder?: string } }) {
   return (
     <figure className="case-fig container">
-      {f.video ? <video src={f.src} muted loop playsInline autoPlay controls aria-label={f.alt} /> : <img src={f.src} alt={f.alt} loading="lazy" />}
+      {f.src ? (f.video ? <video src={f.src} muted loop playsInline controls aria-label={f.alt} /> : <img src={f.src} alt={f.alt} loading="lazy" />) :
+        <MediaPlaceholder path={f.placeholder || "public/media/project-name/visual.png"} />}
       <figcaption>{f.caption}</figcaption>
     </figure>
   )
