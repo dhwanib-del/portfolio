@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import type { KeyboardEvent, TouchEvent } from "react"
 
 export type DesignCarouselSlide = {
   src: string
@@ -46,12 +47,12 @@ export function DesignCarousel({
   }, [count])
 
   useEffect(() => {
-    if (!autoPlay || count < 2) return
+    if (!autoPlay || count < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
     const timer = window.setInterval(() => move(1), Math.max(2000, autoPlayDelay))
     return () => window.clearInterval(timer)
   }, [autoPlay, autoPlayDelay, count, move])
 
-  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "ArrowLeft") {
       event.preventDefault()
       move(-1)
@@ -62,11 +63,11 @@ export function DesignCarousel({
     }
   }
 
-  const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+  const onTouchStart = (event: TouchEvent<HTMLDivElement>) => {
     touchStartX.current = event.touches[0]?.clientX ?? null
   }
 
-  const onTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+  const onTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
     if (touchStartX.current === null) return
     const delta = (event.changedTouches[0]?.clientX ?? touchStartX.current) - touchStartX.current
     if (delta > 45) move(-1)
