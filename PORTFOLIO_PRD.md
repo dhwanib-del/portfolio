@@ -51,3 +51,7 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 - [x] DhwaniGPT `/api/ask` GET reports portfolio mode; the BRIEFS suggestion POST returned HTTP 200 in Vercel logs.
 - [ ] Verify a visible chatbot reply and an unknown-question fallback in a normal browser session. The cloud preview returned a browser-level “This page couldn’t load” after the successful POST, so the rendered reply still needs a clean session check.
 - [ ] Optional: enable free-form model responses only after configuring a server-side model API key in Vercel. The grounded FAQ remains available without it.
+
+
+## Palette follow-up · October 2
+- [x] Separate Pink (`#FF4D8D`) from Cherry (`#C1123F`): Pink stays bright, Cherry is now a deeper crimson. Verified both distinct accent values on the deployed build.
