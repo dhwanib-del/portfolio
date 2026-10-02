@@ -468,3 +468,16 @@
   .album-card, .album-card img, .map-game-card { transition: none; }
   .album-card:hover, .album-card:nth-child(even) { transform: none; }
 }
+
+.reel-brand { position: absolute; top: 12px; right: 12px; z-index: 2; display: grid; place-items: center; width: 72px; height: 48px; padding: 7px; border: 1px solid rgba(255,255,255,.22); border-radius: 12px; background: rgba(255,255,255,.92); box-shadow: 0 8px 26px rgba(0,0,0,.22); backdrop-filter: blur(10px); }
+.reel-brand img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+.about-intro { position: relative; }
+.about-intro::before, .about-intro::after { position: absolute; pointer-events: none; color: #ffca66; text-shadow: 0 0 18px currentColor; animation: sparkle 2.4s ease-in-out infinite; }
+.about-intro::before { content: "✦"; right: 12%; top: 34%; font-size: 22px; }
+.about-intro::after { content: "✧"; right: 7%; top: 55%; color: #f18bb5; font-size: 30px; animation-delay: .8s; }
+.playlist-stage { position: relative; }
+.playlist-stage::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5; background: radial-gradient(circle at 20% 28%, #fff 0 1px, transparent 2px), radial-gradient(circle at 62% 18%, #ffd880 0 1px, transparent 2px), radial-gradient(circle at 82% 70%, #fff 0 1px, transparent 2px), radial-gradient(circle at 36% 84%, #f6a9c7 0 1px, transparent 2px); background-size: 190px 160px, 210px 180px, 180px 170px, 220px 190px; animation: star-drift 16s linear infinite; }
+@keyframes star-drift { to { background-position: 80px -70px, -60px 90px, 100px 40px, -100px -50px; } }
+@media (prefers-reduced-motion: reduce) {
+  .about-intro::before, .about-intro::after, .playlist-stage::before { animation: none; }
+}
