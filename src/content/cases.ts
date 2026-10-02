@@ -94,26 +94,48 @@ export const cases: Case[] = [
     stats: [{ value: 4, label: "weeks of work cut at the pivot" }, { value: 3, label: "usability tests in a truck cab" }, { value: 1, label: "interview that changed the brief" }],
     figures: [],
   },
+  // Sources: "UMSI x Open Library_ Final Report" (methods, findings, recommendations, limitations) and "Dhwani Bagrecha — Portfolio Content" (personal contribution and reflection). The report supports the research and proposed direction; it does not establish live implementation or measured impact.
   {
     slug: "openlibrary",
     org: "Open Library · Internet Archive",
-    headline: "The reader's problem wasn't only translation. It was losing the thread.",
-    hook: "In eight interviews, readers who hit unfamiliar language left the book to find help, and lost their place and their trust in the answer.",
+    headline: "Readers needed language support without leaving the book.",
+    hook: "Across eight interviews with multilingual students, academic-support staff, and subject-matter experts, our team heard a pattern: a difficult passage could send readers between Open Library, translation tools, and dictionaries. Each switch cost context; doubts about technical terms led readers to cross-check.",
     meta: [
-      { label: "Role", value: "UX researcher: interviews, survey, synthesis, recommendations" },
-      { label: "Team", value: "5-person course team (SI 500)" },
-      { label: "When", value: "Aug – Dec 2025" },
-      { label: "Status", value: "Recommendations; Open Library acted on them" },
+      { label: "My role", value: "Interviews, affinity-wall synthesis, report organization, team coordination" },
+      { label: "Team", value: "Five-person SI 500 team · In4mation" },
+      { label: "Project", value: "SI 500 partner project" },
+      { label: "Status", value: "Research report + recommendations; no live product test" },
+    ],
+    claim: { pre: "The problem wasn’t only translation quality. It was ", emphasis: "leaving the book for help", post: "." },
+    stats: [
+      { value: 8, label: "semi-structured interviews · team research" },
+      { value: 330, label: "data points in the team affinity wall" },
     ],
     sections: [
-      { heading: "A better translator alone wouldn't fix it.", body: ["The fix had to keep people in the passage. We recommended bringing existing language support into the reading flow, optional contextual help, and a lightweight way to report problems."] },
-      { heading: "I drove the research and pushed all three recommendations.", body: ["We worked inside copyright, privacy and academic-integrity limits, so every recommendation was something the library could realistically build."] },
+      {
+        heading: "The research pointed to the gaps between tools.",
+        body: [
+          "Our team paired interviews with an UMSI community survey and literature review. I helped synthesize 330 data points on the affinity wall. Readers described switching between the book, translation tools, dictionaries, and other sources; uncertainty around academic and technical terms made them check meaning in several places.",
+          "The barrier was bigger than whether a translation tool worked. Language support was hard to discover, scattered across the reading process, and difficult to trust in context.",
+        ],
+      },
+      {
+        heading: "The answer wasn’t another standalone translator.",
+        body: [
+          "We began by asking how to improve language access. Peer and partner feedback pushed us back to the evidence, where we found that some support already existed but was easy to miss. The team shifted from proposing a new tool to making existing help easier to find and use while reading.",
+          "We recommended moving translation into the primary reading controls, grouping related language support, and offering a prompt when a book’s language differs from the reader’s interface language. I also helped organize the report and keep the team aligned on next steps.",
+        ],
+      },
     ],
-    ai: "One recommendation was an optional AI reading assistant, kept inside the reading view so answers don't pull people away from the book.",
-    status: "After our research, Open Library improved its feedback flow and added context around international books.",
-    next: "Test whether readers get help and return to the same passage with less interruption.",
-    decision: { tension: "The reframe", decision: "Keep readers in the passage instead of sending them to a translator.", why: "Every switch away cost context and trust. Help had to live where the reading happens.", rejected: "A better translation tool on its own" },
-    stats: [{ value: 8, label: "reader interviews" }, { value: 3, label: "recommendations I pushed" }],
+    ai: "We did not use AI to produce this project. As a possible product direction, the team proposed optional, consent-based AI explanations for selected text, limited to comprehension support. This remained a recommendation and would need privacy, copyright, and academic-integrity review.",
+    status: "The project produced a research report and recommendations. We did not implement or test a prototype in the live Open Library interface, so adoption and product impact are unknown.",
+    next: "If revisited, test whether readers can find support, get help without losing their place, and judge when a translation needs checking.",
+    decision: {
+      tension: "What the evidence changed",
+      decision: "Make existing support easier to find before adding another tool.",
+      why: "Readers already lost context while switching between tools. The recommendations focused on visibility and integration, with privacy, copyright, and academic integrity treated as product constraints.",
+      rejected: "A separate translation product that adds another stop to the reading workflow",
+    },
     figures: [],
   },
   {
