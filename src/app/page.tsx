@@ -1,69 +1,40 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { Bubble } from "@/components/Bubble"
+import { WorkReel } from "@/components/WorkReel"
+import { Experience } from "@/components/Experience"
+import { bubbleLines, experience, person, projects } from "@/content/site"
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      <section className="hero" aria-labelledby="hero-name">
+        <div>
+          <p className="hero-hi">hi, i&apos;m</p>
+          <h1 id="hero-name" className="hero-name">{person.name}</h1>
+          <p className="hero-line">I design for people making decisions under pressure.</p>
+          <ul className="hero-meta" aria-label="At a glance">
+            <li>{person.roles}</li>
+            <li>UMSI · May 2027</li>
+            <li>Ann Arbor · open to relocate</li>
+          </ul>
+          <Bubble lines={bubbleLines} />
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <WorkReel projects={projects} eyebrow="selected work" heading="Six projects. Real outcomes, or an honest status." />
+
+      <Experience roles={experience} />
+
+      <section id="contact" className="section contact" aria-labelledby="contact-h">
+        <div className="container">
+          <p className="eyebrow">connect</p>
+          <h2 id="contact-h" className="h2">Hiring for product, UX or experience design? Let&apos;s talk.</h2>
+          <div className="contact-actions">
+            {person.email && <a className="btn btn-primary" href={`mailto:${person.email}`}>Email me</a>}
+            {person.linkedin && <a className="btn" href={person.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>}
+            {person.resume && <a className="btn" href={person.resume}>Résumé (PDF)</a>}
+          </div>
         </div>
-      </main>
-    </div>
-  );
+      </section>
+    </>
+  )
 }
