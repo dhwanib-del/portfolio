@@ -741,7 +741,7 @@
 .reel-grid .reel-ph code { color:rgba(255,255,255,.43); font:10px ui-monospace,monospace; }
 
 /* Project-specific mini interfaces make the work visible before real media is added. */
-.reel-grid .project-art { position:absolute; inset:0; overflow:hidden; display:flex; flex-direction:column; gap:14px; padding:clamp(18px,3vw,34px); color:#182638; background:#e9edf3; font-family:var(--font-body,Arial,sans-serif); }
+.reel-grid .project-art { position:absolute; inset:0; z-index:0; isolation:isolate; overflow:hidden; display:flex; flex-direction:column; gap:14px; padding:clamp(18px,3vw,34px); color:#182638; background:#e9edf3; font-family:var(--font-body,Arial,sans-serif); }
 .reel-grid .project-art b,.reel-grid .project-art strong { font-weight:700; }
 .reel-grid .art-window,.reel-grid .art-topline { display:flex; align-items:center; gap:6px; min-height:18px; color:#344b63; font-size:9px; letter-spacing:.09em; }
 .reel-grid .art-window b,.reel-grid .art-topline b { margin-left:7px; font-size:10px; letter-spacing:.12em; }
