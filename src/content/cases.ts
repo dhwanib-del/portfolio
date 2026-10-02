@@ -122,7 +122,7 @@ export const cases: Case[] = [
       {
         heading: "My first affinity map changed what we were solving.",
         body: [
-          "I helped group 330 research data points on our team's affinity wall. The pattern wasn't simply "translation needs work": support could be scattered, difficult to discover, and hard to trust without context.",
+          "I helped group 330 research data points on our team's affinity wall. The pattern wasn't simply translation quality. Support could be scattered, difficult to discover, and hard to trust without context.",
           "So we shifted from proposing a standalone translator to making existing language support easier to spot inside the reading flow. Our recommendations included grouping the tools and surfacing them when a book's language differs from the reader's interface language.",
         ],
       },
