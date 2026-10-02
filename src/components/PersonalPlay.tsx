@@ -43,7 +43,7 @@ export function PersonalPlay() {
           </div>
           <button className={"vinyl-disc" + (active >= 0 ? " playing" : "")} onClick={() => setActive((active + 1) % records.length)} aria-label="Play next record">
             <span className="vinyl-grooves" />
-            <span className="vinyl-center" style={{ "--record-color": records[active].color } as React.CSSProperties}>
+            <span className="vinyl-center" style={{ "--record-color": records[active].color } as CSSProperties & { "--record-color": string }}>
               <span className="vinyl-center-copy"><strong>{records[active].title}</strong><small>{records[active].artist}</small></span>
             </span>
             <span className="vinyl-shine" />
