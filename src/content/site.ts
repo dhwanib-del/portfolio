@@ -26,6 +26,7 @@ export type Project = {
   tags: string[]
   body: string // 2–3 blunt lines
   video?: string // /media/<slug>.mp4
+  image?: string // /work/<slug>/cover.jpg
   poster?: string
   nda?: boolean
   hint: string // talk-to-me cursor line
