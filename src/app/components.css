@@ -878,3 +878,8 @@
   .gallery-wall .gallery-window { clip-path:inset(0 round 16px); }
   .record-orbit { border-radius:16px; }
 }
+
+/* Keep the horizontal photo wall inside its frame and tighten the About rhythm. */
+html,body { max-width:100%; overflow-x:clip; }
+.about-intro { padding-top:clamp(104px,14vh,136px); padding-bottom:8px; }
+.gallery-wall { padding-block:24px 42px; }
