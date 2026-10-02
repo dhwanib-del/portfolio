@@ -33,9 +33,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Companion />
         <Chat />
         <footer className="footer">
-          <div className="container">
-            <span>© 2026 Dhwani Bagrecha</span>
-            <span>Built to WCAG 2.2 AA · light and dark</span>
+          <div className="footer-inner container">
+            <p className="eyebrow">that’s the scroll</p>
+            <h2>Thanks for <em>scrolling.</em></h2>
+            <p className="footer-question">How can I help?</p>
+            <p className="footer-note">Talk design, music, or the portfolio I’m probably editing again.</p>
+            <div className="footer-actions">
+              <a className="btn btn-primary" href="mailto:dhwanib@umich.edu">Get in touch ↗</a>
+              <a className="btn" href="https://www.linkedin.com/in/dhwanibagrecha/" target="_blank" rel="noreferrer">LinkedIn</a>
+            </div>
+            <p className="footer-credit">© 2026 Dhwani Bagrecha · Made with Claude, edited by Dhwani.</p>
           </div>
         </footer>
       </body>
