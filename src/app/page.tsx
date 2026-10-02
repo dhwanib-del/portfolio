@@ -1,6 +1,7 @@
 import { Bubble } from "@/components/Bubble"
 import { WorkReel } from "@/components/WorkReel"
 import { Experience } from "@/components/Experience"
+import { GalleryWall } from "@/components/GalleryWall"
 import { bubbleLines, experience, person, projects } from "@/content/site"
 
 export default function Home() {
@@ -10,7 +11,7 @@ export default function Home() {
         <div>
           <p className="hero-hi">hi, i&apos;m</p>
           <h1 id="hero-name" className="hero-name">{person.name}</h1>
-          <p className="hero-line">I design for people making decisions under pressure.</p>
+          <p className="hero-line">I design thoughtful products for complicated, real-world workflows.</p>
           <ul className="hero-meta" aria-label="At a glance">
             <li>{person.roles}</li>
             <li>UMSI · May 2027</li>
@@ -24,6 +25,8 @@ export default function Home() {
       <WorkReel projects={projects} eyebrow="selected work" heading="Six projects. Real outcomes, or an honest status." />
 
       <Experience roles={experience} />
+
+      <GalleryWall />
 
 
       <section id="contact" className="section contact" aria-labelledby="contact-h">
