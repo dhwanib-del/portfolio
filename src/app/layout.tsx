@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import "@fontsource-variable/plus-jakarta-sans"
 import "@fontsource/pinyon-script"
+import "@fontsource/patrick-hand"
 import "@fontsource/poppins/400.css"
 import "@fontsource/poppins/500.css"
 import "./globals.css"
@@ -8,6 +9,7 @@ import "./components.css"
 import { Nav } from "@/components/Nav"
 import { Intro } from "@/components/Intro"
 import { Companion } from "@/components/Companion"
+import { Chat } from "@/components/Chat"
 
 export const metadata: Metadata = {
   title: "Dhwani Bagrecha · Product & UX Designer",
@@ -29,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Nav />
         <main id="main" tabIndex={-1}>{children}</main>
         <Companion />
+        <Chat />
         <footer className="footer">
           <div className="container">
             <span>© 2026 Dhwani Bagrecha</span>

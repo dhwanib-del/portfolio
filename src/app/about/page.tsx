@@ -1,10 +1,17 @@
 import Link from "next/link"
 import { person } from "@/content/site"
+import { Journey } from "@/components/play/Journey"
+import { Kolam } from "@/components/play/Kolam"
+import { Polaroids } from "@/components/play/Polaroids"
+
+// Add your photos here (files go in /public/media/about/). Nothing shows until there's at least one.
+const photos: { src: string; alt: string; caption: string }[] = []
 
 export const metadata = { title: "About · Dhwani Bagrecha" }
 
 export default function About() {
   return (
+    <>
     <article className="case container">
       <p className="eyebrow">about me</p>
       <h1 className="case-h1">I started in psychology. I stayed for the moment people decide.</h1>
@@ -21,5 +28,9 @@ export default function About() {
         </section>
       </div>
     </article>
+    <Kolam />
+    <Journey />
+    <Polaroids photos={photos} />
+    </>
   )
 }

@@ -2,6 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { cases } from "@/content/cases"
 import { projects } from "@/content/site"
+import { CaseVideo, Decision, Stats } from "@/components/case/Scenes"
 
 export function generateStaticParams() {
   return [...cases.map((c) => ({ slug: c.slug })), { slug: "prime-video" }]
@@ -47,6 +48,10 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         </dl>
       </header>
 
+      <div className="container case-media">
+        <CaseVideo src={c.video} label="Screen recording coming soon" />
+        {c.stats && <Stats items={c.stats} />}
+      </div>
       {c.figures[0] && <Figure f={c.figures[0]} />}
 
       <div className="container case-body">
@@ -56,6 +61,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
             {s.body.map((p) => <p key={p}>{p}</p>)}
           </section>
         ))}
+        {c.decision && <Decision {...c.decision} />}
         {c.ai && (
           <aside className="case-ai" aria-label="Where AI fit">
             <p className="eyebrow">where AI fit</p>

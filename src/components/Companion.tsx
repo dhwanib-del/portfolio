@@ -24,11 +24,13 @@ export function Companion() {
   const [greet, setGreet] = useState(false)
   const [time, setTime] = useState("")
   const [open, setOpen] = useState(false)
+  const [chat, setChat] = useState(false)
   const pillRef = useRef<HTMLButtonElement>(null)
   const headRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
     setTime(etTime())
+    fetch("/api/ask").then((r) => r.json()).then((d) => setChat(!!d.enabled)).catch(() => {})
     const clock = setInterval(() => setTime(etTime()), 30000)
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -104,6 +106,11 @@ export function Companion() {
           </div>
           <h2 id="tour-h" ref={headRef} tabIndex={-1}>Hey, I&apos;m Dhwani 👋</h2>
           <p>Product and UX designer at UMSI, graduating May 2027. Looking for product, UX and experience design roles. Based in Ann Arbor, happy to move.</p>
+          {chat && (
+            <button type="button" className="btn btn-primary" style={{ marginBottom: 12 }} onClick={() => { setOpen(false); window.dispatchEvent(new Event("open-chat")) }}>
+              Ask DhwaniGPT a question
+            </button>
+          )}
           <ul className="tour-list">
             {projects.map((p) => (
               <li key={p.slug}>

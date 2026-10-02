@@ -15,6 +15,9 @@ export type Case = {
   status: string
   next: string
   figures: Figure[]
+  decision?: { tension: string; decision: string; why: string; rejected: string }
+  stats?: { value: number; prefix?: string; suffix?: string; label: string }[]
+  video?: string // e.g. /media/briefs.mp4 — the main clip under the header
 }
 
 export const cases: Case[] = [
@@ -36,6 +39,7 @@ export const cases: Case[] = [
     ai: "AI is in the product, with guardrails: cited answers, an honest \"not in the records\", and human review before any record changes.",
     status: "Prototype and PRD handed to DPSS. Not launched.",
     next: "Test with dispatchers: can they find a detail, verify the answer and trust the structure under real conditions?",
+    decision: { tension: "The temptation", decision: "Make the record easy to scan instead of making everything urgent.", why: "When every field shouts, nothing does. A fixed structure lets someone find the one detail they need and trust it.", rejected: "Turning every item into an alert" },
     figures: [],
   },
   {
@@ -56,6 +60,7 @@ export const cases: Case[] = [
     ai: "The public intake is a chatbot, so reports arrive structured instead of as free-form messages.",
     status: "In use by the Intelligence Group. Shown here at workflow level with invented records.",
     next: "Measure time from intake to first review now that reports arrive structured.",
+    decision: { tension: "The scope call", decision: "Make the handoff clear instead of replacing the team's tools.", why: "The team still relies on its monitoring apps. The workspace connects the work around them, so it got used.", rejected: "Replacing the team's monitoring apps with one platform" },
     figures: [],
   },
   {
@@ -75,6 +80,8 @@ export const cases: Case[] = [
     ],
     status: "Concept. Three usability tests in a 3D-printed cab. Details stay under NDA, so no real-world claims.",
     next: "Does a host make the group feel organized, or controlled?",
+    decision: { tension: "Four weeks in", decision: "Cut the biometric work and design for the whole trip.", why: "One driver interview showed the real job: a group coordinating across phones, screens and messages while moving.", rejected: "Personalizing the drive for a single driver" },
+    stats: [{ value: 4, label: "weeks of work cut at the pivot" }, { value: 3, label: "usability tests in a truck cab" }, { value: 1, label: "interview that changed the brief" }],
     figures: [],
   },
   {
@@ -95,6 +102,8 @@ export const cases: Case[] = [
     ai: "One recommendation was an optional AI reading assistant, kept inside the reading view so answers don't pull people away from the book.",
     status: "After our research, Open Library improved its feedback flow and added context around international books.",
     next: "Test whether readers get help and return to the same passage with less interruption.",
+    decision: { tension: "The reframe", decision: "Keep readers in the passage instead of sending them to a translator.", why: "Every switch away cost context and trust. Help had to live where the reading happens.", rejected: "A better translation tool on its own" },
+    stats: [{ value: 8, label: "reader interviews" }, { value: 3, label: "recommendations I pushed" }],
     figures: [],
   },
   {
@@ -115,6 +124,7 @@ export const cases: Case[] = [
     ai: "The AI cart builder drafts a starting cart from a budget and needs; people edit it, they don't start from an empty prompt.",
     status: "Prototype tasks tested, not a live service. No measured change in spending yet.",
     next: "Measure whether shoppers put fewer items back at checkout.",
+    decision: { tension: "What testing showed", decision: "Keep the lowest price visible and compare stores where the tradeoff happens.", why: "People trusted their cart less when we hid the numbers. Simple can't mean hidden.", rejected: "Hiding brands, stores and prices to look simple" },
     figures: [],
   },
 ]
