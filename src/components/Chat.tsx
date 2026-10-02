@@ -63,7 +63,7 @@ export function Chat() {
         {err && <p className="chat-err" role="alert">{err}</p>}
         <div ref={endRef} />
       </div>
-      {msgs.length === 0 && (
+      {enabled && msgs.length === 0 && (
         <div className="chat-sugs">{SUGGESTIONS.map((s) => <button key={s} type="button" onClick={() => send(s)}>{s}</button>)}</div>
       )}
       {enabled ? <form className="chat-form" onSubmit={(e) => { e.preventDefault(); send(input) }}>
