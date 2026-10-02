@@ -5,6 +5,7 @@
 import Link from "next/link"
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { Project } from "@/content/site"
+import { BrandMark } from "@/components/BrandMark"
 
 const pad = (n: number) => (n < 10 ? "0" + n : String(n))
 
@@ -79,9 +80,9 @@ export function WorkReel({ projects, eyebrow, heading }: { projects: Project[]; 
     )
     const inner = (
       <>
-        <div className="reel-media">{media}{p.mark && <span className="reel-brand"><img src={p.mark.src} alt={p.mark.alt} loading="lazy" referrerPolicy="no-referrer" /></span>}</div>
+        <div className="reel-media">{media}</div>
         <div className="reel-body">
-          <p className="reel-title">{p.title}</p>
+          <div className="reel-title-row"><p className="reel-title">{p.title}</p>{p.brand && <BrandMark brand={p.brand} />}</div>
           <h3 className="reel-result">{p.result}</h3>
           <ul className="reel-tags" aria-label="Topics">{p.tags.map((t) => <li key={t}>{t}</li>)}</ul>
           <p className="reel-text">{p.body}</p>
