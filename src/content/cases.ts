@@ -109,7 +109,7 @@ export const cases: Case[] = [
     claim: { pre: "Readers didn't need one more tool. They needed ", emphasis: "help they could find without leaving the book", post: "." },
     stats: [
       { value: 8, label: "semi-structured interviews · team research" },
-      { value: 330, label: "data points in my first affinity map" },
+      { value: 330, label: "data points on our team's affinity wall" },
     ],
     sections: [
       {
