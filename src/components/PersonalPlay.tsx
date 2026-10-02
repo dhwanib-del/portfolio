@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type CSSProperties } from "react"
 
 type Track = { title: string; artist: string; cover?: string; spotifyUrl?: string; tint: string }
 
@@ -42,7 +42,7 @@ export function PersonalPlay() {
               key={record.title}
               type="button"
               className={`orbit-cover orbit-cover-${index} ${active === index ? "is-active" : ""}`}
-              style={{ "--orbit-x": pos.x, "--orbit-y": pos.y, "--orbit-size": pos.size, "--orbit-tint": record.tint } as React.CSSProperties}
+              style={{ "--orbit-x": pos.x, "--orbit-y": pos.y, "--orbit-size": pos.size, "--orbit-tint": record.tint } as CSSProperties & { "--orbit-x": string; "--orbit-y": string; "--orbit-size": string; "--orbit-tint": string }}
               onClick={() => setActive(index)}
               aria-pressed={active === index}
               aria-label={`Play ${record.title} by ${record.artist}`}
@@ -57,7 +57,7 @@ export function PersonalPlay() {
           <div className="orbit-center-kicker">now spinning</div>
           <button type="button" className="orbit-vinyl" onClick={() => setActive((active + 1) % records.length)} aria-label="Spin to the next track">
             <span className="orbit-vinyl-grooves" />
-            <span className="orbit-vinyl-label" style={{ "--orbit-tint": track.tint } as React.CSSProperties}>
+            <span className="orbit-vinyl-label" style={{ "--orbit-tint": track.tint } as CSSProperties & { "--orbit-tint": string }}>
               <strong>{track.title}</strong><small>{track.artist}</small>
             </span>
             <span className="orbit-vinyl-glint" />
