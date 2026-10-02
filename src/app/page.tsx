@@ -1,4 +1,5 @@
 import { Bubble } from "@/components/Bubble"
+import { WelcomeChat } from "@/components/WelcomeChat"
 import { WorkReel } from "@/components/WorkReel"
 import { Experience } from "@/components/Experience"
 import { bubbleLines, experience, person, projects } from "@/content/site"
@@ -11,6 +12,7 @@ export default function Home() {
           <p className="hero-hi">hi, i&apos;m</p>
           <h1 id="hero-name" className="hero-name">{person.name}</h1>
           <p className="hero-line">I design thoughtful products for complicated, real-world workflows.</p>
+          <WelcomeChat />
           <ul className="hero-meta" aria-label="At a glance">
             <li>{person.roles}</li>
             <li>UMSI · May 2027</li>
