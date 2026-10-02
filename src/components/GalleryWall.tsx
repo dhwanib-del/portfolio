@@ -3,11 +3,14 @@
 import { useState } from "react"
 
 const photos = [
-  { src: "https://framerusercontent.com/images/hv3L3bWYTundZJIkU5PtmHOvQ.webp?height=700&width=700", alt: "" },
-  { src: "https://framerusercontent.com/images/gJHvNtldI6tyEVhuinUXMHXlU.webp?height=800&width=1000", alt: "" },
-  { src: "https://framerusercontent.com/images/UCYyLPlXjj3vh1rcpUsCjJ3F48.jpeg?height=500&width=500", alt: "" },
-  { src: "https://framerusercontent.com/images/M5GlIOctDy88BZJWPlHYasb1WMM.jpeg?height=500&width=500", alt: "" },
-  { src: "https://framerusercontent.com/images/GfGkADagM4KEibNcIiRUWlfrR0.jpg", alt: "" },
+  { src: "/gallery/moment-01.jpg", alt: "" },
+  { src: "/gallery/moment-02.jpg", alt: "" },
+  { src: "/gallery/moment-03.jpg", alt: "" },
+  { src: "/gallery/moment-04.jpg", alt: "" },
+  { src: "/gallery/moment-05.jpg", alt: "" },
+  { src: "/gallery/moment-06.jpg", alt: "" },
+  { src: "/gallery/moment-07.jpg", alt: "" },
+  { src: "/gallery/moment-08.jpg", alt: "" },
 ]
 
 function PhotoTile({ photo, index }: { photo: typeof photos[number]; index: number }) {
@@ -16,7 +19,7 @@ function PhotoTile({ photo, index }: { photo: typeof photos[number]; index: numb
     <figure className={"gallery-tile tile-" + (index + 1)}>
       {!missing
         ? <img src={photo.src} alt={photo.alt} loading="lazy" referrerPolicy="no-referrer" onError={() => setMissing(true)} />
-        : <div className="gallery-placeholder" title={"Add " + photo.src + " to the public folder"}>
+        : <div className="gallery-placeholder" title={"Add your photo at " + photo.src}>
             <span aria-hidden="true">＋</span><small>Add photo</small>
           </div>}
     </figure>
