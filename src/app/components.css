@@ -1010,3 +1010,28 @@ html,body { max-width:100%; overflow-x:clip; }
   color:var(--on-accent,#fff);
   transform:translateY(-2px);
 }
+
+
+/* Typed portfolio greeting and source-linked DhwaniGPT answers. */
+.welcome-chat { display:flex; align-items:center; gap:12px; width:fit-content; max-width:100%; margin:0 auto 24px; padding:9px 10px 9px 14px; border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line)); border-radius:18px; background:var(--glass); box-shadow:0 10px 30px color-mix(in srgb,var(--accent) 10%,transparent); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); text-align:left; }
+.welcome-chat-dot { display:grid; flex:0 0 28px; width:28px; height:28px; place-items:center; border-radius:50%; color:var(--on-accent); background:var(--accent); font-size:14px; }
+.welcome-chat-text { min-height:22px; color:var(--text); font-size:14px; font-weight:500; }
+.welcome-chat-text i { display:inline-block; width:1px; height:1em; margin-left:2px; vertical-align:-.12em; background:var(--accent); animation:welcome-caret .75s steps(1,end) infinite; }
+@keyframes welcome-caret { 50% { opacity:0; } }
+.welcome-chat-button { flex:0 0 auto; min-height:40px; padding:0 14px; border:0; border-radius:12px; background:var(--accent); color:var(--on-accent); font:600 13px var(--font-sans); cursor:pointer; transition:filter .2s,transform .2s; }
+.welcome-chat-button:hover { filter:brightness(1.08); transform:translateY(-1px); }
+.chat-spark { color:var(--accent); }
+.chat-message { display:grid; gap:5px; max-width:85%; }
+.chat-message.assistant { align-self:flex-start; }
+.chat-message.user { justify-items:end; align-self:flex-end; }
+.chat-message .chat-msg { max-width:100%; }
+.chat-source { padding:0 8px; color:var(--accent); font-size:12px; font-weight:600; text-decoration:none; }
+.chat-source:hover { text-decoration:underline; }
+.chat-footnote { margin:0; padding:0 16px 12px; color:var(--text-2); font-size:11px; text-align:center; }
+@media(max-width:600px) {
+ .welcome-chat { width:min(100%,440px); flex-wrap:wrap; justify-content:center; text-align:center; }
+ .welcome-chat-text { flex:1 1 calc(100% - 52px); text-align:left; font-size:13px; }
+ .welcome-chat-button { min-height:44px; }
+ .chat { right:12px; bottom:12px; width:calc(100vw - 24px); max-height:min(620px,calc(100dvh - 24px)); }
+}
+@media(prefers-reduced-motion:reduce) { .welcome-chat-text i { animation:none; } .welcome-chat-button { transition:none; } }
