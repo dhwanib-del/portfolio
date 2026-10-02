@@ -1,145 +1,92 @@
 "use client"
-// Work reel (brandonux.design-style). Desktop + motion allowed: section pins and vertical scroll
-// slides the cards sideways, with 01/06 and ← →. Reduced motion: sideways scroller with arrows.
-// Phones: vertical stack. Each card is one real link; tabbing to an off-screen card brings it in.
+
 import Link from "next/link"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { Project } from "@/content/site"
 import { BrandMark } from "@/components/BrandMark"
 
-const pad = (n: number) => (n < 10 ? "0" + n : String(n))
-
 export function WorkReel({ projects, eyebrow, heading }: { projects: Project[]; eyebrow: string; heading: string }) {
-  const outer = useRef<HTMLDivElement>(null)
-  const view = useRef<HTMLDivElement>(null)
-  const track = useRef<HTMLOListElement>(null)
-  const [mode, setMode] = useState<"pin" | "row" | "stack">("stack")
-  const [dist, setDist] = useState(0)
-  const [x, setX] = useState(0)
-  const [index, setIndex] = useState(0)
-  const n = projects.length
+  const grid = useRef<HTMLOListElement>(null)
+  const [revealReady, setRevealReady] = useState(false)
+  const [revealed, setRevealed] = useState<string[]>([])
 
   useEffect(() => {
-    const rm = window.matchMedia("(prefers-reduced-motion: reduce)")
-    const wide = window.matchMedia("(min-width: 900px)")
-    const pick = () => setMode(!wide.matches ? "stack" : rm.matches ? "row" : "pin")
-    pick()
-    rm.addEventListener("change", pick)
-    wide.addEventListener("change", pick)
-    return () => { rm.removeEventListener("change", pick); wide.removeEventListener("change", pick) }
+    setRevealReady(true)
+    const cards = grid.current?.querySelectorAll<HTMLElement>("[data-project]")
+    if (!cards) return
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (reduceMotion || !("IntersectionObserver" in window)) {
+      setRevealed(Array.from(cards).map((card) => card.dataset.project || ""))
+      return
+    }
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue
+        const slug = (entry.target as HTMLElement).dataset.project
+        if (slug) setRevealed((current) => current.includes(slug) ? current : [...current, slug])
+        observer.unobserve(entry.target)
+      }
+    }, { threshold: 0.28, rootMargin: "0px 0px -6% 0px" })
+    cards.forEach((card) => observer.observe(card))
+    return () => observer.disconnect()
   }, [])
 
-  useEffect(() => {
-    if (mode !== "pin") return
-    const measure = () => { if (track.current && view.current) setDist(Math.max(0, track.current.scrollWidth - view.current.clientWidth)) }
-    measure()
-    const ro = new ResizeObserver(measure)
-    if (track.current) ro.observe(track.current)
-    return () => ro.disconnect()
-  }, [mode])
-
-  useEffect(() => {
-    if (mode !== "pin") return
-    let raf = 0
-    const run = () => {
-      raf = 0
-      if (!outer.current) return
-      const p = Math.min(1, Math.max(0, -outer.current.getBoundingClientRect().top / Math.max(1, dist)))
-      setX(p * dist)
-      setIndex(Math.min(n - 1, Math.round(p * (n - 1))))
-    }
-    const on = () => { if (!raf) raf = requestAnimationFrame(run) }
-    run()
-    window.addEventListener("scroll", on, { passive: true })
-    return () => { window.removeEventListener("scroll", on); cancelAnimationFrame(raf) }
-  }, [mode, dist, n])
-
-  const goTo = useCallback((i: number) => {
-    const k = Math.max(0, Math.min(n - 1, i))
-    if (mode === "pin" && outer.current) {
-      const top = outer.current.getBoundingClientRect().top + window.scrollY
-      window.scrollTo({ top: top + (k / Math.max(1, n - 1)) * dist, behavior: "smooth" })
-    } else if (mode === "row") {
-      (track.current?.children[k] as HTMLElement | undefined)?.scrollIntoView({ block: "nearest", inline: "start" })
-    }
-  }, [mode, dist, n])
-
-  const onRowScroll = () => {
-    const v = view.current
-    if (!v) return
-    setIndex(Math.round((v.scrollLeft / Math.max(1, v.scrollWidth - v.clientWidth)) * (n - 1)))
-  }
-
-  const cards = projects.map((p, i) => {
-    const media = p.nda ? (
-      <div className="reel-ph"><span>Under NDA</span></div>
-    ) : p.video ? (
-      <video src={p.video} poster={p.poster} muted loop playsInline autoPlay preload="metadata" aria-hidden="true" />
+  const cards = projects.map((project) => {
+    const media = project.nda ? (
+      <div className="reel-ph reel-ph-nda"><span>Under NDA</span><small>Ask me about the work</small></div>
+    ) : project.video ? (
+      <video src={project.video} poster={project.poster} muted loop playsInline autoPlay preload="metadata" aria-hidden="true" />
+    ) : project.image ? (
+      <img className="reel-cover-image" src={project.image} alt="" loading="lazy" />
     ) : (
-      <div className="reel-ph"><span>{p.title.split(" · ")[0]}</span></div>
+      <div className="reel-ph">
+        <span>{project.title.split(" · ")[0]}</span>
+        <small>Project preview</small>
+        <code>public/work/{project.slug}/cover.jpg</code>
+      </div>
     )
-    const inner = (
+    const visible = revealed.includes(project.slug)
+    const inside = (
       <>
-        <div className="reel-media">{media}</div>
+        <div className="reel-media">
+          {media}
+          <span className="reel-media-label">{project.tags[0]}</span>
+        </div>
         <div className="reel-body">
-          <div className="reel-title-row"><p className="reel-title">{p.title}</p>{p.brand && <BrandMark brand={p.brand} />}</div>
-          <h3 className="reel-result">{p.result}</h3>
-          <ul className="reel-tags" aria-label="Topics">{p.tags.map((t) => <li key={t}>{t}</li>)}</ul>
-          <p className="reel-text">{p.body}</p>
-          <span className="reel-cta" aria-hidden="true">{p.nda ? "Ask me about it →" : "Read the study →"}</span>
+          <div className="reel-title-row"><p className="reel-title">{project.title}</p>{project.brand && <BrandMark brand={project.brand} />}</div>
+          <h3 className="reel-result">{project.result}</h3>
+          <div className="reel-extra" aria-hidden={!visible}>
+            <ul className="reel-tags" aria-label="Topics">{project.tags.map((tag) => <li key={tag}>{tag}</li>)}</ul>
+            <p className="reel-text">{project.body}</p>
+            <span className="reel-cta" aria-hidden="true">{project.nda ? "Ask me about it →" : "View case study →"}</span>
+          </div>
         </div>
       </>
     )
-    const label = `${p.title}. ${p.result}.${p.nda ? " Under NDA." : " Read the case study."}`
+    const label = `${project.title}. ${project.result}. ${project.nda ? "Under NDA." : "View case study."}`
     return (
-      <li key={p.slug} className="reel-card" data-nda={p.nda ? "" : undefined}>
-        {p.nda ? (
-          <article className="reel-link" tabIndex={0} aria-label={label} onFocus={() => mode !== "stack" && goTo(i)}>{inner}</article>
+      <li key={project.slug} data-project={project.slug} className={`reel-card project-${project.slug} ${visible ? "is-revealed" : ""}`}>
+        {project.nda ? (
+          <article className="reel-link" tabIndex={0} aria-label={label} onFocus={() => setRevealed((current) => current.includes(project.slug) ? current : [...current, project.slug])}>{inside}</article>
         ) : (
-          <Link className="reel-link" href={`/work/${p.slug}`} aria-label={label} onFocus={() => mode !== "stack" && goTo(i)}>{inner}</Link>
+          <Link className="reel-link" href={`/work/${project.slug}`} aria-label={label} onFocus={() => setRevealed((current) => current.includes(project.slug) ? current : [...current, project.slug])}>{inside}</Link>
         )}
       </li>
     )
   })
 
-  const head = (
-    <div className="reel-head container">
-      <div>
-        <p className="eyebrow">{eyebrow}</p>
-        <h2 className="h2">{heading}</h2>
-      </div>
-      {mode !== "stack" && (
-        <div className="reel-ctrl">
-          <span className="reel-count" aria-hidden="true">{pad(index + 1)} / {pad(n)}</span>
-          <button type="button" className="reel-arrow" aria-label="Previous project" disabled={index === 0} onClick={() => goTo(index - 1)}>←</button>
-          <button type="button" className="reel-arrow" aria-label="Next project" disabled={index === n - 1} onClick={() => goTo(index + 1)}>→</button>
-        </div>
-      )}
-    </div>
-  )
-
-  if (mode === "pin") {
-    return (
-      <section id="work" className="reel" aria-labelledby="work-h">
-        <span id="work-h" className="sr-only">{eyebrow}</span>
-        <div ref={outer} style={{ position: "relative", height: `calc(100vh + ${dist}px)` }}>
-          <div className="reel-sticky">
-            {head}
-            <div ref={view} style={{ overflow: "hidden" }}>
-              <ol ref={track} className="reel-track" style={{ transform: `translate3d(${-x}px,0,0)` }}>{cards}</ol>
-            </div>
-          </div>
-        </div>
-      </section>
-    )
-  }
   return (
-    <section id="work" className={`reel section ${mode === "row" ? "reel-row" : "reel-stack"}`} aria-labelledby="work-h">
-      <span id="work-h" className="sr-only">{eyebrow}</span>
-      {head}
-      <div ref={view} className="reel-view" onScroll={mode === "row" ? onRowScroll : undefined}>
-        <ol ref={track} className="reel-track">{cards}</ol>
+    <section id="work" className="reel section reel-editorial" aria-labelledby="work-heading">
+      <div className="reel-head container">
+        <div>
+          <p className="eyebrow">{eyebrow}</p>
+          <h2 id="work-heading" className="h2">{heading}</h2>
+        </div>
+        <p className="reel-scroll-note">Keep scrolling for the details <span aria-hidden="true">↓</span></p>
       </div>
+      <ol ref={grid} className="reel-grid" data-reveal-ready={revealReady ? "true" : "false"}>
+        {cards}
+      </ol>
     </section>
   )
 }
