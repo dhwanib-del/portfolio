@@ -40,3 +40,12 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 - Sensitive BRIEFS example must be fictionalized or generalized.
 - Prime Video remains confidential.
 - Gallery assets require the user's photos; keep friendly image placeholders until supplied.
+
+
+## Current iteration · October 2
+- [x] Cherry, Go Blue, and custom gradients recolor the gallery placeholders, map-game card, playlist background, and track-placeholder discs. Original album art keeps its real colors; the open-to-work indicator stays green because it signals availability.
+- [x] Add a first-visit typewriter greeting with a direct Ask DhwaniGPT action.
+- [x] Make DhwaniGPT answer from portfolio facts without an external model key; link project answers to case studies, protect Prime Video details, and say when a fact is not verified.
+- [x] Do not store chat history. Do not connect the portfolio to the unrelated Luma or Glimmer Supabase databases.
+- [ ] Verify Vercel build and test a project answer, an unknown question, Cherry, and a custom gradient after deploy.
+- [ ] Optional: enable free-form model responses only after configuring a server-side model API key in Vercel. The grounded FAQ remains available without it.
