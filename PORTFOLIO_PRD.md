@@ -56,4 +56,4 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 ## Palette follow-up · October 2
 - [x] Cherry’s accent was separated from Pink, then merged into Pink after the palette was simplified.
 
-- [x] Simplify palette to Orange, Go Blue, Pink, Go Green, plus the custom gradient. Legacy Cherry selections now map to Pink.
+- [x] Simplify palette to Orange, Sky Blue, Pink, Yellow, plus the custom gradient. Legacy Cherry selections map to Pink; the renamed Sky Blue and Yellow retain their saved theme IDs.
