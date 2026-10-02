@@ -32,21 +32,25 @@ const moments: Moment[] = [
 ]
 
 function GalleryTile({ moment, index }: { moment: Moment; index: number }) {
-  const [missing, setMissing] = useState(false)
+  const [loaded, setLoaded] = useState(false)
   const imageNumber = String((index % 16) + 1).padStart(2, "0")
   const src = `/gallery/moment-${imageNumber}.jpg`
 
   return (
     <figure className={`gallery-tile tile-${index % 8} tone-${moment.tone}`}>
       <div className="gallery-photo">
-        {!missing ? (
-          <img src={src} alt={moment.caption} loading="lazy" onError={() => setMissing(true)} />
-        ) : (
-          <div className="gallery-placeholder" aria-label={`Add a photo for ${moment.caption}`}>
-            <span className="gallery-placeholder-mark" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-            <span className="gallery-placeholder-caption">{moment.caption}</span>
-          </div>
-        )}
+        <div className="gallery-placeholder" aria-hidden="true">
+          <span className="gallery-placeholder-mark">{imageNumber}</span>
+          <span className="gallery-placeholder-caption">{moment.caption}</span>
+        </div>
+        <img
+          className={loaded ? "is-loaded" : ""}
+          src={src}
+          alt=""
+          loading="lazy"
+          onLoad={() => setLoaded(true)}
+          onError={() => setLoaded(false)}
+        />
       </div>
       <figcaption><span>{moment.caption}</span><time>{moment.year}</time></figcaption>
     </figure>
@@ -64,13 +68,12 @@ export function GalleryWall() {
         <p className="gallery-scroll-hint">Hover to wander <span aria-hidden="true">✳</span> · scroll to explore</p>
       </div>
       <div className="gallery-window">
-        <div className="gallery-grid" tabIndex={0} aria-label="Scrollable photo gallery. Add local photos in public/gallery.">
+        <div className="gallery-grid" tabIndex={0} aria-label="Scrollable photo gallery">
           {moments.map((moment, index) => <GalleryTile key={`${moment.caption}-${index}`} moment={moment} index={index} />)}
         </div>
         <div className="gallery-vignette gallery-vignette-left" aria-hidden="true" />
         <div className="gallery-vignette gallery-vignette-right" aria-hidden="true" />
       </div>
-      <p className="gallery-instructions container">Add your own photos to <code>public/gallery/</code> as <code>moment-01.jpg</code> through <code>moment-16.jpg</code>.</p>
     </section>
   )
 }
