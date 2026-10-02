@@ -79,7 +79,7 @@ export function WorkReel({ projects, eyebrow, heading }: { projects: Project[]; 
     )
     const inner = (
       <>
-        <div className="reel-media">{media}</div>
+        <div className="reel-media">{media}{p.mark && <span className="reel-brand"><img src={p.mark.src} alt={p.mark.alt} loading="lazy" referrerPolicy="no-referrer" /></span>}</div>
         <div className="reel-body">
           <p className="reel-title">{p.title}</p>
           <h3 className="reel-result">{p.result}</h3>
