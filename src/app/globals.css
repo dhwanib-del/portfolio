@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@500;600;700&display=swap");
+
 /* Dhwani Bagrecha — design tokens.
    Dark is the original site. Light is the contrast-checked inverse (every text pair ≥ 4.5:1).
    Theme: follows the OS; the nav toggle sets html[data-theme] and wins. */
