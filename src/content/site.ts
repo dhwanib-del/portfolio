@@ -68,10 +68,10 @@ export const projects: Project[] = [
   {
     slug: "openlibrary",
     title: "Open Library · Internet Archive",
-    result: "Open Library changed the product",
+    result: "Reframed translation as a reading-flow problem",
     tags: ["Research", "Multilingual", "Accessibility"],
-    body: "Readers couldn't tell what a non-English scan offered. I ran the research and pushed three recommendations. Open Library added clearer feedback and context for international books.",
-    hint: "research → Open Library changed →",
+    body: "Our team found readers lost context while switching between books, translation tools, and dictionaries. I helped turn that research into recommendations for language support that is easier to find and use while reading.",
+    hint: "language help in the reading flow →",
   },
   {
     slug: "budgetcart",
