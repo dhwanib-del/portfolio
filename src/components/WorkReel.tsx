@@ -5,6 +5,47 @@ import { useEffect, useRef, useState } from "react"
 import type { Project } from "@/content/site"
 import { BrandMark } from "@/components/BrandMark"
 
+function ProjectArtwork({ slug }: { slug: string }) {
+  if (slug === "briefs") return (
+    <div className="project-art project-art-briefs" aria-hidden="true">
+      <div className="art-window"><span className="art-dot" /><span className="art-dot" /><span className="art-dot" /><b>BRIEFS</b><i>illustrative interface</i></div>
+      <div className="art-search"><span>⌕</span> Search building information <kbd>⌘ K</kbd></div>
+      <div className="art-workspace"><div className="art-sidebar"><i /><i /><i /><i /></div><div className="art-record"><small>BUILDING RECORD</small><strong>North Campus · Overview</strong><div className="art-lines"><i /><i /><i /></div><div className="art-pills"><em>Contacts</em><em>Maps</em><em>Resources</em></div></div></div>
+    </div>
+  )
+  if (slug === "intel") return (
+    <div className="project-art project-art-intel" aria-hidden="true">
+      <div className="art-topline"><b>CASEWORK</b><i>illustrative interface</i></div>
+      <div className="art-dash"><strong>Requests</strong><span>Search cases <b>⌕</b></span></div>
+      <div className="art-case"><div className="art-avatar">01</div><p><b>Case review</b><small>Follow-up requested · Today</small></p><em>OPEN</em></div>
+      <div className="art-case"><div className="art-avatar">02</div><p><b>New submission</b><small>Assigned to your team</small></p><em>NEW</em></div>
+    </div>
+  )
+  if (slug === "general-motors") return (
+    <div className="project-art project-art-gm" aria-hidden="true">
+      <div className="art-topline"><b>TRIP TOGETHER</b><i>concept prototype</i></div>
+      <div className="art-map"><div className="art-route" /><span className="art-pin art-pin-a">A</span><span className="art-pin art-pin-you">YOU</span><span className="art-pin art-pin-b">B</span><div className="art-map-label">Convoy synced <b>●</b></div></div>
+      <div className="art-controls"><span>Climate</span><b>68°</b><span>Cabin · Auto</span></div>
+    </div>
+  )
+  if (slug === "openlibrary") return (
+    <div className="project-art project-art-library" aria-hidden="true">
+      <div className="art-topline"><b>OPEN LIBRARY</b><i>reading concept</i></div>
+      <div className="art-book"><small>CHAPTER 04</small><strong>Reading should keep its rhythm.</strong><div className="art-lines"><i /><i /><i /><i /></div><div className="art-translate"><b>A</b><span>Translate · Define · Listen</span><span>↗</span></div></div>
+      <div className="art-page">34 <span>of 208</span></div>
+    </div>
+  )
+  return (
+    <div className="project-art project-art-budget" aria-hidden="true">
+      <div className="art-topline"><b>BUDGETCART</b><i>concept prototype</i></div>
+      <div className="art-budget-head"><strong>Good deals, in budget.</strong><span>Weekly plan · $60</span></div>
+      <div className="art-grocery"><span>🥬</span><p><b>Fresh greens</b><small>SNAP eligible</small></p><strong>$3.49</strong></div>
+      <div className="art-grocery"><span>🥣</span><p><b>Oat yogurt</b><small>Buy 1, get 1</small></p><strong>$4.20</strong></div>
+      <div className="art-total"><span>Cart total</span><b>$7.69 <i>fits your plan</i></b></div>
+    </div>
+  )
+}
+
 export function WorkReel({ projects, eyebrow, heading }: { projects: Project[]; eyebrow: string; heading: string }) {
   const grid = useRef<HTMLOListElement>(null)
   const [revealReady, setRevealReady] = useState(false)
@@ -39,11 +80,7 @@ export function WorkReel({ projects, eyebrow, heading }: { projects: Project[]; 
     ) : project.image ? (
       <img className="reel-cover-image" src={project.image} alt="" loading="lazy" />
     ) : (
-      <div className="reel-ph">
-        <span>{project.title.split(" · ")[0]}</span>
-        <small>Project preview</small>
-        <code>public/work/{project.slug}/cover.jpg</code>
-      </div>
+      <ProjectArtwork slug={project.slug} />
     )
     const visible = revealed.includes(project.slug)
     const inside = (
