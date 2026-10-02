@@ -412,3 +412,7 @@
   .gallery-tile, .gallery-tile img { transition: none; }
   .gallery-grid:hover .gallery-tile:not(:hover), .gallery-tile:hover { transform: none; }
 }
+.footer-chat-launcher { padding: 0; border: 0; background: none; color: var(--text); cursor: pointer; font: 400 clamp(26px, 4vw, 38px) var(--font-display, Georgia, serif); transition: color .2s ease, transform .2s ease; }
+.footer-chat-launcher span { display: inline-block; color: var(--accent); font: 500 .55em var(--font-sans); transition: transform .2s ease; }
+.footer-chat-launcher:hover { color: var(--accent); }
+.footer-chat-launcher:hover span { transform: translate(3px, -3px); }
