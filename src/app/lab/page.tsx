@@ -8,8 +8,8 @@ export default function Lab() {
     <div className="case">
       <div className="container">
         <p className="eyebrow">play</p>
-        <h1 className="case-h1">Things I build when nobody asked.</h1>
-        <p className="case-hook">Side projects and AI experiments. Each one taught me something I used in real work.</p>
+        <h1 className="case-h1 tidbits-title">Tidbits of my <em>Work</em></h1>
+        <p className="case-hook">Small experiments in interaction, code, and play.</p>
       </div>
       <div className="container"><DragCanvas items={tidbits} /></div>
       <div className="container">
