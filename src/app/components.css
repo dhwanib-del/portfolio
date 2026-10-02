@@ -739,6 +739,67 @@
 .reel-grid .reel-ph span { color:#fff; font-size:clamp(22px,3vw,42px); }
 .reel-grid .reel-ph small { color:rgba(255,255,255,.6); font:600 9px var(--font-nav); letter-spacing:.16em; text-transform:uppercase; }
 .reel-grid .reel-ph code { color:rgba(255,255,255,.43); font:10px ui-monospace,monospace; }
+
+/* Project-specific mini interfaces make the work visible before real media is added. */
+.reel-grid .project-art { position:absolute; inset:0; overflow:hidden; display:flex; flex-direction:column; gap:14px; padding:clamp(18px,3vw,34px); color:#182638; background:#e9edf3; font-family:var(--font-body,Arial,sans-serif); }
+.reel-grid .project-art b,.reel-grid .project-art strong { font-weight:700; }
+.reel-grid .art-window,.reel-grid .art-topline { display:flex; align-items:center; gap:6px; min-height:18px; color:#344b63; font-size:9px; letter-spacing:.09em; }
+.reel-grid .art-window b,.reel-grid .art-topline b { margin-left:7px; font-size:10px; letter-spacing:.12em; }
+.reel-grid .art-window i,.reel-grid .art-topline i { margin-left:auto; font-size:8px; font-style:normal; color:#61768d; letter-spacing:.06em; text-transform:uppercase; }
+.reel-grid .art-dot { width:6px;height:6px;border-radius:50%;background:#b8c4d2; }
+.reel-grid .art-search,.reel-grid .art-dash span { display:flex; align-items:center; gap:9px; padding:9px 12px; border:1px solid rgba(46,68,92,.13); border-radius:8px; background:rgba(255,255,255,.84); color:#687b8e; font-size:10px; }
+.reel-grid .art-search>span { font-size:19px;color:#395979; }
+.reel-grid .art-search kbd { margin-left:auto; padding:3px 5px; border-radius:4px; background:#eef1f6; font-size:8px; }
+.reel-grid .art-workspace { display:flex; flex:1; gap:12px; min-height:0; }
+.reel-grid .art-sidebar { display:flex; flex-direction:column; gap:12px; width:24px; padding-top:7px; }
+.reel-grid .art-sidebar i { width:14px;height:14px;border-radius:4px;background:#c1ccda; }
+.reel-grid .art-sidebar i:first-child { background:#e7b821; }
+.reel-grid .art-record { flex:1; padding:14px; border:1px solid rgba(46,68,92,.12); border-radius:10px; background:#fff; box-shadow:0 10px 24px rgba(41,59,79,.08); }
+.reel-grid .art-record small,.reel-grid .art-book>small { display:block;color:#798ba0;font-size:7px;letter-spacing:.14em; }
+.reel-grid .art-record strong { display:block;margin-top:8px;font-size:clamp(11px,1.4vw,16px); }
+.reel-grid .art-lines { display:grid;gap:6px;margin-top:11px; }
+.reel-grid .art-lines i { height:5px;border-radius:4px;background:#e8edf2; }
+.reel-grid .art-lines i:last-child { width:62%; }
+.reel-grid .art-pills { display:flex;gap:5px;margin-top:12px; }
+.reel-grid .art-pills em { padding:4px 7px;border-radius:99px;background:#f0f3f7;color:#687b8e;font-size:7px;font-style:normal; }
+.reel-grid .project-art-briefs { background:linear-gradient(145deg,#e6eef6,#d7e2ee); }
+.reel-grid .project-art-intel { gap:13px;background:linear-gradient(140deg,#102b4a,#21456a);color:#f4f7fb; }
+.reel-grid .project-art-intel .art-topline,.reel-grid .project-art-intel .art-topline i { color:#d5e4f5; }
+.reel-grid .art-dash { display:flex;align-items:center;justify-content:space-between; }
+.reel-grid .art-dash strong { font-size:clamp(18px,2.2vw,26px); }
+.reel-grid .art-dash span { min-width:35%; padding:8px 10px;background:rgba(255,255,255,.1);color:#d5e4f5;border-color:rgba(255,255,255,.18);font-size:9px; }
+.reel-grid .art-dash span b { margin-left:auto; }
+.reel-grid .art-case { display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.16);border-radius:9px;background:rgba(255,255,255,.08); }
+.reel-grid .art-avatar { display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#dce8f5;color:#22415f;font-size:8px;font-weight:700; }
+.reel-grid .art-case p { display:grid;gap:4px;margin:0; }
+.reel-grid .art-case p b { font-size:10px; }
+.reel-grid .art-case p small { color:#c3d3e5;font-size:8px; }
+.reel-grid .art-case em { margin-left:auto;color:#b8edce;font-size:7px;font-style:normal;letter-spacing:.1em; }
+.reel-grid .project-art-gm { background:linear-gradient(150deg,#d9e9f4,#eef1ed); }
+.reel-grid .art-map { position:relative;flex:1;min-height:80px;overflow:hidden;border-radius:12px;background:radial-gradient(ellipse at 24% 70%,#d1e3d6 0 18%,transparent 19%),radial-gradient(ellipse at 74% 24%,#cbdccf 0 16%,transparent 17%),linear-gradient(32deg,transparent 47%,#fff 48% 51%,transparent 52%),linear-gradient(145deg,#d7e5e8,#eaf0e9); }
+.reel-grid .art-route { position:absolute;left:19%;top:53%;width:63%;height:2px;background:#2687a4;transform:rotate(-15deg);box-shadow:0 0 0 4px rgba(38,135,164,.12); }
+.reel-grid .art-pin { position:absolute;display:grid;place-items:center;width:23px;height:23px;border:2px solid white;border-radius:50%;background:#fff;color:#276076;font-size:7px;font-weight:800;box-shadow:0 3px 9px #526b7440; }
+.reel-grid .art-pin-a { left:15%;top:55%; }.reel-grid .art-pin-you { left:48%;top:40%;width:31px;height:31px;background:#22798c;color:#fff; }.reel-grid .art-pin-b { right:13%;top:31%; }
+.reel-grid .art-map-label { position:absolute;right:9px;bottom:9px;padding:7px 9px;border:1px solid #ffffffbd;border-radius:9px;background:#fffdf1;color:#294d57;font-size:8px; }
+.reel-grid .art-map-label b { color:#38a772; }
+.reel-grid .art-controls { display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid #ffffffd9;border-radius:10px;background:#ffffffc9;font-size:9px; }
+.reel-grid .art-controls b { font-size:19px; }.reel-grid .art-controls span:last-child { margin-left:auto;color:#627582; }
+.reel-grid .project-art-library { background:linear-gradient(120deg,#d9c7a5,#f3e9d7);color:#493c2d; }
+.reel-grid .project-art-library .art-topline { color:#66553d; }
+.reel-grid .art-book { flex:1;padding:clamp(14px,2.5vw,26px);border:1px solid #8e74533d;border-radius:5px 14px 14px 5px;background:linear-gradient(90deg,#dac9aa,#fffaf0 10%,#fffaf0);box-shadow:5px 8px 16px #513d2220; }
+.reel-grid .art-book>strong { display:block;max-width:340px;margin-top:10px;font-family:Georgia,serif;font-size:clamp(17px,2.4vw,29px);font-weight:500;line-height:1.05; }
+.reel-grid .art-book .art-lines { margin-top:12px; }.reel-grid .art-book .art-lines i { background:#e8dfcf; }
+.reel-grid .art-translate { display:flex;align-items:center;gap:8px;margin-top:12px;padding:8px 9px;border:1px solid #e6dccb;border-radius:8px;background:#fff;box-shadow:0 5px 12px #604d2220;font-size:8px;color:#76664e; }
+.reel-grid .art-translate b { display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#f4ead5;color:#8e6737; }.reel-grid .art-translate span:last-child { margin-left:auto; }
+.reel-grid .art-page { text-align:right;color:#76664e;font-size:8px; }.reel-grid .art-page span { color:#a39177; }
+.reel-grid .project-art-budget { background:linear-gradient(145deg,#e7f2df,#d8e8d5); }
+.reel-grid .art-budget-head { display:grid;gap:5px; }.reel-grid .art-budget-head strong { font-size:clamp(17px,2.2vw,25px);letter-spacing:-.04em; }.reel-grid .art-budget-head span { color:#607565;font-size:9px; }
+.reel-grid .art-grocery { display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #ffffffcf;border-radius:10px;background:#ffffffc9; }
+.reel-grid .art-grocery>span { display:grid;place-items:center;width:29px;height:29px;border-radius:8px;background:#eff5e8;font-size:15px; }
+.reel-grid .art-grocery p { display:grid;gap:3px;margin:0; }.reel-grid .art-grocery p b { font-size:9px; }.reel-grid .art-grocery p small { color:#638365;font-size:8px; }.reel-grid .art-grocery>strong { margin-left:auto;font-size:10px; }
+.reel-grid .art-total { display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid #a6bda9;color:#55715b;font-size:9px; }.reel-grid .art-total b { color:#264c34; }.reel-grid .art-total i { padding-left:5px;font-size:7px;font-style:normal;color:#438353; }
+@media(max-width:760px) { .reel-grid .art-window,.reel-grid .art-topline { min-height:12px; }.reel-grid .project-art { gap:9px;padding:16px; } }
+
 .project-general-motors { --project-tint:#5085b8; }
 .project-budgetcart { --project-tint:#72a879; }
 .project-briefs,.project-intel { --project-tint:#4879a1; }
