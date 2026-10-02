@@ -531,12 +531,12 @@
 .map-game-page h1 { max-width:15ch; margin:8px 0; font-size:clamp(42px,8vw,78px); letter-spacing:-.06em; line-height:.98; }
 .map-game-intro { color:var(--text-2); }
 .map-game-board { display:grid; grid-template-columns:1fr 1fr; gap:clamp(22px,5vw,56px); align-items:center; margin-top:40px; padding:clamp(20px,4vw,40px); border:1px solid var(--line); border-radius:28px; background:var(--card); box-shadow:var(--shadow); }
-.map-game-art { position:relative; display:grid; min-height:310px; place-items:center; overflow:hidden; border-radius:20px; background:radial-gradient(ellipse at center,color-mix(in srgb,#84cba9 28%,transparent),transparent 62%),linear-gradient(145deg,color-mix(in srgb,var(--accent) 13%,var(--surface)),var(--surface-2)); }
+.map-game-art { position:relative; display:grid; min-height:310px; place-items:center; overflow:hidden; border-radius:20px; background:radial-gradient(ellipse at center,color-mix(in srgb,var(--vibe-b,var(--accent)) 28%,transparent),transparent 62%),linear-gradient(145deg,color-mix(in srgb,var(--accent) 13%,var(--surface)),var(--surface-2)); }
 .map-game-art::before,.map-game-art::after { content:""; position:absolute; width:140%; height:1px; background:color-mix(in srgb,var(--text-2) 20%,transparent); transform:rotate(-27deg); }
 .map-game-art::after { transform:rotate(35deg); }
 .map-orbit { position:absolute; width:70%; aspect-ratio:1; border:1px solid color-mix(in srgb,var(--text-2) 20%,transparent); border-radius:50%; transform:scaleY(.44) rotate(-24deg); }
 .orbit-two { width:100%; transform:scaleY(.42) rotate(26deg); }
-.map-pin { z-index:1; color:#f18c6b; font-size:56px; text-shadow:0 0 26px rgba(241,140,107,.55); animation:map-bob 2s ease-in-out infinite; }
+.map-pin { z-index:1; color:var(--accent); font-size:56px; text-shadow:0 0 26px color-mix(in srgb,var(--accent) 55%,transparent); animation:map-bob 2s ease-in-out infinite; }
 @keyframes map-bob { 50% { transform:translateY(-10px); } }
 .map-coord { position:absolute; bottom:18px; left:20px; color:var(--text-2); font:500 10px var(--font-nav); letter-spacing:.12em; }
 .map-game-prompt h2 { margin:8px 0 22px; font-size:clamp(23px,3vw,34px); letter-spacing:-.03em; line-height:1.15; }
