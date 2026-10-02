@@ -664,3 +664,9 @@
  .gallery-tile,.gallery-photo img,.gallery-placeholder::before { transition:none; }
  .gallery-tile:hover,.gallery-tile:focus-visible { transform:none; }
 }
+
+/* Override the previous mosaic spans for the new even, scrollable rows. */
+.gallery-grid > .gallery-tile { grid-column:auto; grid-row:auto; }
+.gallery-placeholder { place-content:end start; }
+.gallery-placeholder .gallery-placeholder-mark { color:rgba(255,255,255,.65); font:500 9px var(--font-nav); letter-spacing:.12em; }
+.gallery-placeholder .gallery-placeholder-caption { color:rgba(255,255,255,.93); font:500 clamp(15px,1.5vw,20px)/1.12 var(--font-sans); letter-spacing:-.03em; }
