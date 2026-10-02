@@ -997,3 +997,16 @@ html,body { max-width:100%; overflow-x:clip; }
 /* Gallery captions inherit the site's light/dark ink so every vibe stays legible. */
 .gallery-tile figcaption { color:var(--text); }
 .gallery-tile figcaption time { color:var(--text-2); }
+
+/* Playlist actions follow the selected vibe instead of keeping Spotify green. */
+.record-orbit .orbit-spotify {
+  background:var(--accent);
+  color:var(--on-accent,#fff);
+  box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 28%,transparent);
+  transition:background .25s ease,color .25s ease,box-shadow .25s ease,transform .25s ease;
+}
+.record-orbit .orbit-spotify:hover,.record-orbit .orbit-spotify:focus-visible {
+  background:color-mix(in srgb,var(--accent) 86%,white);
+  color:var(--on-accent,#fff);
+  transform:translateY(-2px);
+}
