@@ -59,3 +59,8 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 - [x] Simplify palette to Orange, Sky Blue, Pink, Yellow, plus the custom gradient. Legacy Cherry selections map to Pink; the renamed Sky Blue and Yellow retain their saved theme IDs.
 
 - [x] Add the Hindi `ध्वनि?` wordmark to desktop and mobile navigation.
+
+
+## Deployment note · October 2
+- [x] GitHub `main` contains the current palette, Hindi wordmark, and playful portfolio/chat styling.
+- [ ] Vercel deployment verification is blocked: the newest available production deployment is still on an earlier commit, and the Vercel deploy action is unavailable in this session. Do not treat the new changes as live until a deployment includes the current `main` commit.
