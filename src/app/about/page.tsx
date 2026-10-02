@@ -20,6 +20,15 @@ export default function About() {
       <GalleryWall />
       <PersonalPlay />
 
+      <section className="container map-game-link-section">
+        <a className="map-game-link-card" href="/map-game">
+          <span className="eyebrow">take a little detour</span>
+          <strong>Where in my world is this?</strong>
+          <span>Play my local map game <b>↗</b></span>
+          <span className="map-link-spark" aria-hidden="true">✳</span>
+        </a>
+      </section>
+
       <section className="container about-close" aria-label="A note about how I work">
         <p>I want people to feel comfortable asking the question everyone else is holding back.</p>
       </section>
