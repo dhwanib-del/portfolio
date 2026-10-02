@@ -68,9 +68,9 @@ export const projects: Project[] = [
   {
     slug: "openlibrary",
     title: "Open Library · Internet Archive",
-    result: "Reframed translation as a reading-flow problem",
+    result: "Found the real issue: language help was hard to find",
     tags: ["Research", "Multilingual", "Accessibility"],
-    body: "Our team found readers lost context while switching between books, translation tools, and dictionaries. I helped turn that research into recommendations for language support that is easier to find and use while reading.",
+    body: "My first affinity map helped our team see that readers needed support they could find without leaving the book. I helped carry the research into clear partner recommendations.",
     hint: "language help in the reading flow →",
   },
   {
@@ -93,7 +93,7 @@ export const experience: Role[] = [
   { org: "Iska Press for African Perspectives", role: "UX Researcher & Project Manager", dates: "Jan – May 2026", summary: "Led a research and project-management consulting engagement." },
   { org: "SOCHI, University of Michigan", role: "Project Manager & UX Researcher", dates: "Sep 2025 – May 2026", summary: "Product strategy, research and project management." },
   { org: "U-M Global Scholars Program", role: "Project Manager & Social Media Coordinator", dates: "Aug 2025 – May 2026", summary: "Led project teams and global community programming." },
-  { org: "Open Library", role: "UX Researcher", dates: "Aug – Dec 2025", summary: "Multilingual-access research. Open Library changed how it explains international books." },
+  { org: "Open Library", role: "UX Researcher", dates: "Aug – Dec 2025", summary: "Multilingual reading research, affinity mapping, and recommendations for in-book language support." },
   { org: "MSU College of Social Science", role: "Research Assistant", dates: "May 2024 – May 2025", summary: "Organized and analyzed eye-tracking data for behavioral research." },
   { org: "Miller Johnson", role: "Human Resources Systems Intern", dates: "Jun – Aug 2024", summary: "Internal systems and operations at a law firm." },
   { org: "DDB Mudra Group", role: "User Experience DEI Intern", dates: "Jun – Aug 2023", summary: "Research on accessible social media and representation in advertising." },
