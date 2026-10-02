@@ -10,6 +10,7 @@ import { Nav } from "@/components/Nav"
 import { Intro } from "@/components/Intro"
 import { Companion } from "@/components/Companion"
 import { Chat } from "@/components/Chat"
+import { ChatLauncher } from "@/components/ChatLauncher"
 
 export const metadata: Metadata = {
   title: "Dhwani Bagrecha · Product & UX Designer",
@@ -36,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="footer-inner container">
             <p className="eyebrow">that’s the scroll</p>
             <h2>Thanks for <em>scrolling.</em></h2>
-            <p className="footer-question">How can I help?</p>
+            <ChatLauncher />
             <p className="footer-note">Talk design, music, or the portfolio I’m probably editing again.</p>
             <div className="footer-actions">
               <a className="btn btn-primary" href="mailto:dhwanib@umich.edu">Get in touch ↗</a>
