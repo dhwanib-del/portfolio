@@ -112,7 +112,11 @@
 .reel-stack .reel-track { flex-direction: column; padding: 0 var(--gutter); }
 .reel-stack .reel-card { flex: 1 1 auto; }
 .reel-link { display: flex; flex-direction: column; gap: 16px; height: 100%; padding: 12px 12px 24px; border-radius: var(--radius-lg); background: var(--card); border: 1px solid var(--line); color: inherit; text-decoration: none; transition: background .2s ease, border-color .2s ease; }
-.reel-link:hover { background: var(--card-hover); border-color: var(--line-strong); }
+.reel-link { transition: background .25s ease, border-color .25s ease, transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s ease; }
+.reel-link:hover, .reel-link:focus-visible { background: var(--card-hover); border-color: var(--line-strong); transform: scale(1.025); box-shadow: var(--shadow); }
+.reel-media video, .reel-ph { transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+.reel-link:hover .reel-media video, .reel-link:hover .reel-ph { transform: scale(1.06); }
+@media (prefers-reduced-motion: reduce) { .reel-link:hover, .reel-link:focus-visible { transform: none; } .reel-link:hover .reel-media video { transform: none; } }
 .reel-media { position: relative; aspect-ratio: 16 / 10; border-radius: var(--radius-md); overflow: hidden; background: var(--surface); }
 .reel-media video { width: 100%; height: 100%; object-fit: cover; }
 .reel-ph { position: absolute; inset: 0; display: grid; place-items: center; background: radial-gradient(120% 90% at 20% 10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%), var(--surface); }
