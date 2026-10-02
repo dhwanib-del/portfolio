@@ -2,7 +2,7 @@
 // Kept short on purpose: hook, TL;DR, 3 short sections, honest status. Screens go in `figures`
 // (drop files in /public/media/<slug>/ and list them here with a caption that says what to notice).
 
-export type Figure = { src: string; alt: string; caption: string; video?: boolean }
+export type Figure = { src?: string; alt: string; caption: string; video?: boolean; placeholder?: string }
 export type Section = { heading: string; body: string[] }
 export type Case = {
   slug: string
@@ -15,6 +15,7 @@ export type Case = {
   status: string
   next: string
   figures: Figure[]
+  links?: { label: string; href: string }[]
   decision?: { tension: string; decision: string; why: string; rejected: string }
   stats?: { value: number; prefix?: string; suffix?: string; label: string }[]
   video?: string // e.g. /media/briefs.mp4 — the main clip under the header
@@ -94,55 +95,61 @@ export const cases: Case[] = [
     stats: [{ value: 4, label: "weeks of work cut at the pivot" }, { value: 3, label: "usability tests in a truck cab" }, { value: 1, label: "interview that changed the brief" }],
     figures: [],
   },
-  // Sources: "UMSI x Open Library_ Final Report" (interviews, synthesis, recommendations, limitations), "Dhwani Bagrecha — Portfolio Content" (role), and Dhwani's account (client calls, team dynamics, partner follow-through).
+  // Sources: Open Library final report + Dhwani's confirmed account of partner follow-through.
   {
     slug: "openlibrary",
     org: "Open Library · Internet Archive",
-    headline: "We went looking for a translation fix. The real issue was finding help.",
-    hook: "Open Library asked how to make reading easier across languages. All five of us were international students, so the question felt personal. Client calls and reader research helped us test that instinct: people were losing their place while searching for language support.",
+    headline: "I went looking for a translation fix. Readers needed help without losing their place.",
+    hook: "All five of us were international students, so multilingual reading felt personal. Client conversations and eight interviews helped us test that instinct—and find the real friction: leaving the book to get help.",
     meta: [
-      { label: "My role", value: "Client calls, affinity mapping, synthesis, report, team coordination" },
+      { label: "My part", value: "Client calls, interviews, first affinity map, synthesis" },
       { label: "Team", value: "Five-person SI 500 team · In4mation" },
-      { label: "Project", value: "SI 500 partner project" },
-      { label: "Status", value: "Research and recommendations; no live product test" },
+      { label: "Read", value: "1 minute" },
+      { label: "Status", value: "Research and recommendations" },
     ],
-    claim: { pre: "Readers didn't need one more tool. They needed ", emphasis: "help they could find without leaving the book", post: "." },
+    claim: { pre: "The reader should not have to leave the page to ", emphasis: "find language support", post: "." },
     stats: [
-      { value: 8, label: "semi-structured interviews · team research" },
-      { value: 330, label: "data points on our team's affinity wall" },
+      { value: 8, label: "team interviews" },
+      { value: 330, label: "data points mapped as a team" },
     ],
     sections: [
       {
-        heading: "We shared the question, not the answer.",
+        heading: "Our lived experience was a starting point, not the whole answer.",
         body: [
-          "All five of us were international students, so multilingual reading was close to home. I joined client calls and helped bring readers' experiences into the conversation instead of treating our own experience as the whole answer.",
-          "Across eight interviews, people described jumping between books, translation tools, and dictionaries. Technical and academic terms made it hard to know whether a translation was right.",
+          "As international students, we recognized the language barrier. I joined client calls and helped bring readers' experiences into the conversation so we could check our assumptions.",
         ],
       },
       {
-        heading: "My first affinity map changed what we were solving.",
+        heading: "My first affinity map shifted the question.",
         body: [
-          "I helped group 330 research data points on our team's affinity wall. The pattern wasn't simply translation quality. Support could be scattered, difficult to discover, and hard to trust without context.",
-          "So we shifted from proposing a standalone translator to making existing language support easier to spot inside the reading flow. Our recommendations included grouping the tools and surfacing them when a book's language differs from the reader's interface language.",
+          "I helped synthesize 330 data points from our team's research. Readers were moving between the book, dictionaries, and translation tools—and losing their place and context.",
+          "We recommended making existing support easier to find inside the reading flow, instead of adding another standalone tool.",
         ],
       },
       {
-        heading: "I kept the work moving, even when collaboration got uneven.",
+        heading: "The partner kept investing in the work.",
         body: [
-          "I organized the report, summarized decisions, and clarified next steps so the team could get from research to a focused set of recommendations. It was my first time using affinity mapping, and I learned how synthesis can help a team move past its first assumption.",
-          "After the project, Open Library improved its feedback system and invested more in the project, as I later learned. I was glad to see the work meet a partner willing to keep improving. We didn't launch or test a product, so we can't claim a measured change for readers.",
+          "After we shared our feedback, Open Library improved its feedback system and invested more in the project. That was meaningful partner follow-through. Our work remained research and recommendations: the product direction was not implemented or tested with readers, so we do not claim a reader outcome.",
+          "The team dynamic was uneven at times. I learned to create momentum by making synthesis visible, organizing the report, and clarifying next steps.",
         ],
       },
     ],
-    status: "Research report and recommendations delivered. The partner later improved its feedback system and increased investment in Open Library (shared by me); no live product test or measured reader outcome.",
-    next: "Test whether readers can find language help, use it without losing their place, and tell when they need to verify a translation.",
+    status: "Research report and recommendations delivered; no live product test or measured reader impact.",
+    next: "Test whether readers can find help without losing their place—and whether the support earns their trust.",
     decision: {
-      tension: "What the evidence changed",
+      tension: "The turning point",
       decision: "Make existing language support easier to find in the reading flow.",
-      why: "Readers already had ways to get help, but moving between tools cost context. We focused on discoverability and continuity before adding another destination.",
-      rejected: "A separate translation product that adds another stop to the reading workflow",
+      why: "Readers already had tools; switching between them cost context.",
+      rejected: "Adding one more separate translation tool",
     },
-    figures: [],
+    figures: [
+      { alt: "Open Library research affinity map", caption: "Team synthesis · add a cleared photo or screenshot", placeholder: "public/media/openlibrary/affinity-map.jpg" },
+      { alt: "Open Library recommendation concept", caption: "Proposed reading-flow support · add final project screen", placeholder: "public/media/openlibrary/recommendation.png" },
+    ],
+    links: [
+      { label: "View final report", href: "https://docs.google.com/document/d/1A3DYPNe7f7799FZ6WSzoFFgkkHUHTBwmLgYzPkPPsjs/edit" },
+      { label: "View final presentation", href: "https://docs.google.com/presentation/d/1HDW0dLSZCc09ewu0dh__M0BJS2c-ByhvlvdnQMwyYZs" },
+    ],
   },
   {
     slug: "budgetcart",
