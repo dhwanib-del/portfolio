@@ -10,8 +10,8 @@ const records: Track[] = [
   { title: "Hit the Wall", artist: "Gracie Abrams", cover: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e021f4ba58b0e4dcef24a8df0cf", spotifyUrl: "https://open.spotify.com/track/1U90UBmMrQTx9GNweUA4LZ", tint: "#cb7e93" },
   { title: "CTRL ESCAPE", artist: "A saved album", cover: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02edd455c68b4f20c12a76c8c6", spotifyUrl: "https://open.spotify.com/album/3M5cmrMP6IkqcrpHKOwO6e", tint: "#e9a933" },
   { title: "Comfort In Chaos", artist: "A saved album", cover: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02ac2be70b09319ac92b074fde", spotifyUrl: "https://open.spotify.com/album/2pHm3ZP2R3phzCYi7ilGN2", tint: "#5d87be" },
-  { title: "Add a favorite", artist: "Your next repeat", tint: "#a78bc5" },
-  { title: "One more song", artist: "Your side B", tint: "#67a891" },
+  { title: "Add a favorite", artist: "Your next repeat", tint: "var(--accent)" },
+  { title: "One more song", artist: "Your side B", tint: "var(--accent)" },
 ]
 
 const positions = [
