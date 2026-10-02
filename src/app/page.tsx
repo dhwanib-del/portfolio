@@ -21,7 +21,7 @@ export default function Home() {
       </section>
 
 
-      <WorkReel projects={projects} eyebrow="selected work" heading="Six projects. Real outcomes, or an honest status." />
+      <WorkReel projects={projects} eyebrow="selected work" heading="Complex work, made clearer." />
 
       <Experience roles={experience} />
 
