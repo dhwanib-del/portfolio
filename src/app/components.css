@@ -857,3 +857,24 @@
 .gallery-instructions { display:none; }
 @media(max-width:700px) { .gallery-window { margin-inline:12px; border-radius:16px; } }
 @media(prefers-reduced-motion:reduce) { .gallery-photo img { transition:none; } }
+
+/* Final spacing and affordance pass. */
+.hero { min-height:clamp(560px,65vh,690px); }
+.hero .bubble {
+  min-height:46px;
+  border-color:color-mix(in srgb,var(--accent) 35%,transparent);
+  background:var(--accent);
+  color:var(--on-accent,#fff);
+  font-weight:600;
+  box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 18%,transparent);
+}
+.gallery-wall .gallery-window { overflow:hidden; clip-path:inset(0 round 22px); }
+.gallery-placeholder { gap:0; }
+.gallery-placeholder-mark { align-self:start; padding:6px 8px; border:1px solid rgba(255,255,255,.3); border-radius:99px; background:rgba(15,15,17,.22); backdrop-filter:blur(8px); }
+.record-player { padding-block:clamp(32px,4.2vw,54px); }
+.record-orbit { border:1px solid rgba(255,255,255,.09); border-radius:22px; }
+@media(max-width:700px) {
+  .hero { min-height:560px; padding-top:112px; padding-bottom:42px; }
+  .gallery-wall .gallery-window { clip-path:inset(0 round 16px); }
+  .record-orbit { border-radius:16px; }
+}
