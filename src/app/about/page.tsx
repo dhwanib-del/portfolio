@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { GalleryWall } from "@/components/GalleryWall"
+import { PersonalPlay } from "@/components/PersonalPlay"
 
 export const metadata = { title: "About · Dhwani Bagrecha" }
 
@@ -17,6 +18,7 @@ export default function About() {
       </section>
 
       <GalleryWall />
+      <PersonalPlay />
 
       <section className="container about-close" aria-label="A note about how I work">
         <p>I want people to feel comfortable asking the question everyone else is holding back.</p>
