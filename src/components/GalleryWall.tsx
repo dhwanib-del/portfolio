@@ -2,24 +2,26 @@
 
 import { useState } from "react"
 
-const moments = [
-  { src: "/gallery/dj-set.jpg", alt: "Dhwani DJing", label: "DJing", year: "2026" },
-  { src: "/gallery/travel-peru.jpg", alt: "A travel moment in Peru", label: "Somewhere new", year: "2025" },
-  { src: "/gallery/instruments.jpg", alt: "Instruments Dhwani plays", label: "Four instruments, one playlist", year: "always" },
-  { src: "/gallery/music-theory.jpg", alt: "A music theory notebook", label: "Music theory rabbit hole", year: "2026" },
-  { src: "/gallery/workout.jpg", alt: "Dhwani at the gym", label: "Gym, then maybe a run", year: "2026" },
-  { src: "/gallery/campus.jpg", alt: "A University of Michigan campus moment", label: "Ann Arbor days", year: "2026" },
-  { src: "/gallery/book.jpg", alt: "A book Dhwani is reading", label: "On my nightstand", year: "now" },
-  { src: "/gallery/friends.jpg", alt: "A day out with friends", label: "Always say yes to the plan", year: "2026" },
+const photos = [
+  { src: "/gallery/moment-01.jpg", alt: "Dhwani, photo one" },
+  { src: "/gallery/moment-02.jpg", alt: "Dhwani, photo two" },
+  { src: "/gallery/moment-03.jpg", alt: "Dhwani, photo three" },
+  { src: "/gallery/moment-04.jpg", alt: "Dhwani, photo four" },
+  { src: "/gallery/moment-05.jpg", alt: "Dhwani, photo five" },
+  { src: "/gallery/moment-06.jpg", alt: "Dhwani, photo six" },
+  { src: "/gallery/moment-07.jpg", alt: "Dhwani, photo seven" },
+  { src: "/gallery/moment-08.jpg", alt: "Dhwani, photo eight" },
 ]
 
-function GalleryTile({ item }: { item: typeof moments[number] }) {
+function PhotoTile({ photo, index }: { photo: typeof photos[number]; index: number }) {
   const [missing, setMissing] = useState(false)
   return (
-    <figure className={"gallery-tile" + (missing ? " is-empty" : "")}>
-      {!missing && <img src={item.src} alt={item.alt} loading="lazy" onError={() => setMissing(true)} />}
-      {missing && <div className="gallery-placeholder"><span>Add photo</span><code>{item.src}</code></div>}
-      <figcaption><span>{item.label}</span><small>{item.year}</small></figcaption>
+    <figure className={"gallery-tile tile-" + (index + 1)}>
+      {!missing
+        ? <img src={photo.src} alt={photo.alt} loading="lazy" onError={() => setMissing(true)} />
+        : <div className="gallery-placeholder" title={"Add " + photo.src + " to the public folder"}>
+            <span aria-hidden="true">＋</span><small>Add photo</small>
+          </div>}
     </figure>
   )
 }
@@ -28,12 +30,11 @@ export function GalleryWall() {
   return (
     <section className="gallery-wall section" aria-labelledby="gallery-title">
       <div className="container gallery-heading">
-        <p className="eyebrow">off the clock</p>
-        <h2 id="gallery-title" className="h2">A few things that make me, me.</h2>
-        <p>Music, movement, new places, and whatever I’m currently curious about.</p>
+        <p className="eyebrow">a little beyond the work</p>
+        <h2 id="gallery-title" className="h2">The rest of the picture.</h2>
       </div>
       <div className="gallery-grid container">
-        {moments.map((item) => <GalleryTile item={item} key={item.src} />)}
+        {photos.map((photo, index) => <PhotoTile key={photo.src} photo={photo} index={index} />)}
       </div>
     </section>
   )
