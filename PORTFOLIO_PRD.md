@@ -43,7 +43,7 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 
 
 ## Current iteration · October 2
-- [x] Cherry, Go Blue, and custom gradients recolor gallery placeholders, map-game art and pin, playlist background, and track-placeholder discs. Original album art keeps its real colors; the open-to-work indicator stays green because it signals availability.
+- [x] The four presets (Orange, Go Blue, Pink, Go Green) and custom gradients recolor gallery placeholders, map-game art and pin, playlist background, and track-placeholder discs. Original album art keeps its real colors; the open-to-work indicator stays green because it signals availability.
 - [x] Add a first-visit typewriter greeting with a direct Ask DhwaniGPT action.
 - [x] Make DhwaniGPT answer from portfolio facts without an external model key; link project answers to case studies, protect Prime Video details, and say when a fact is not verified.
 - [x] Do not store chat history. Do not connect the portfolio to the unrelated Luma or Glimmer Supabase databases.
@@ -54,4 +54,6 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 
 
 ## Palette follow-up · October 2
-- [x] Separate Pink (`#FF4D8D`) from Cherry (`#C1123F`): Pink stays bright, Cherry is now a deeper crimson. Verified both distinct accent values on the deployed build.
+- [x] Cherry’s accent was separated from Pink, then merged into Pink after the palette was simplified.
+
+- [x] Simplify palette to Orange, Go Blue, Pink, Go Green, plus the custom gradient. Legacy Cherry selections now map to Pink.
