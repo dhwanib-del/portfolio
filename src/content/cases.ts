@@ -94,46 +94,52 @@ export const cases: Case[] = [
     stats: [{ value: 4, label: "weeks of work cut at the pivot" }, { value: 3, label: "usability tests in a truck cab" }, { value: 1, label: "interview that changed the brief" }],
     figures: [],
   },
-  // Sources: "UMSI x Open Library_ Final Report" (methods, findings, recommendations, limitations) and "Dhwani Bagrecha — Portfolio Content" (personal contribution and reflection). The report supports the research and proposed direction; it does not establish live implementation or measured impact.
+  // Sources: "UMSI x Open Library_ Final Report" (interviews, synthesis, recommendations, limitations), "Dhwani Bagrecha — Portfolio Content" (role), and Dhwani's account (client calls, team dynamics, partner follow-through).
   {
     slug: "openlibrary",
     org: "Open Library · Internet Archive",
-    headline: "Readers needed language support without leaving the book.",
-    hook: "Across eight interviews with multilingual students, academic-support staff, and subject-matter experts, our team heard a pattern: a difficult passage could send readers between Open Library, translation tools, and dictionaries. Each switch cost context; doubts about technical terms led readers to cross-check.",
+    headline: "We went looking for a translation fix. The real issue was finding help.",
+    hook: "Open Library asked how to make reading easier across languages. All five of us were international students, so the question felt personal. Client calls and reader research helped us test that instinct: people were losing their place while searching for language support.",
     meta: [
-      { label: "My role", value: "Interviews, affinity-wall synthesis, report organization, team coordination" },
+      { label: "My role", value: "Client calls, affinity mapping, synthesis, report, team coordination" },
       { label: "Team", value: "Five-person SI 500 team · In4mation" },
       { label: "Project", value: "SI 500 partner project" },
-      { label: "Status", value: "Research report + recommendations; no live product test" },
+      { label: "Status", value: "Research and recommendations; no live product test" },
     ],
-    claim: { pre: "The problem wasn’t only translation quality. It was ", emphasis: "leaving the book for help", post: "." },
+    claim: { pre: "Readers didn't need one more tool. They needed ", emphasis: "help they could find without leaving the book", post: "." },
     stats: [
       { value: 8, label: "semi-structured interviews · team research" },
-      { value: 330, label: "data points in the team affinity wall" },
+      { value: 330, label: "data points in my first affinity map" },
     ],
     sections: [
       {
-        heading: "The research pointed to the gaps between tools.",
+        heading: "We shared the question, not the answer.",
         body: [
-          "Our team paired interviews with an UMSI community survey and literature review. I helped synthesize 330 data points on the affinity wall. Readers described switching between the book, translation tools, dictionaries, and other sources; uncertainty around academic and technical terms made them check meaning in several places.",
-          "The barrier was bigger than whether a translation tool worked. Language support was hard to discover, scattered across the reading process, and difficult to trust in context.",
+          "All five of us were international students, so multilingual reading was close to home. I joined client calls and helped bring readers' experiences into the conversation instead of treating our own experience as the whole answer.",
+          "Across eight interviews, people described jumping between books, translation tools, and dictionaries. Technical and academic terms made it hard to know whether a translation was right.",
         ],
       },
       {
-        heading: "The answer wasn’t another standalone translator.",
+        heading: "My first affinity map changed what we were solving.",
         body: [
-          "We began by asking how to improve language access. Peer and partner feedback pushed us back to the evidence, where we found that some support already existed but was easy to miss. The team shifted from proposing a new tool to making existing help easier to find and use while reading.",
-          "We recommended moving translation into the primary reading controls, grouping related language support, and offering a prompt when a book’s language differs from the reader’s interface language. I also helped organize the report and keep the team aligned on next steps.",
+          "I helped group 330 research data points on our team's affinity wall. The pattern wasn't simply "translation needs work": support could be scattered, difficult to discover, and hard to trust without context.",
+          "So we shifted from proposing a standalone translator to making existing language support easier to spot inside the reading flow. Our recommendations included grouping the tools and surfacing them when a book's language differs from the reader's interface language.",
+        ],
+      },
+      {
+        heading: "I kept the work moving, even when collaboration got uneven.",
+        body: [
+          "I organized the report, summarized decisions, and clarified next steps so the team could get from research to a focused set of recommendations. It was my first time using affinity mapping, and I learned how synthesis can help a team move past its first assumption.",
+          "After the project, Open Library improved its feedback system and invested more in the project, as I later learned. I was glad to see the work meet a partner willing to keep improving. We didn't launch or test a product, so we can't claim a measured change for readers.",
         ],
       },
     ],
-    ai: "We did not use AI to produce this project. As a possible product direction, the team proposed optional, consent-based AI explanations for selected text, limited to comprehension support. This remained a recommendation and would need privacy, copyright, and academic-integrity review.",
-    status: "The project produced a research report and recommendations. We did not implement or test a prototype in the live Open Library interface, so adoption and product impact are unknown.",
-    next: "If revisited, test whether readers can find support, get help without losing their place, and judge when a translation needs checking.",
+    status: "Research report and recommendations delivered. The partner later improved its feedback system and increased investment in Open Library (shared by me); no live product test or measured reader outcome.",
+    next: "Test whether readers can find language help, use it without losing their place, and tell when they need to verify a translation.",
     decision: {
       tension: "What the evidence changed",
-      decision: "Make existing support easier to find before adding another tool.",
-      why: "Readers already lost context while switching between tools. The recommendations focused on visibility and integration, with privacy, copyright, and academic integrity treated as product constraints.",
+      decision: "Make existing language support easier to find in the reading flow.",
+      why: "Readers already had ways to get help, but moving between tools cost context. We focused on discoverability and continuity before adding another destination.",
       rejected: "A separate translation product that adds another stop to the reading workflow",
     },
     figures: [],
