@@ -62,7 +62,12 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 
 
 ## Deployment verification · October 3
-- [x] Vercel has a READY production deployment on commit `5db0743` (`Add Hindi Dhwani question wordmark`). The preview's `/api/ask` GET returns HTTP 200 in portfolio mode, and `/work/openlibrary` returns HTTP 200.
-- [ ] Production is behind GitHub `main` (which has advanced beyond `f7e316a`, including this checklist update). Do not treat changes after `5db0743` as live until Vercel deploys a commit that includes them.
-- [ ] Verify a visible chatbot reply and unknown-question fallback in a normal browser session. The preview redirects this browser to Vercel login, so the read-only API and rendered page response do not confirm the interactive chat.
-- [ ] `dhwanibagrecha.com` still renders the older Framer portfolio as of October 3; the Vercel preview is not serving the custom domain.
+- [x] GM contribution update is deployed in Vercel production on commit `6533079`. Build state: READY. `/work/general-motors` returned HTTP 200 with the updated personal contribution, biometric pushback, and shared design-system copy.
+- [ ] Verify a visible chatbot reply and unknown-question fallback in a normal browser session. The earlier preview redirected this browser to Vercel login; this iteration verified the GM page response, not interactive chat.
+- [ ] Confirm `dhwanibagrecha.com` serves the rebuilt app. The earlier October 3 check rendered the older Framer portfolio; this iteration verified the Vercel deployment only.
+
+## GM contribution update · October 3
+- [x] Name Dhwani's biometric pushback in the case narrative and her advanced Figma interactions, reusable components, and first shared team design system in the contribution section.
+- Evidence: Dhwani's confirmed account recorded in this brief and the existing GM project card in `src/content/site.ts`. Added no metrics or implementation outcomes.
+- Checks: TypeScript syntax/module loading; preserved all other case records, existing GM metrics and NDA status; Vercel build READY; updated copy confirmed in the deployed page response.
+- The broader GM story checklist remains open pending cleared source evidence for enterprise constraints.
