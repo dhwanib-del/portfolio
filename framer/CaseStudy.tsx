@@ -84,9 +84,9 @@ const CASES: Case[] = [
     ]
    },
    {
-    "heading": "So every building profile got the same five places.",
+    "heading": "So every building profile got the same sections, in the same order.",
     "body": [
-     "Response, contacts, maps and floor plans, documents, details. Same order, every building. The few details that matter mid-call sit in a strip that stays visible while you move between sections."
+     "In the PRD: response, contacts, maps and floor plans, documents, details. Same order, every building, so nobody has to hunt. The few details that matter mid-call sit in a strip that stays visible while you move between sections."
     ]
    },
    {
@@ -417,7 +417,7 @@ function BriefsBeforeAfter() {
                         <ul className="cs-ba-tabs" aria-label="Sections"><li aria-current="true">Response</li><li>Contacts</li><li>Maps &amp; floor plans</li><li>Documents</li><li>Details</li></ul>
                         <div className="cs-ba-body" aria-hidden="true"><i /><i /><i style={{ width: "70%" }} /></div>
                     </div>
-                    <p className="cs-ba-note">Every profile has the same five places. The few details that matter mid-call stay pinned while you move between them.</p>
+                    <p className="cs-ba-note">Every profile has the same sections. The few details that matter mid-call stay pinned while you move between them.</p>
                 </div>
             </div>
             <figcaption>Recreated with made-up content. Section names follow the PRD; they could still change after testing.</figcaption>
