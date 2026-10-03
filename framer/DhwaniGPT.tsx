@@ -5,6 +5,7 @@
 // Opens on window event "db-chat-open"; sets window.__dbChatReady = true while mounted.
 import { addPropertyControls, ControlType, RenderTarget } from "framer"
 import { useState, useRef, useEffect, useCallback } from "react"
+import { createPortal } from "react-dom"
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 
 const FONT = "'Poppins', 'Inter', sans-serif"
@@ -303,7 +304,11 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
 
     const iconBtn: React.CSSProperties = { width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: "1px solid " + T.line, background: "transparent", color: T.text2, fontSize: 22, lineHeight: 1, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }
 
-    return (
+    // Oct 3 fix: render into <body> on the live site. Inside Framer's 1px wrapper, ancestors with
+    // transforms/overflow clipped the fixed launcher, so DhwaniGPT never showed up.
+    const [mounted, setMounted] = useState(false)
+    useEffect(() => { setMounted(true) }, [])
+    const ui = (
         <div className="dbgpt" style={{ fontFamily: FONT, ...(isCanvas ? { position: "relative", width: "100%", height: "100%", minWidth: 220, minHeight: 160 } : {}) }}>
             <style>{css}</style>
 
@@ -318,7 +323,7 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: dur, ease }}
-                        style={{ position: pos, right: 16, bottom: offset + 56, zIndex: 9998, width: "min(340px, calc(100vw - 32px))", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, padding: "10px 10px 10px 14px", borderRadius: 18, background: T.glass, border: "1px solid color-mix(in srgb, " + T.accent + " 22%, " + T.glassLine + ")", boxShadow: T.shadow, backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)", boxSizing: "border-box" }}
+                        style={{ position: pos, right: 16, bottom: offset + 56, zIndex: 2147480001, width: "min(340px, calc(100vw - 32px))", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, padding: "10px 10px 10px 14px", borderRadius: 18, background: T.glass, border: "1px solid color-mix(in srgb, " + T.accent + " 22%, " + T.glassLine + ")", boxShadow: T.shadow, backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)", boxSizing: "border-box" }}
                     >
                         <span aria-hidden="true" style={{ display: "grid", placeItems: "center", flex: "0 0 28px", width: 28, height: 28, borderRadius: "50%", background: T.accent, color: T.onAccent, fontSize: 14 }}>✳</span>
                         <span className="dbgpt-sr">{GREETING_TEXT}</span>
@@ -341,7 +346,7 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                     aria-haspopup="dialog"
                     aria-expanded={false}
                     aria-controls="dbgpt-panel"
-                    style={{ position: pos, right: 16, bottom: offset, zIndex: 9998, height: 44, minWidth: 44, padding: "0 18px 0 14px", borderRadius: 999, border: "1px solid color-mix(in srgb, " + T.accent + " 40%, transparent)", background: T.accent, color: T.onAccent, fontSize: 13, fontWeight: 600, letterSpacing: "0.02em", whiteSpace: "nowrap", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, boxShadow: "0 8px 28px color-mix(in srgb, " + T.accent + " 35%, transparent)" }}
+                    style={{ position: pos, right: 16, bottom: offset, zIndex: 2147480001, height: 44, minWidth: 44, padding: "0 18px 0 14px", borderRadius: 999, border: "1px solid color-mix(in srgb, " + T.accent + " 40%, transparent)", background: T.accent, color: T.onAccent, fontSize: 13, fontWeight: 600, letterSpacing: "0.02em", whiteSpace: "nowrap", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, boxShadow: "0 8px 28px color-mix(in srgb, " + T.accent + " 35%, transparent)" }}
                 >
                     <span aria-hidden="true" style={{ fontSize: 14 }}>✦</span>
                     Ask DhwaniGPT
@@ -361,7 +366,7 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
                         transition={{ duration: dur, ease }}
-                        style={{ position: pos, right: 12, bottom: 12, zIndex: 9999, width: "min(400px, calc(100vw - 24px))", maxHeight: "min(600px, calc(100dvh - 24px))", display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 20, background: T.glass, border: "1px solid color-mix(in srgb, " + T.accent + " 28%, " + T.glassLine + ")", boxShadow: T.shadow, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", color: T.text, boxSizing: "border-box" }}
+                        style={{ position: pos, right: 12, bottom: 12, zIndex: 2147480002, width: "min(400px, calc(100vw - 24px))", maxHeight: "min(600px, calc(100dvh - 24px))", display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 20, background: T.glass, border: "1px solid color-mix(in srgb, " + T.accent + " 28%, " + T.glassLine + ")", boxShadow: T.shadow, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", color: T.text, boxSizing: "border-box" }}
                     >
                         <div aria-hidden="true" style={{ height: 3, flexShrink: 0, background: "linear-gradient(90deg, transparent, " + T.accent + ", transparent)" }} />
 
@@ -422,6 +427,8 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
             </AnimatePresence>
         </div>
     )
+    if (isCanvas) return ui
+    return <div style={{ width: 1, height: 1 }}>{mounted && typeof document !== "undefined" ? createPortal(ui, document.body) : null}</div>
 }
 
 function Bubble({ role, T, children }: { role: "user" | "assistant"; T: Record<string, string>; children: React.ReactNode }) {
