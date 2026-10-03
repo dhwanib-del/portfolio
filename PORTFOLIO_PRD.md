@@ -63,6 +63,6 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 
 ## Deployment verification · October 3
 - [x] Vercel has a READY production deployment on commit `5db0743` (`Add Hindi Dhwani question wordmark`). The preview's `/api/ask` GET returns HTTP 200 in portfolio mode, and `/work/openlibrary` returns HTTP 200.
-- [ ] Production is behind GitHub `main` (`f7e316a`) by nine commits. Do not treat changes after `5db0743` as live until Vercel deploys a commit that includes them.
+- [ ] Production is behind GitHub `main` (which has advanced beyond `f7e316a`, including this checklist update). Do not treat changes after `5db0743` as live until Vercel deploys a commit that includes them.
 - [ ] Verify a visible chatbot reply and unknown-question fallback in a normal browser session. The preview redirects this browser to Vercel login, so the read-only API and rendered page response do not confirm the interactive chat.
 - [ ] `dhwanibagrecha.com` still renders the older Framer portfolio as of October 3; the Vercel preview is not serving the custom domain.
