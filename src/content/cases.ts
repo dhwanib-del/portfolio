@@ -80,14 +80,14 @@ export const cases: Case[] = [
     headline: "Most cars are designed around one driver. Our trip wasn't.",
     hook: "We started with how a vehicle could personalize the drive for one person. One driver interview reframed it: a road trip is a group coordinating across phones, screens and messages.",
     meta: [
-      { label: "Role", value: "UX researcher & designer: research, advanced prototyping" },
+      { label: "My part", value: "Research, advanced Figma interactions, reusable components" },
       { label: "Team", value: "With Sara and Julia, GM-sponsored" },
       { label: "When", value: "Jan – May 2026" },
       { label: "Status", value: "Concept, tested in a 3D-printed truck cab" },
     ],
     sections: [
-      { heading: "We cut four weeks of biometric work to design for the whole trip.", body: ["The first direction was technically interesting and disconnected from the need. Planning stayed on the phone, where groups already organize. In the car, the screen shows position, spacing and group status, not another phone on the dashboard."] },
-      { heading: "I prototyped the in-cab controls on real screens.", body: ["HVAC and in-drive views were built in Figma and run on vehicle-size screens alongside other prototyping tools, so testers reached for them the way they would while driving. A host coordinates the plan; everyone else follows and can signal when they need something."] },
+      { heading: "We cut four weeks of biometric work to design for the whole trip.", body: ["I challenged the biometric direction and pushed us toward a community convoy. Planning stayed on the phone, where groups already organize. In the car, the screen shows position, spacing and group status, not another phone on the dashboard."] },
+      { heading: "My first shared design system had to work at vehicle size.", body: ["I built reusable Figma components and advanced interactions in our team’s first shared design system. HVAC and in-drive views ran on vehicle-size screens alongside other prototyping tools, so testers reached for them the way they would while driving. A host coordinates the plan; everyone else follows and can signal when they need something."] },
     ],
     status: "Concept. Three usability tests in a 3D-printed cab. Details stay under NDA, so no real-world claims.",
     next: "Does a host make the group feel organized, or controlled?",
