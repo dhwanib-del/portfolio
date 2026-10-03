@@ -10,8 +10,9 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 
 const FONT = "'Poppins', 'Inter', sans-serif"
 const LINKEDIN = "https://www.linkedin.com/in/dhwanibagrecha/"
+const EMAIL = "dhwanib@umich.edu"
 const GREETING_KEY = "db-gpt-greeted"
-const GREETING_TEXT = "Hi, I’m DhwaniGPT, Dhwani’s portfolio assistant. Want the quick tour?"
+const GREETING_TEXT = "Hi, I’m DhwaniGPT. Ask me anything about Dhwani’s work, or something silly."
 
 // ── Portfolio facts (keep in sync with the Next.js site's content files) ─────
 type Project = { slug: string; name: string; terms: RegExp; summary: string; status: string; role: string; team: string; when: string; ai?: string }
@@ -86,7 +87,8 @@ type Link = { href: string; label: string; external?: boolean }
 type Reply = { text: string; links?: Link[] }
 type Message = { role: "user" | "assistant"; content: string; links?: Link[] }
 
-const LI: Link = { href: LINKEDIN, label: "Connect on LinkedIn ↗", external: true }
+const LI: Link = { href: LINKEDIN, label: "LinkedIn ↗", external: true }
+const EM: Link = { href: "mailto:" + EMAIL, label: "Email her ↗", external: true }
 
 function answer(raw: string, base: string): Reply {
     const q = raw.toLowerCase().replace(/[’‘]/g, "'").trim()
@@ -116,7 +118,7 @@ function answer(raw: string, base: string): Reply {
     }
 
     if (/contact|reach|e-?mail|linkedin|resume|résumé|\bcv\b|hire|hiring|get in touch|connect|talk to (her|dhwani)|message her/.test(q)) {
-        return { text: "LinkedIn is the best way to reach Dhwani. I’m a bot, so I can’t pass messages along (and I’d probably paraphrase you badly).", links: [LI] }
+        return { text: "Easiest way: email her or find her on LinkedIn. I’m a bot, so I can’t pass messages along (and I’d paraphrase you badly).", links: [EM, LI] }
     }
 
     if (/looking for|open to work|available|availability|what roles?|kind of (role|job)|\bjobs?\b|full[- ]time|graduat/.test(q)) {
@@ -158,17 +160,32 @@ function answer(raw: string, base: string): Reply {
         return { text: "Five case studies: the Intelligence Hub and BRIEFS (both U-M DPSS), Convoy for General Motors, Open Library for the Internet Archive, and BudgetCart at UMSI. There’s also a Prime Video capstone, which is under NDA. Pick one and I’ll give you the short version." }
     }
 
+
+    // Silly corner (Oct 3: "make the bot quirky, answer silly questions too").
+    if (/pineapple/.test(q)) return { text: "On pizza? I’m legally a bot, so I’m staying out of it. Dhwani is vegetarian, though, so ask her for food recs instead. She takes those seriously." }
+    if (/joke|make me laugh|funny/.test(q)) return { text: "A UX designer walks into a bar. Then walks back out, because the door said push and had a handle. She filed a bug report." }
+    if (/meaning of life|42\b/.test(q)) return { text: "Probably good information architecture. Or a really well-sequenced playlist. Dhwani would argue those are the same thing." }
+    if (/sentient|alive|conscious|feelings|do you dream/.test(q)) return { text: "Not even a little. I’m a pile of if-statements wearing a nice font." }
+    if (/\bdj\b|music|playlist|song|instrument|spotify/.test(q)) return { text: "She DJs, loves music theory and plays four instruments. Her playlists have a taxonomy. That’s not a joke, it’s a warning." }
+    if (/food|eat|vegetarian|restaurant|hungry|snack/.test(q)) return { text: "Vegetarian, and very willing to give you recommendations. It’s literally in her contact section." }
+    if (/coffee|chai|\btea\b/.test(q)) return { text: "That’s above my clearance level. Ask her on LinkedIn and report back.", links: [LI] }
+    if (/\brun|running|gym|workout|work out|fitness/.test(q)) return { text: "She works out a lot and is currently trying to become the kind of person who likes running. Progress: ongoing." }
+    if (/weather|time is it|stock|bitcoin|crypto/.test(q)) return { text: "I only know what’s on this portfolio. For that, a window or a search engine will serve you better." }
+    if (/\b(cat|cats|dog|dogs)\b/.test(q)) return { text: "I don’t have a verified stance on that, and I refuse to start a war on her website." }
+    if (/favou?rite (color|colour)/.test(q)) return { text: "Judging by this site? Somewhere between ember orange and whatever vibe you picked." }
+    if (/hire|should .*(hire|interview)/.test(q)) return { text: "I’m biased, I literally live on her website. But the case studies make a decent argument.", links: [EM, LI] }
+
     if (/thank/.test(q)) return { text: "Anytime. If you want the real Dhwani, she’s on LinkedIn.", links: [LI] }
     if (/^(hi|hello|hey|hiya|yo|howdy)\b/.test(q)) return { text: "Hi! I’m DhwaniGPT, an automated assistant. Ask me about a project, her process, or what she’s looking for." }
 
-    return { text: "That isn’t on the portfolio, so I won’t guess or make it up. I can talk about the Intelligence Hub, BRIEFS, GM Convoy, Open Library or BudgetCart, or you can ask Dhwani directly on LinkedIn.", links: [LI] }
+    return { text: "That isn’t on the portfolio, so I won’t guess or make it up. I can talk about the Intelligence Hub, BRIEFS, GM Convoy, Open Library or BudgetCart, or you can ask Dhwani directly.", links: [EM, LI] }
 }
 
 const SUGGESTIONS = [
-    { label: "Design superpower", query: "What does Dhwani do best?", n: "01" },
+    { label: "What does she do best?", query: "What does Dhwani do best?", n: "01" },
     { label: "The BRIEFS story", query: "Tell me about BRIEFS", n: "02" },
-    { label: "AI, thoughtfully", query: "How does she use AI?", n: "03" },
-    { label: "Open to a move?", query: "Is she open to relocating?", n: "04" },
+    { label: "Tell me a joke", query: "Tell me a joke", n: "03" },
+    { label: "How do I reach her?", query: "How do I contact her?", n: "04" },
 ]
 
 type Props = { accentColor: string; greeting: string; casePath: string; showGreeting: boolean; bottomOffset: number }
@@ -207,7 +224,7 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
         return b.endsWith("/") ? b : b + "/"
     })()
     const offset = typeof bottomOffset === "number" ? bottomOffset : 84
-    const welcome = greeting?.trim() || "Hey! I’m DhwaniGPT, an automated assistant, not Dhwani herself. Ask me about a project, her process, or what she’s looking for. I only answer from what’s on this portfolio."
+    const welcome = greeting?.trim() || "Hi, I’m DhwaniGPT, a little bot that knows this portfolio. Ask about a project, her process, or something silly. Heads up: I’m a bot, so I might get things wrong."
     const pos = isCanvas ? "absolute" : "fixed"
 
     const openPanel = useCallback(() => {
@@ -285,27 +302,44 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
     }
 
     const ease = [0.16, 1, 0.3, 1] as [number, number, number, number]
-    const dur = reduce ? 0 : 0.26
+    const dur = reduce ? 0 : 0.22
 
+    // Oct 3 redesign ("this whole ui is ugly"): quiet, editorial. One accent moment (the orb +
+    // send button), neutral surfaces, no numbered chips, no Hindi badge, no orange outlines.
     const css = `
-.dbgpt button, .dbgpt input, .dbgpt a { font-family: ${FONT}; }
-.dbgpt button:focus-visible, .dbgpt a:focus-visible, .dbgpt input:focus-visible { outline: 2px solid ${T.accent}; outline-offset: 2px; }
-.dbgpt-chip { transition: transform .18s ease, border-color .18s ease; }
-.dbgpt-chip:hover { transform: translateY(-2px); border-color: color-mix(in srgb, ${T.accent} 58%, ${T.line}) !important; }
-.dbgpt-launch { transition: transform .18s ease, filter .18s ease; }
-.dbgpt-launch:hover { transform: translateY(-2px); filter: brightness(1.06); }
-.dbgpt-link:hover { text-decoration: underline !important; }
-.dbgpt-caret { display: inline-block; width: 1px; height: 1em; margin-left: 2px; vertical-align: -.12em; background: ${T.accent}; animation: dbgpt-caret .75s steps(1,end) infinite; }
+.dbgpt, .dbgpt button, .dbgpt input, .dbgpt a { font-family: ${FONT}; -webkit-font-smoothing: antialiased; }
+.dbgpt button:focus-visible, .dbgpt a:focus-visible { outline: 2px solid ${T.accent}; outline-offset: 2px; }
+.dbgpt-field:focus-within { border-color: color-mix(in srgb, ${T.accent} 55%, ${T.line}); box-shadow: 0 0 0 3px color-mix(in srgb, ${T.accent} 16%, transparent); }
+.dbgpt-field input:focus { outline: none; }
+.dbgpt-field input::placeholder { color: ${T.text2}; opacity: 1; }
+.dbgpt-chip { transition: background .18s ease, border-color .18s ease, color .18s ease; }
+.dbgpt-chip:hover { background: ${T.line}; color: ${T.text}; }
+.dbgpt-ghost { transition: background .18s ease, color .18s ease; }
+.dbgpt-ghost:hover { background: ${T.line}; color: ${T.text}; }
+.dbgpt-launch { transition: transform .2s ease, border-color .2s ease; }
+.dbgpt-launch:hover { transform: translateY(-1px); border-color: color-mix(in srgb, ${T.accent} 45%, ${T.glassLine}); }
+.dbgpt-link:hover { text-decoration: underline !important; text-underline-offset: 3px; }
+.dbgpt-orb { background: radial-gradient(circle at 30% 30%, var(--vibe-c, #FFD27A), var(--vibe-b, ${T.accent}) 55%, var(--vibe-a, #8A2A04)); }
+@keyframes dbgpt-pulse { 0%,100% { transform: scale(1); opacity: .9 } 50% { transform: scale(1.08); opacity: 1 } }
+.dbgpt-orb-live { animation: dbgpt-pulse 3.2s ease-in-out infinite; }
+.dbgpt-caret { display: inline-block; width: 1px; height: 1em; margin-left: 2px; vertical-align: -.12em; background: ${T.text2}; animation: dbgpt-caret .9s steps(1,end) infinite; }
 @keyframes dbgpt-caret { 50% { opacity: 0; } }
 .dbgpt-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+.dbgpt-log { scrollbar-width: none; }
 .dbgpt-log::-webkit-scrollbar { width: 0; }
-@media (prefers-reduced-motion: reduce) { .dbgpt-chip, .dbgpt-launch { transition: none; } .dbgpt-chip:hover, .dbgpt-launch:hover { transform: none; } .dbgpt-caret { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .dbgpt-chip, .dbgpt-launch, .dbgpt-ghost { transition: none; } .dbgpt-launch:hover { transform: none; } .dbgpt-caret, .dbgpt-orb-live { animation: none; } }
 `
 
-    const iconBtn: React.CSSProperties = { width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: "1px solid " + T.line, background: "transparent", color: T.text2, fontSize: 22, lineHeight: 1, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }
+    const Orb = ({ size, live }: { size: number; live?: boolean }) => (
+        <span aria-hidden="true" className={"dbgpt-orb" + (live && !reduce ? " dbgpt-orb-live" : "")} style={{ display: "inline-block", flexShrink: 0, width: size, height: size, borderRadius: "50%", boxShadow: "0 0 0 1px " + T.line + ", 0 4px 14px color-mix(in srgb, " + T.accent + " 30%, transparent)" }} />
+    )
+    const CloseIcon = () => (
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    )
+    const ghost: React.CSSProperties = { width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: 0, background: "transparent", color: T.text2, cursor: "pointer", display: "grid", placeItems: "center" }
+    const canSend = !!input.trim()
 
-    // Oct 3 fix: render into <body> on the live site. Inside Framer's 1px wrapper, ancestors with
-    // transforms/overflow clipped the fixed launcher, so DhwaniGPT never showed up.
+    // Render into <body> on the live site so the fixed launcher is never clipped by Framer wrappers.
     const [mounted, setMounted] = useState(false)
     useEffect(() => { setMounted(true) }, [])
     const ui = (
@@ -319,24 +353,24 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                         key="greet"
                         role="region"
                         aria-label="DhwaniGPT greeting"
-                        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 10 }}
+                        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: dur, ease }}
-                        style={{ position: pos, right: 16, bottom: offset + 56, zIndex: 2147480001, width: "min(340px, calc(100vw - 32px))", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, padding: "10px 10px 10px 14px", borderRadius: 18, background: T.glass, border: "1px solid color-mix(in srgb, " + T.accent + " 22%, " + T.glassLine + ")", boxShadow: T.shadow, backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)", boxSizing: "border-box" }}
+                        style={{ position: pos, right: 16, bottom: offset + 56, zIndex: 2147480001, width: "min(320px, calc(100vw - 32px))", display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 8px 14px 14px", borderRadius: 16, background: T.glass, border: "1px solid " + T.glassLine, boxShadow: T.shadow, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxSizing: "border-box" }}
                     >
-                        <span aria-hidden="true" style={{ display: "grid", placeItems: "center", flex: "0 0 28px", width: 28, height: 28, borderRadius: "50%", background: T.accent, color: T.onAccent, fontSize: 14 }}>✳</span>
-                        <span className="dbgpt-sr">{GREETING_TEXT}</span>
-                        <span aria-hidden="true" style={{ flex: "1 1 180px", minHeight: 22, color: T.text, fontSize: 14, fontWeight: 500, lineHeight: 1.45 }}>{typed}<i className="dbgpt-caret" /></span>
-                        <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
-                            <button type="button" onClick={openPanel} style={{ minHeight: 44, padding: "0 14px", border: 0, borderRadius: 12, background: T.accent, color: T.onAccent, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Ask DhwaniGPT <span aria-hidden="true">↗</span></button>
-                            <button type="button" aria-label="Dismiss greeting" onClick={() => setGreetVisible(false)} style={iconBtn}>×</button>
+                        <span style={{ paddingTop: 2 }}><Orb size={22} live /></span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <span className="dbgpt-sr">{GREETING_TEXT}</span>
+                            <p aria-hidden="true" style={{ margin: 0, minHeight: 42, color: T.text, fontSize: 14, lineHeight: 1.5 }}>{typed}<i className="dbgpt-caret" /></p>
+                            <button type="button" onClick={openPanel} className="dbgpt-chip" style={{ marginTop: 10, minHeight: 36, padding: "0 14px", border: "1px solid " + T.line, borderRadius: 999, background: "transparent", color: T.text, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>Start the tour</button>
                         </div>
+                        <button type="button" aria-label="Dismiss greeting" onClick={() => setGreetVisible(false)} className="dbgpt-ghost" style={{ ...ghost, width: 36, height: 36, borderRadius: 10 }}><CloseIcon /></button>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* ── Launcher (sits above the "open to work" pill) ────────── */}
+            {/* ── Launcher ─────────────────────────────────────────────── */}
             {!open && (
                 <button
                     ref={launcherRef}
@@ -346,9 +380,9 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                     aria-haspopup="dialog"
                     aria-expanded={false}
                     aria-controls="dbgpt-panel"
-                    style={{ position: pos, right: 16, bottom: offset, zIndex: 2147480001, height: 44, minWidth: 44, padding: "0 18px 0 14px", borderRadius: 999, border: "1px solid color-mix(in srgb, " + T.accent + " 40%, transparent)", background: T.accent, color: T.onAccent, fontSize: 13, fontWeight: 600, letterSpacing: "0.02em", whiteSpace: "nowrap", cursor: "pointer", display: "flex", alignItems: "center", gap: 7, boxShadow: "0 8px 28px color-mix(in srgb, " + T.accent + " 35%, transparent)" }}
+                    style={{ position: pos, right: 16, bottom: offset, zIndex: 2147480001, height: 44, padding: "0 16px 0 10px", borderRadius: 999, border: "1px solid " + T.glassLine, background: T.glass, color: T.text, fontSize: 14, fontWeight: 500, whiteSpace: "nowrap", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, boxShadow: T.shadow, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
                 >
-                    <span aria-hidden="true" style={{ fontSize: 14 }}>✦</span>
+                    <Orb size={22} live />
                     Ask DhwaniGPT
                 </button>
             )}
@@ -362,66 +396,56 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                         role="dialog"
                         aria-modal="false"
                         aria-labelledby="dbgpt-title"
-                        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 18, scale: 0.97 }}
+                        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 14, scale: 0.98 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={reduce ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.98 }}
+                        exit={reduce ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98, transition: { duration: 0.15 } }}
                         transition={{ duration: dur, ease }}
-                        style={{ position: pos, right: 12, bottom: 12, zIndex: 2147480002, width: "min(400px, calc(100vw - 24px))", maxHeight: "min(600px, calc(100dvh - 24px))", display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 20, background: T.glass, border: "1px solid color-mix(in srgb, " + T.accent + " 28%, " + T.glassLine + ")", boxShadow: T.shadow, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", color: T.text, boxSizing: "border-box" }}
+                        style={{ position: pos, right: 12, bottom: 12, zIndex: 2147480002, width: "min(380px, calc(100vw - 24px))", height: "min(560px, calc(100dvh - 24px))", display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 20, background: T.glass, border: "1px solid " + T.glassLine, boxShadow: T.shadow, backdropFilter: "blur(28px) saturate(140%)", WebkitBackdropFilter: "blur(28px) saturate(140%)", color: T.text, boxSizing: "border-box", transformOrigin: "bottom right" }}
                     >
-                        <div aria-hidden="true" style={{ height: 3, flexShrink: 0, background: "linear-gradient(90deg, transparent, " + T.accent + ", transparent)" }} />
-
                         {/* Header */}
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "14px 14px 12px 18px", borderBottom: "1px solid " + T.line, flexShrink: 0 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
-                                <span lang="hi" aria-hidden="true" style={{ flexShrink: 0, padding: "6px 10px", borderRadius: 12, background: "color-mix(in srgb, " + T.accent + " 14%, " + T.surface + ")", border: "1px solid color-mix(in srgb, " + T.accent + " 30%, " + T.line + ")", color: T.text, fontSize: 16, fontWeight: 600, lineHeight: 1.2 }}>ध्वनि<span style={{ color: T.accent, fontWeight: 700 }}>?</span></span>
-                                <div style={{ minWidth: 0 }}>
-                                    <p style={{ margin: "0 0 2px", color: T.text2, fontSize: 9, fontWeight: 600, letterSpacing: "0.13em" }}>A LITTLE PORTFOLIO SIDEKICK</p>
-                                    <h2 id="dbgpt-title" style={{ margin: 0, fontSize: 17, fontWeight: 600, color: T.text, display: "flex", alignItems: "center", gap: 8 }}>
-                                        DhwaniGPT
-                                        <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: T.accent }} />
-                                    </h2>
-                                    <p style={{ margin: "3px 0 0", fontSize: 12, color: T.text2 }}>Automated assistant, not Dhwani · portfolio facts only</p>
-                                </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 8px 12px 16px", flexShrink: 0 }}>
+                            <Orb size={30} live />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <h2 id="dbgpt-title" style={{ margin: 0, fontSize: 15, fontWeight: 600, letterSpacing: "-0.01em", color: T.text }}>DhwaniGPT</h2>
+                                <p style={{ margin: "1px 0 0", fontSize: 12, color: T.text2 }}>Answers from her portfolio</p>
                             </div>
-                            <button type="button" aria-label="Close chat" onClick={close} style={iconBtn}>×</button>
+                            <button type="button" aria-label="Close chat" onClick={close} className="dbgpt-ghost" style={ghost}><CloseIcon /></button>
                         </div>
+                        <div aria-hidden="true" style={{ height: 1, background: T.line, flexShrink: 0 }} />
 
                         {/* Log */}
-                        <div ref={logRef} className="dbgpt-log" role="log" aria-live="polite" aria-relevant="additions" style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 10, scrollbarWidth: "none" }}>
+                        <div ref={logRef} className="dbgpt-log" role="log" aria-live="polite" aria-relevant="additions" style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "20px 16px 8px", display: "flex", flexDirection: "column", gap: 18 }}>
                             <Bubble role="assistant" T={T}>{welcome}</Bubble>
+                            {messages.length === 0 && (
+                                <div role="group" aria-label="Suggested questions" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                    {SUGGESTIONS.map((s) => (
+                                        <button key={s.n} type="button" className="dbgpt-chip" onClick={() => send(s.query)} style={{ minHeight: 36, padding: "0 14px", border: "1px solid " + T.line, borderRadius: 999, background: "transparent", color: T.text2, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+                                            {s.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                             {messages.map((m, i) => (
-                                <motion.div key={i} initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduce ? 0 : 0.22 }} style={{ display: "grid", gap: 6, maxWidth: "88%", alignSelf: m.role === "user" ? "flex-end" : "flex-start", justifyItems: m.role === "user" ? "end" : "start" }}>
+                                <motion.div key={i} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduce ? 0 : 0.2 }} style={{ display: "grid", gap: 4, alignSelf: m.role === "user" ? "flex-end" : "stretch", justifyItems: m.role === "user" ? "end" : "start", maxWidth: m.role === "user" ? "85%" : "100%" }}>
                                     <Bubble role={m.role} T={T}>{m.content}</Bubble>
                                     {m.links?.map((l) => (
-                                        <a key={l.href} className="dbgpt-link" href={l.href} {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})} style={{ display: "inline-flex", alignItems: "center", minHeight: 44, padding: "0 8px", color: T.accent, fontSize: 13, fontWeight: 600, textDecoration: "none" }}>{l.label}</a>
+                                        <a key={l.href} className="dbgpt-link" href={l.href} {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})} style={{ display: "inline-flex", alignItems: "center", minHeight: 36, color: T.text, fontSize: 13, fontWeight: 500, textDecoration: "underline", textDecorationColor: "color-mix(in srgb, " + T.accent + " 60%, transparent)", textUnderlineOffset: 3 }}>{l.label}</a>
                                     ))}
                                 </motion.div>
                             ))}
                         </div>
 
-                        {/* Suggestions */}
-                        {messages.length === 0 && (
-                            <div style={{ padding: "0 16px 12px", flexShrink: 0 }}>
-                                <p style={{ display: "flex", justifyContent: "space-between", margin: "0 0 8px", color: T.text2, fontSize: 9, fontWeight: 600, letterSpacing: "0.14em" }}>PICK A THREAD <span aria-hidden="true" style={{ color: T.accent, fontSize: 14 }}>↘</span></p>
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 7 }}>
-                                    {SUGGESTIONS.map((s) => (
-                                        <button key={s.n} type="button" className="dbgpt-chip" onClick={() => send(s.query)} style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, minHeight: 48, padding: "7px 9px", border: "1px solid " + T.line, borderRadius: "13px 13px 13px 5px", background: T.surface, color: T.text, textAlign: "left", fontSize: 12, fontWeight: 500, lineHeight: 1.2, cursor: "pointer" }}>
-                                            <span aria-hidden="true" style={{ display: "grid", placeItems: "center", flex: "0 0 24px", width: 24, height: 24, borderRadius: 8, background: "color-mix(in srgb, " + T.accent + " 14%, " + T.surface + ")", color: T.accent, fontSize: 9, fontWeight: 600 }}>{s.n}</span>
-                                            <span>{s.label}</span>
-                                            <span aria-hidden="true" style={{ marginLeft: "auto", color: T.accent, fontSize: 13 }}>↗</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
                         {/* Input */}
-                        <form onSubmit={(e) => { e.preventDefault(); send(input) }} style={{ display: "flex", gap: 8, padding: 12, borderTop: "1px solid " + T.line, flexShrink: 0 }}>
+                        <form onSubmit={(e) => { e.preventDefault(); send(input) }} style={{ padding: "8px 12px 10px", flexShrink: 0 }}>
                             <label htmlFor="dbgpt-in" className="dbgpt-sr">Ask about Dhwani</label>
-                            <input id="dbgpt-in" ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask me something…" maxLength={600} autoComplete="off" style={{ flex: 1, minWidth: 0, minHeight: 44, padding: "0 14px", borderRadius: 12, border: "1px solid " + T.line, background: T.surface, color: T.text, fontSize: 15, caretColor: T.accent, boxSizing: "border-box" }} />
-                            <button type="submit" disabled={!input.trim()} style={{ minHeight: 44, padding: "0 16px", borderRadius: 12, border: 0, background: T.accent, color: T.onAccent, fontSize: 14, fontWeight: 600, cursor: input.trim() ? "pointer" : "default", opacity: input.trim() ? 1 : 0.55, flexShrink: 0 }}>Send <span aria-hidden="true">↗</span></button>
+                            <div className="dbgpt-field" style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 4px 4px 14px", borderRadius: 14, border: "1px solid " + T.line, background: T.surface, transition: "border-color .18s ease, box-shadow .18s ease" }}>
+                                <input id="dbgpt-in" ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about a project…" maxLength={600} autoComplete="off" style={{ flex: 1, minWidth: 0, height: 40, border: 0, background: "transparent", color: T.text, fontSize: 15, caretColor: T.accent }} />
+                                <button type="submit" disabled={!canSend} aria-label="Send" style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 10, border: 0, display: "grid", placeItems: "center", background: canSend ? T.accent : T.line, color: canSend ? T.onAccent : T.text2, cursor: canSend ? "pointer" : "default", transition: "background .18s ease, color .18s ease" }}>
+                                    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+                                </button>
+                            </div>
+                            <p style={{ margin: "8px 0 0", color: T.text2, fontSize: 11, textAlign: "center" }}>Automated, not Dhwani. I’m a bot and I can get things wrong (lol). Nothing is saved.</p>
                         </form>
-                        <p style={{ margin: 0, padding: "0 16px 12px", color: T.text2, fontSize: 11, textAlign: "center" }}>Automated answers from the portfolio only. No private details, please. This chat isn’t saved.</p>
                     </motion.section>
                 )}
             </AnimatePresence>
@@ -433,10 +457,10 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
 
 function Bubble({ role, T, children }: { role: "user" | "assistant"; T: Record<string, string>; children: React.ReactNode }) {
     const user = role === "user"
-    return (
-        <p style={{ margin: 0, maxWidth: user ? "100%" : "88%", padding: "10px 14px", borderRadius: user ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: user ? T.accent : "color-mix(in srgb, " + T.accent + " 7%, " + T.surface + ")", border: user ? "none" : "1px solid color-mix(in srgb, " + T.accent + " 18%, " + T.line + ")", color: user ? T.onAccent : T.text, fontSize: 14, lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-            {children}
-        </p>
+    return user ? (
+        <p style={{ margin: 0, padding: "9px 14px", borderRadius: "16px 16px 4px 16px", background: T.line, color: T.text, fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{children}</p>
+    ) : (
+        <p style={{ margin: 0, color: T.text, fontSize: 14.5, lineHeight: 1.6, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{children}</p>
     )
 }
 
