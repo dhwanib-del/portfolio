@@ -30,9 +30,9 @@ const PROJECTS: Project[] = [
     },
     {
         slug: "intel",
-        name: "Intel workspace",
+        name: "Intelligence Hub",
         terms: /\bintel\b|intelligence|analysts?\b|case management|handoff/,
-        summary: "Intel workspace (U-M DPSS): Dhwani interviewed six analysts and adjusted her questions to bring quieter voices in. The concept brings case history, status, ownership and related information into one workspace, so handoffs stop being where things get lost. The first version ran in Google Apps Script so the team could try it without touching production systems.",
+        summary: "Intelligence Hub (U-M DPSS): Dhwani interviewed six analysts and adjusted her questions to bring quieter voices in. The concept brings case history, status, ownership and related information into one workspace, so handoffs stop being where things get lost. The first version ran in Google Apps Script so the team could try it without touching production systems.",
         status: "Status: in use by the Intelligence Group, and the team has since started building its own server version.",
         role: "UX design intern doing workflow design and the prototype",
         team: "with Aaron Tucker at DPSS",
@@ -112,7 +112,7 @@ function answer(raw: string, base: string): Reply {
     }
 
     if (/\bdpss\b|public safety/.test(q)) {
-        return { text: "Dhwani was a UX Design Intern at U-M DPSS, May – Aug 2026, designing tools for campus dispatch and the Intelligence Group. Two case studies came out of it: BRIEFS (finding building details mid-call) and the Intel workspace, which is in use.", links: [caseLink(byslug("briefs")), caseLink(byslug("intel"))] }
+        return { text: "Dhwani was a UX Design Intern at U-M DPSS, May – Aug 2026, designing tools for campus dispatch and the Intelligence Group. Two case studies came out of it: BRIEFS (finding building details mid-call) and the Intelligence Hub, which is in use.", links: [caseLink(byslug("briefs")), caseLink(byslug("intel"))] }
     }
 
     if (/contact|reach|e-?mail|linkedin|resume|résumé|\bcv\b|hire|hiring|get in touch|connect|talk to (her|dhwani)|message her/.test(q)) {
@@ -155,13 +155,13 @@ function answer(raw: string, base: string): Reply {
     }
 
     if (/projects?|\bwork\b|portfolio|case stud|show me/.test(q)) {
-        return { text: "Five case studies: BRIEFS and the Intel workspace (both U-M DPSS), Convoy for General Motors, Open Library for the Internet Archive, and BudgetCart at UMSI. There’s also a Prime Video capstone, which is under NDA. Pick one and I’ll give you the short version." }
+        return { text: "Five case studies: the Intelligence Hub and BRIEFS (both U-M DPSS), Convoy for General Motors, Open Library for the Internet Archive, and BudgetCart at UMSI. There’s also a Prime Video capstone, which is under NDA. Pick one and I’ll give you the short version." }
     }
 
     if (/thank/.test(q)) return { text: "Anytime. If you want the real Dhwani, she’s on LinkedIn.", links: [LI] }
     if (/^(hi|hello|hey|hiya|yo|howdy)\b/.test(q)) return { text: "Hi! I’m DhwaniGPT, an automated assistant. Ask me about a project, her process, or what she’s looking for." }
 
-    return { text: "That isn’t on the portfolio, so I won’t guess or make it up. I can talk about BRIEFS, Intel, GM Convoy, Open Library or BudgetCart, or you can ask Dhwani directly on LinkedIn.", links: [LI] }
+    return { text: "That isn’t on the portfolio, so I won’t guess or make it up. I can talk about the Intelligence Hub, BRIEFS, GM Convoy, Open Library or BudgetCart, or you can ask Dhwani directly on LinkedIn.", links: [LI] }
 }
 
 const SUGGESTIONS = [
