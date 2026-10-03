@@ -13,7 +13,7 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 - Respect motion preferences, keyboard access, readable contrast, and responsive layouts.
 
 ## Project story checklist
-- [ ] **Open Library:** uneven team collaboration; first affinity mapping; client calls; international-student language needs; partner adopted feedback-process improvements and increased project investment. Do not imply reader outcomes were measured.
+- [x] **Open Library:** uneven team collaboration; first affinity mapping; client calls; international-student language needs; partner adopted feedback-process improvements and increased project investment. The case page states the recommendations were not implemented or tested with readers; no reader outcome is claimed. Evidence: final report plus Dhwani-confirmed partner follow-through.
 - [ ] **GM:** user's critical pushback on biometrics; pivot to a community convoy; advanced prototyping, components, first team design system, and enterprise trade-offs.
 - [ ] **BRIEFS:** high-stakes supporting case; first contextual inquiry; no existing Figma files; built the concept and design foundation; Apps Script + Sheets prototype and server/deployment work; explain the sensitive-data discovery without exposing real information. Verify any time-saved claim first.
 - [ ] **Intel / Intelligence Hub:** keep separate from BRIEFS; six analysts; email/phone intake and spreadsheets made case history hard to retrieve; case-management database; stakeholder interviews and inclusive facilitation; explain navigation choices with usability evidence and HCI principles.
@@ -61,6 +61,8 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 - [x] Add the Hindi `ध्वनि?` wordmark to desktop and mobile navigation.
 
 
-## Deployment note · October 2
-- [x] GitHub `main` contains the current palette, Hindi wordmark, and playful portfolio/chat styling.
-- [ ] Vercel deployment verification is blocked: the newest available production deployment is still on an earlier commit, and the Vercel deploy action is unavailable in this session. Do not treat the new changes as live until a deployment includes the current `main` commit.
+## Deployment verification · October 3
+- [x] Vercel has a READY production deployment on commit `5db0743` (`Add Hindi Dhwani question wordmark`). The preview's `/api/ask` GET returns HTTP 200 in portfolio mode, and `/work/openlibrary` returns HTTP 200.
+- [ ] Production is behind GitHub `main` (`f7e316a`) by nine commits. Do not treat changes after `5db0743` as live until Vercel deploys a commit that includes them.
+- [ ] Verify a visible chatbot reply and unknown-question fallback in a normal browser session. The preview redirects this browser to Vercel login, so the read-only API and rendered page response do not confirm the interactive chat.
+- [ ] `dhwanibagrecha.com` still renders the older Framer portfolio as of October 3; the Vercel preview is not serving the custom domain.
