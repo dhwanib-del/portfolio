@@ -2,9 +2,14 @@
 // CaseStudyVideo — drop-in autoplaying clip for case studies.
 // Pick the file in the right panel (Video). Plays muted + looped + inline, pauses when
 // scrolled out of view, and respects "reduce motion" (shows controls instead of autoplay).
-// Until a file is picked it renders a clearly visible 16:9 glass frame with the label.
-// Oct 4 (light-mode sweep): the media frame stays dark in both modes (videos letterbox on black),
-// so it is marked data-db-keep and its label stays light; the caption below follows the theme text.
+// Until a file is picked it renders a clearly visible glass frame with the label.
+// Oct 5: "fix my screens to FIT MY VIDEOS" + "remove the white/dark background, it can just be the screens".
+//  • Ratio "auto" (default) reads the video's own size and sizes the frame to match — nothing cut off,
+//    no letterbox bars. Fixed ratios are still there (16:9, 4:3, 3:2, 1:1, 9:16).
+//  • Fit: cover fills the frame (default), contain shows the whole video inside a fixed ratio.
+//  • Frame: none (default, just the video with rounded corners), subtle (thin theme line), dark (old frame).
+//  • Max height (0 = off) keeps tall phone recordings from taking over the page; the frame narrows to keep its shape.
+//  • Fills whatever width its parent gives it.
 import * as React from "react"
 import { startTransition } from "react"
 import { addPropertyControls, ControlType, useIsStaticRenderer } from "framer"
@@ -15,8 +20,14 @@ type Props = {
     caption: string
     radius: number
     accent: string
+    fit: "cover" | "contain"
+    ratio: "auto" | "16:9" | "4:3" | "3:2" | "1:1" | "9:16"
+    frame: "none" | "subtle" | "dark"
+    maxHeight: number
     style?: React.CSSProperties
 }
+
+const RATIOS: Record<string, number> = { "16:9": 16 / 9, "4:3": 4 / 3, "3:2": 3 / 2, "1:1": 1, "9:16": 9 / 16 }
 
 /**
  * @framerSupportedLayoutWidth any
@@ -24,9 +35,14 @@ type Props = {
  */
 export default function CaseStudyVideo(props: Props) {
     const { video, label, caption, radius, accent, style } = props
+    const fit = props.fit || "cover"
+    const ratio = props.ratio || "auto"
+    const frameKind = props.frame || "none"
+    const maxHeight = props.maxHeight || 0
     const ref = React.useRef<HTMLVideoElement | null>(null)
     const isStatic = useIsStaticRenderer()
     const [reduced, setReduced] = React.useState(false)
+    const [natural, setNatural] = React.useState<number | null>(null)
 
     React.useEffect(() => {
         if (typeof window === "undefined") return
@@ -51,23 +67,58 @@ export default function CaseStudyVideo(props: Props) {
         return () => obs.disconnect()
     }, [video, reduced])
 
+    // Intrinsic size: metadata may already be loaded before React attaches the handler.
+    const readNatural = React.useCallback(() => {
+        const el = ref.current
+        if (el && el.videoWidth > 0 && el.videoHeight > 0) {
+            const r = el.videoWidth / el.videoHeight
+            startTransition(() => setNatural(r))
+        }
+    }, [])
+
+    React.useEffect(() => {
+        setNatural(null)
+        const el = ref.current
+        if (el && el.readyState >= 1) readNatural()
+    }, [video, readNatural])
+
+    const ar = ratio === "auto" ? natural || 16 / 9 : RATIOS[ratio] || 16 / 9
+
+    const isPlaceholder = !video
+    const look: React.CSSProperties = isPlaceholder
+        ? {
+              background: "linear-gradient(160deg, rgba(0,39,76,0.85) 0%, rgba(12,14,20,0.95) 100%)",
+              border: "1px solid rgba(255,255,255,0.16)",
+              boxShadow: "0 24px 60px -20px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08)",
+          }
+        : frameKind === "dark"
+          ? {
+                background: "#0A0A0A",
+                border: "1px solid rgba(255,255,255,0.16)",
+                boxShadow: "0 24px 60px -20px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08)",
+            }
+          : frameKind === "subtle"
+            ? { background: "transparent", border: "1px solid var(--db-line, rgba(127,127,127,0.25))" }
+            : { background: "transparent", border: "none", boxShadow: "none" }
+
     const frame: React.CSSProperties = {
         position: "relative",
-        width: "100%",
-        aspectRatio: "16 / 9",
+        width: maxHeight > 0 ? `min(100%, ${Math.round(maxHeight * ar)}px)` : "100%",
+        margin: "0 auto",
+        aspectRatio: String(ar),
         borderRadius: radius,
         overflow: "hidden",
-        background: video
-            ? "#0A0A0A"
-            : "linear-gradient(160deg, rgba(0,39,76,0.85) 0%, rgba(12,14,20,0.95) 100%)",
-        border: "1px solid rgba(255,255,255,0.16)",
-        boxShadow: "0 24px 60px -20px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08)",
         zIndex: 1,
+        boxSizing: "border-box",
+        ...look,
     }
 
+    // The dark frame and the placeholder stay dark in light mode; "none"/"subtle" have no fill to protect.
+    const keep = isPlaceholder || frameKind === "dark" ? { "data-db-keep": "" } : {}
+
     return (
-        <figure style={{ ...style, position: "relative", width: "100%", margin: 0, zIndex: 1 }}>
-            <div data-db-keep="" style={frame}>
+        <figure style={{ ...style, position: "relative", width: "100%", minWidth: 0, margin: 0, zIndex: 1 }}>
+            <div {...keep} style={frame}>
                 {video ? (
                     <video
                         ref={ref}
@@ -79,7 +130,8 @@ export default function CaseStudyVideo(props: Props) {
                         controls={reduced}
                         preload="metadata"
                         aria-label={caption || label}
-                        style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+                        onLoadedMetadata={readNatural}
+                        style={{ width: "100%", height: "100%", objectFit: fit, display: "block", borderRadius: "inherit" }}
                     />
                 ) : (
                     <div
@@ -150,6 +202,10 @@ CaseStudyVideo.defaultProps = {
     caption: "",
     radius: 16,
     accent: "#FFCB05",
+    fit: "cover",
+    ratio: "auto",
+    frame: "none",
+    maxHeight: 0,
 }
 
 addPropertyControls(CaseStudyVideo, {
@@ -160,6 +216,39 @@ addPropertyControls(CaseStudyVideo, {
     },
     label: { type: ControlType.String, title: "Placeholder", defaultValue: "Pick a video in the right panel" },
     caption: { type: ControlType.String, title: "Caption", defaultValue: "", displayTextArea: true },
+    ratio: {
+        type: ControlType.Enum,
+        title: "Ratio",
+        options: ["auto", "16:9", "4:3", "3:2", "1:1", "9:16"],
+        optionTitles: ["Auto (match video)", "16:9", "4:3", "3:2", "1:1", "9:16"],
+        defaultValue: "auto",
+    },
+    fit: {
+        type: ControlType.Enum,
+        title: "Fit",
+        options: ["cover", "contain"],
+        optionTitles: ["Cover", "Contain"],
+        displaySegmentedControl: true,
+        defaultValue: "cover",
+    },
+    frame: {
+        type: ControlType.Enum,
+        title: "Frame",
+        options: ["none", "subtle", "dark"],
+        optionTitles: ["None", "Subtle", "Dark"],
+        displaySegmentedControl: true,
+        defaultValue: "none",
+    },
+    maxHeight: {
+        type: ControlType.Number,
+        title: "Max height",
+        min: 0,
+        max: 1600,
+        step: 10,
+        unit: "px",
+        defaultValue: 0,
+        description: "0 = no limit. Useful for tall phone recordings.",
+    },
     radius: { type: ControlType.Number, title: "Radius", min: 0, max: 40, step: 1, defaultValue: 16 },
     accent: { type: ControlType.Color, title: "Accent", defaultValue: "#FFCB05" },
 })
