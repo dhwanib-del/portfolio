@@ -9,6 +9,61 @@ import { addPropertyControls, ControlType } from "framer"
  * @framerIntrinsicHeight 120
  */
 
+// Oct 4 (light-mode sweep): in light mode the badge uses the site theme tokens (surface, text,
+// text-2, a text-tinted track) instead of the instance's dark colours; a warm progress colour
+// follows the visitor's vibe accent. Dark mode keeps the instance colours. Strokes are set via
+// style so CSS variables work.
+
+function isWarm(c: string): boolean {
+    const s = String(c || "").trim().toLowerCase()
+    let r = 0
+    let g = 0
+    let b = 0
+    const m = s.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/)
+    if (m) {
+        r = +m[1]
+        g = +m[2]
+        b = +m[3]
+    } else {
+        const h = s.match(/^#([0-9a-f]{3}|[0-9a-f]{6})\b/)
+        if (!h) return false
+        const x = h[1].length === 3 ? h[1].split("").map((ch) => ch + ch).join("") : h[1]
+        const n = parseInt(x, 16)
+        r = (n >> 16) & 255
+        g = (n >> 8) & 255
+        b = n & 255
+    }
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    const d = max - min
+    if (max < 120 || d < 90) return false
+    let hue = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+    hue *= 60
+    if (hue < 0) hue += 360
+    return hue >= 8 && hue <= 62
+}
+
+function useDbLight(): boolean {
+    const [light, setLight] = useState(false)
+    useEffect(() => {
+        if (typeof document === "undefined") return
+        const html = document.documentElement
+        const read = () => setLight(html.getAttribute("data-db-theme") === "light")
+        read()
+        window.addEventListener("db-theme", read)
+        let mo: MutationObserver | null = null
+        if (typeof MutationObserver !== "undefined") {
+            mo = new MutationObserver(read)
+            mo.observe(html, { attributes: true, attributeFilter: ["data-db-theme"] })
+        }
+        return () => {
+            window.removeEventListener("db-theme", read)
+            if (mo) mo.disconnect()
+        }
+    }, [])
+    return light
+}
+
 export default function ScrollProgressV1(props) {
     const {
         size,
@@ -35,6 +90,13 @@ export default function ScrollProgressV1(props) {
 
     const [progress, setProgress] = useState(previewProgress)
     const ticking = useRef(false)
+    const light = useDbLight()
+
+    const bgColor = light ? "var(--db-surface, #EEEEEE)" : backgroundColor
+    const numColor = light ? "var(--db-text, #0A0A0A)" : textColor
+    const capColor = light ? "var(--db-text-2, rgba(0,0,0,0.62))" : labelColor
+    const trkColor = light ? "color-mix(in srgb, var(--db-text, #0A0A0A) 12%, transparent)" : trackColor
+    const progColor = isWarm(progressColor) ? `var(--db-accent, ${progressColor})` : progressColor
 
     function clamp(value, min, max) {
         return Math.min(Math.max(value, min), max)
@@ -134,6 +196,7 @@ export default function ScrollProgressV1(props) {
 
     return (
         <div
+            data-db-keep=""
             style={{
                 ...style,
                 ...fixedStyles,
@@ -153,7 +216,7 @@ export default function ScrollProgressV1(props) {
                     width: safeSize,
                     height: safeSize,
                     borderRadius: safeRadius,
-                    backgroundColor: backgroundColor,
+                    backgroundColor: bgColor,
                     boxShadow: shadow
                         ? "0 16px 40px rgba(0, 0, 0, 0.18)"
                         : "none",
@@ -179,8 +242,8 @@ export default function ScrollProgressV1(props) {
                         cy={center}
                         r={circleRadius}
                         fill="none"
-                        stroke={trackColor}
                         strokeWidth={safeStroke}
+                        style={{ stroke: trkColor }}
                     />
 
                     <circle
@@ -188,12 +251,12 @@ export default function ScrollProgressV1(props) {
                         cy={center}
                         r={circleRadius}
                         fill="none"
-                        stroke={progressColor}
                         strokeWidth={safeStroke}
                         strokeLinecap="round"
                         strokeDasharray={circumference}
                         strokeDashoffset={dashOffset}
                         style={{
+                            stroke: progColor,
                             transition: `stroke-dashoffset ${smoothness}s ease`,
                         }}
                     />
@@ -216,7 +279,7 @@ export default function ScrollProgressV1(props) {
                     {showPercentage && (
                         <div
                             style={{
-                                color: textColor,
+                                color: numColor,
                                 fontSize: safeSize * 0.22,
                                 fontWeight: 800,
                                 letterSpacing: "-0.04em",
@@ -230,7 +293,7 @@ export default function ScrollProgressV1(props) {
                         <div
                             style={{
                                 marginTop: 6,
-                                color: labelColor,
+                                color: capColor,
                                 fontSize: safeSize * 0.09,
                                 fontWeight: 600,
                                 letterSpacing: "-0.01em",

@@ -3,6 +3,8 @@
 // Pick the file in the right panel (Video). Plays muted + looped + inline, pauses when
 // scrolled out of view, and respects "reduce motion" (shows controls instead of autoplay).
 // Until a file is picked it renders a clearly visible 16:9 glass frame with the label.
+// Oct 4 (light-mode sweep): the media frame stays dark in both modes (videos letterbox on black),
+// so it is marked data-db-keep and its label stays light; the caption below follows the theme text.
 import * as React from "react"
 import { startTransition } from "react"
 import { addPropertyControls, ControlType, useIsStaticRenderer } from "framer"
@@ -65,7 +67,7 @@ export default function CaseStudyVideo(props: Props) {
 
     return (
         <figure style={{ ...style, position: "relative", width: "100%", margin: 0, zIndex: 1 }}>
-            <div style={frame}>
+            <div data-db-keep="" style={frame}>
                 {video ? (
                     <video
                         ref={ref}
@@ -132,7 +134,7 @@ export default function CaseStudyVideo(props: Props) {
                         fontFamily: "'Poppins', sans-serif",
                         fontSize: 15,
                         lineHeight: 1.5,
-                        color: "#D4D4D4",
+                        color: "color-mix(in srgb, var(--db-text, #FAFAFA) 84%, transparent)",
                     }}
                 >
                     {caption}

@@ -10,6 +10,58 @@ import { useState, useEffect, useRef, CSSProperties } from "react"
  * @framerSupportedLayoutWidth any
  * @framerSupportedLayoutHeight any
  */
+
+// Is this a yellow / maize / orange accent?
+function isWarm(c: string): boolean {
+    const s = String(c || "").trim().toLowerCase()
+    let r = 0
+    let g = 0
+    let b = 0
+    const m = s.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/)
+    if (m) {
+        r = +m[1]
+        g = +m[2]
+        b = +m[3]
+    } else {
+        const h = s.match(/^#([0-9a-f]{3}|[0-9a-f]{6})\b/)
+        if (!h) return false
+        const x = h[1].length === 3 ? h[1].split("").map((ch) => ch + ch).join("") : h[1]
+        const n = parseInt(x, 16)
+        r = (n >> 16) & 255
+        g = (n >> 8) & 255
+        b = n & 255
+    }
+    const max = Math.max(r, g, b)
+    const min = Math.min(r, g, b)
+    const d = max - min
+    if (max < 120 || d < 90) return false
+    let hue = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+    hue *= 60
+    if (hue < 0) hue += 360
+    return hue >= 8 && hue <= 62
+}
+
+function useDbLight(): boolean {
+    const [light, setLight] = useState(false)
+    useEffect(() => {
+        if (typeof document === "undefined") return
+        const html = document.documentElement
+        const read = () => setLight(html.getAttribute("data-db-theme") === "light")
+        read()
+        window.addEventListener("db-theme", read)
+        let mo: MutationObserver | null = null
+        if (typeof MutationObserver !== "undefined") {
+            mo = new MutationObserver(read)
+            mo.observe(html, { attributes: true, attributeFilter: ["data-db-theme"] })
+        }
+        return () => {
+            window.removeEventListener("db-theme", read)
+            if (mo) mo.disconnect()
+        }
+    }, [])
+    return light
+}
+
 export default function DecisionCard(props: any) {
     const { tension, decision, why, rejected, accent, style } = props
     const ref = useRef<HTMLDivElement | null>(null)
@@ -46,11 +98,16 @@ export default function DecisionCard(props: any) {
 
     const font = "'Poppins', sans-serif"
     const appear = reduced || shown
-    // Default orange (any notation) follows the vibe/theme accent; a custom colour is kept as-is
-    const norm = String(accent || "").replace(/\s+/g, "").toLowerCase()
-    const isDefaultOrange =
-        !norm || norm === "#f3500f" || norm === "rgb(243,80,15)" || norm === "rgba(243,80,15,1)"
-    const accentColor = isDefaultOrange ? "var(--db-accent, #F3500F)" : accent
+    // Oct 4 sweep: warm accents (default orange, maize/yellow like BRIEFS' rgb(255,203,5)) follow the
+    // vibe/theme accent, which is contrast-safe in light mode. Other custom hues keep their colour in
+    // dark mode and get a darkened ink in light mode so the tension line stays readable.
+    const light = useDbLight()
+    const accentColor =
+        !accent || isWarm(accent)
+            ? `var(--db-accent, ${accent || "#F3500F"})`
+            : light
+              ? `color-mix(in srgb, ${accent} 52%, #000)`
+              : accent
 
     const wrap: CSSProperties = {
         display: "flex",

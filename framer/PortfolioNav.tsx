@@ -19,6 +19,8 @@
 // Only the copy for the visible breakpoint draws (Framer mounts all breakpoints → was a double nav).
 // On the Framer canvas it draws inline. "work" stays highlighted on case pages (/work/*, /projects/*).
 // Sections are found by layer name OR heading text ("connect" finds "Send a signal.").
+// Oct 4: light mode also darkens very light, low-saturation logo images (layer or alt named
+// "logo", e.g. the white GM mark) so they don't vanish on the light background.
 import * as React from "react"
 import { startTransition, useEffect, useRef, useState, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
@@ -298,9 +300,135 @@ function watchFlip(on: boolean) {
         flipTimer = window.setTimeout(() => {
             flipTimer = 0
             domFlip()
+            logoFix()
         }, 400)
     })
     flipObs.observe(document.getElementById("main") || document.body, { childList: true, subtree: true })
+}
+
+// ---- Oct 4: light-mode logo fix ----
+// White logos (e.g. the GM mark on case-study heroes) vanish on the light background. In light
+// mode, <img>s (and background-image layers) whose nearest named Framer layer contains "logo", or
+// whose alt contains "logo", are sampled once via an offscreen canvas. Very light (mean luminance
+// > 0.82), low-saturation (< 0.18) marks with some transparency get darkened with a filter; dark
+// mode puts them back. Results are cached per src; tainted or failed samples are skipped. Never throws.
+const LOGO_ATTR = "data-db-logo"
+const logoCache: Record<string, boolean | "pending"> = {}
+function isLogoEl(el: HTMLElement): boolean {
+    if (/logo/i.test(el.getAttribute("alt") || "")) return true
+    const named = el.closest("[data-framer-name]")
+    return !!named && /logo/i.test(named.getAttribute("data-framer-name") || "")
+}
+function bgUrlOf(el: HTMLElement): string {
+    const v = getComputedStyle(el).backgroundImage || ""
+    const m = v.match(/url\(["']?([^"')]+)["']?\)/)
+    return m ? m[1] : ""
+}
+function sampleLogo(src: string, done: (light: boolean) => void) {
+    try {
+        const img = new Image()
+        img.crossOrigin = "anonymous"
+        img.decoding = "async"
+        img.onload = () => {
+            let light = false
+            try {
+                const w = Math.max(1, Math.min(64, img.naturalWidth || 64))
+                const h = Math.max(1, Math.min(64, img.naturalHeight || 64))
+                const c = document.createElement("canvas")
+                c.width = w
+                c.height = h
+                const ctx = c.getContext("2d")
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0, w, h)
+                    const d = ctx.getImageData(0, 0, w, h).data // throws if the canvas is tainted
+                    let n = 0
+                    let clear = 0
+                    let lum = 0
+                    let sat = 0
+                    for (let i = 0; i < d.length; i += 4) {
+                        if (d[i + 3] < 32) {
+                            clear++
+                            continue
+                        }
+                        const r = d[i] / 255
+                        const g = d[i + 1] / 255
+                        const b = d[i + 2] / 255
+                        const mx = Math.max(r, g, b)
+                        const mn = Math.min(r, g, b)
+                        lum += 0.2126 * r + 0.7152 * g + 0.0722 * b
+                        sat += mx === 0 ? 0 : (mx - mn) / mx
+                        n++
+                    }
+                    // needs some transparency, so an opaque white photo/box is never blacked out
+                    if (n > 0 && clear / (n + clear) > 0.03) light = lum / n > 0.82 && sat / n < 0.18
+                }
+            } catch {}
+            done(light)
+        }
+        img.onerror = () => done(false)
+        img.src = src
+    } catch {
+        done(false)
+    }
+}
+function logoOn(el: HTMLElement, src: string) {
+    if (el.getAttribute(LOGO_ATTR) === src) return
+    if (!el.hasAttribute(LOGO_ATTR)) {
+        el.setAttribute("data-db-logo-f", el.style.getPropertyValue("filter"))
+        el.setAttribute("data-db-logo-o", el.style.getPropertyValue("opacity"))
+    }
+    el.setAttribute(LOGO_ATTR, src)
+    el.style.setProperty("filter", "brightness(0) saturate(100%)", "important")
+    el.style.setProperty("opacity", "0.86", "important")
+}
+function logoOff(el: HTMLElement) {
+    const f = el.getAttribute("data-db-logo-f") || ""
+    const o = el.getAttribute("data-db-logo-o") || ""
+    if (f) el.style.setProperty("filter", f)
+    else el.style.removeProperty("filter")
+    if (o) el.style.setProperty("opacity", o)
+    else el.style.removeProperty("opacity")
+    el.removeAttribute(LOGO_ATTR)
+    el.removeAttribute("data-db-logo-f")
+    el.removeAttribute("data-db-logo-o")
+}
+function logoUnfix() {
+    if (typeof document === "undefined") return
+    try {
+        document.querySelectorAll<HTMLElement>(`[${LOGO_ATTR}]`).forEach(logoOff)
+    } catch {}
+}
+function logoFix() {
+    if (typeof document === "undefined") return
+    try {
+        if (document.documentElement.getAttribute("data-db-theme") !== "light") return
+        const root = document.getElementById("main") || document.body
+        const found: Array<[HTMLElement, string]> = []
+        root.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
+            if (img.closest("[data-dbnav]") || !isLogoEl(img)) return
+            const src = img.currentSrc || img.src
+            if (src) found.push([img, src])
+        })
+        root.querySelectorAll<HTMLElement>("[data-framer-name]").forEach((named) => {
+            if (!/logo/i.test(named.getAttribute("data-framer-name") || "")) return
+            const els = [named, ...Array.from(named.querySelectorAll<HTMLElement>("div, span, a, figure")).slice(0, 24)]
+            els.forEach((el) => {
+                const src = bgUrlOf(el)
+                if (src) found.push([el, src])
+            })
+        })
+        found.forEach(([el, src]) => {
+            const hit = logoCache[src]
+            if (hit === true) return logoOn(el, src)
+            if (el.hasAttribute(LOGO_ATTR) && el.getAttribute(LOGO_ATTR) !== src) logoOff(el)
+            if (hit === false || hit === "pending") return
+            logoCache[src] = "pending"
+            sampleLogo(src, (light) => {
+                logoCache[src] = light
+                if (light) logoFix()
+            })
+        })
+    } catch {}
 }
 
 function applyTheme(t: Theme | null) {
@@ -313,11 +441,15 @@ function applyTheme(t: Theme | null) {
     pinTokens(resolved)
     autoTheme()
     if (resolved === "light") {
-        window.requestAnimationFrame(() => domFlip())
+        window.requestAnimationFrame(() => {
+            domFlip()
+            logoFix()
+        })
         watchFlip(true)
     } else {
         watchFlip(false)
         unflip()
+        logoUnfix()
     }
     try {
         window.dispatchEvent(new CustomEvent("db-theme", { detail: { theme: resolved } }))

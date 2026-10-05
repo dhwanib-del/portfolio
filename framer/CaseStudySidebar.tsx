@@ -12,6 +12,8 @@ const defaultSections = [
     { label: "Outcomes", id: "outcomes" },
 ]
 
+// Oct 4 (light-mode sweep): colours follow the site theme (--db-text ink at the same strengths),
+// and the nav is marked data-db-keep so the light-mode DOM flip leaves its state colours alone.
 const css = `
     .cs-sidebar {
         position: sticky;
@@ -22,11 +24,11 @@ const css = `
         align-items: flex-start;
         gap: 4px;
         padding: 12px 8px;
-        background: rgba(255,255,255,0.08);
+        background: color-mix(in srgb, var(--db-text, #fff) 8%, transparent);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
         border-radius: 400px;
-        box-shadow: 0 2px 24px rgba(0,0,0,0.3);
+        box-shadow: var(--db-shadow, 0 2px 24px rgba(0,0,0,0.3));
         margin-left: 32px;
         width: fit-content;
     }
@@ -39,7 +41,7 @@ const css = `
         font-size: 12px;
         font-family: inherit;
         font-weight: 400;
-        color: rgba(255,255,255,0.38);
+        color: color-mix(in srgb, var(--db-text, #fff) 60%, transparent);
         text-decoration: none;
         transition: all 0.2s ease;
         white-space: nowrap;
@@ -49,25 +51,25 @@ const css = `
         background: transparent;
     }
     .cs-link:hover {
-        color: rgba(255,255,255,0.75);
-        background: rgba(255,255,255,0.06);
+        color: color-mix(in srgb, var(--db-text, #fff) 75%, transparent);
+        background: color-mix(in srgb, var(--db-text, #fff) 6%, transparent);
     }
     .cs-link.active {
-        color: #fff;
+        color: var(--db-text, #fff);
         font-weight: 500;
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.1);
+        background: color-mix(in srgb, var(--db-text, #fff) 15%, transparent);
+        border: 1px solid color-mix(in srgb, var(--db-text, #fff) 10%, transparent);
     }
     .cs-dot {
         width: 5px;
         height: 5px;
         border-radius: 50%;
-        background: rgba(255,255,255,0.2);
+        background: color-mix(in srgb, var(--db-text, #fff) 20%, transparent);
         flex-shrink: 0;
         transition: background 0.2s ease;
     }
     .cs-link.active .cs-dot {
-        background: #fff;
+        background: var(--db-text, #fff);
     }
 `
 
@@ -112,7 +114,7 @@ export default function CaseStudySidebar(props) {
     return (
         <>
             <style>{css}</style>
-            <nav className="cs-sidebar">
+            <nav className="cs-sidebar" data-db-keep="">
                 {sections.map((s, i) => (
                     <a
                         key={i}
