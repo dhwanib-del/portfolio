@@ -1,4 +1,11 @@
-// FridgeBoard v4 (Oct 4) — a scrapbook steel fridge door with a desi-maximalist layer, for one
+// FridgeBoard v5 (Oct 5) — the fridge door now BLENDS into the Home hero. `door` = "glass"
+// (default: a barely-there frosted panel whose edges dissolve via mask-image, slim translucent
+// handle, no hard shadow), "none" (items float straight on the page) or "steel" (the v4 look).
+// Calmer default collage: hello label, postcard quote, photo strip, receipt, place magnets,
+// letter magnets ("hi!"), chai + a small marigold accent; `extras` brings back the note, tile,
+// bangles, flower sprig and glitter star. Saturation down ~15%, soft contact shadows from
+// --db-shadow. Everything stays inside the frame with breathing room.
+// v4 brief, kept for reference — a scrapbook steel fridge door with a desi-maximalist layer, for one
 // corner of the home hero (~340x460, scales down to fit its frame).
 // Brief (adapted from the owner's references, nothing copied): brushed-steel door (dark = deep
 // graphite steel, light = soft silver) with a tall chrome bar handle, densely but tidily layered
@@ -20,6 +27,8 @@ import { addPropertyControls, ControlType, RenderTarget, useIsStaticRenderer } f
 type Img = any
 
 interface FridgeBoardProps {
+    door: "glass" | "steel" | "none"
+    extras: boolean
     hellos: string
     quote: string
     places: string
@@ -289,18 +298,18 @@ function BulldogClip() {
 
 function Garland({ compact }: { compact: boolean }) {
     const pts: { x: number; y: number; t: number }[] = []
-    const n = compact ? 9 : 11
+    const n = compact ? 6 : 7
     for (let i = 0; i <= n; i++) {
         const t = i / n
-        const x = (1 - t) * (1 - t) * 222 + 2 * (1 - t) * t * 300 + t * t * 344
-        const y = (1 - t) * (1 - t) * -4 + 2 * (1 - t) * t * 44 + t * t * 104
+        const x = (1 - t) * (1 - t) * 258 + 2 * (1 - t) * t * 310 + t * t * 330
+        const y = (1 - t) * (1 - t) * -4 + 2 * (1 - t) * t * 30 + t * t * 76
         pts.push({ x, y, t })
     }
     return (
-        <svg aria-hidden width={DESIGN_W} height="120" viewBox={`0 0 ${DESIGN_W} 120`} style={{ position: "absolute", left: 0, top: 0, pointerEvents: "none", zIndex: 60, overflow: "visible" }}>
-            <path d="M222 -4Q300 44 344 104" fill="none" stroke="#c9b48a" strokeWidth="1" />
+        <svg aria-hidden width={DESIGN_W} height="90" viewBox={`0 0 ${DESIGN_W} 90`} style={{ position: "absolute", left: 0, top: 0, pointerEvents: "none", zIndex: 60, overflow: "visible", filter: "var(--dbf-dim)" }}>
+            <path d="M258 -4Q310 30 330 76" fill="none" stroke="#c9b48a" strokeWidth="1" />
             {pts.map((p, i) => (
-                <g key={i} transform={`translate(${p.x} ${p.y})`} style={{ filter: "drop-shadow(0 2px 1.5px rgba(0,0,0,.35))" }}>
+                <g key={i} transform={`translate(${p.x} ${p.y}) scale(.78)`} style={{ filter: "drop-shadow(0 1.5px 1.5px var(--dbf-sh))" }}>
                     {i % 4 === 2 ? (
                         <path d="M0 0q5-6 10-2q-5 6-10 2Z" fill="#3f8a4a" transform="rotate(30)" />
                     ) : (
@@ -346,11 +355,13 @@ function Letter({ ch, i }: { ch: string; i: number }) {
  */
 export default function FridgeBoard(props: FridgeBoardProps) {
     const {
+        door = "glass",
+        extras = false,
         hellos = "hello, नमस्ते, ನಮಸ್ಕಾರ",
         quote = "the best work happens when people feel seen enough to speak up.",
         places = "Ann Arbor, East Lansing, Bangalore",
         receiptLines = "matcha ×2, research, one more prototype, dj set @ 1am",
-        magnetWord = "DHWANI",
+        magnetWord = "hi!",
         noteLine = "ask the 'dumb' question.",
         photo1, photo2, photo3,
         photo1Alt = "Photo-booth frame 1", photo2Alt = "Photo-booth frame 2", photo3Alt = "Photo-booth frame 3",
@@ -437,15 +448,15 @@ export default function FridgeBoard(props: FridgeBoardProps) {
 
     const placeAnchors = hasPins
         ? compact
-            ? [[206, 250, 4], [210, 288, -3], [200, 324, 3]]
-            : [[118, 358, -4], [194, 366, 3], [252, 344, -3], [38, 380, 4], [220, 388, -2]]
-        : [[128, 268, -4], [206, 256, 4], [150, 302, -2], [218, 298, 3], [126, 336, 2]]
+            ? [[214, 280, 3], [212, 316, -3], [140, 312, 2]]
+            : [[136, 306, -3], [130, 342, 3], [214, 372, -2], [60, 392, 2], [250, 404, -3]]
+        : [[148, 222, -4], [158, 260, 3], [146, 298, -2], [212, 330, 3], [150, 340, -3]]
 
     const items: Item[] = []
 
     // hello — mustard paper label, chunky display type
     items.push({
-        id: "hello", label: `Hello label: ${words.join(", ")}`, x: 34, y: 14, r: -3, kind: "box",
+        id: "hello", label: `Hello label: ${words.join(", ")}`, x: 36, y: 22, r: -3, kind: "box",
         node: (
             <div className="dbf-mustard dbf-grain">
                 <span aria-hidden className="dbf-goldmag" />
@@ -460,7 +471,7 @@ export default function FridgeBoard(props: FridgeBoardProps) {
 
     // postcard with the quote
     items.push({
-        id: "postcard", label: `Postcard: ${quote}`, x: 32, y: 60, r: -2, w: 184, kind: "box",
+        id: "postcard", label: `Postcard: ${quote}`, x: 34, y: 72, r: -2, w: 184, kind: "box",
         node: (
             <div className="dbf-airmail">
                 <div className="dbf-postcard dbf-grain">
@@ -492,7 +503,7 @@ export default function FridgeBoard(props: FridgeBoardProps) {
     // photo-booth strip on the right edge
     const PH = ["linear-gradient(150deg,#c9a27a,#7a5a3e)", "linear-gradient(150deg,#b38a8a,#6a4a5a)", "linear-gradient(150deg,#8aa3b3,#4a5a6a)"]
     items.push({
-        id: "strip", label: "Photo-booth strip", x: 280, y: 108, r: 3, w: 54, kind: "box",
+        id: "strip", label: "Photo-booth strip", x: 262, y: 94, r: 3, w: 54, kind: "box",
         node: (
             <div className="dbf-grain" style={{ position: "relative", background: "#fbfaf6", padding: "5px 5px 0", display: "grid", gap: 4 }}>
                 <Washi left={4} top={-7} w={44} r={-5} />
@@ -508,7 +519,7 @@ export default function FridgeBoard(props: FridgeBoardProps) {
 
     // receipt in a bulldog clip
     items.push({
-        id: "receipt", label: `Receipt, the set so far: ${lines.join(", ")}`, x: 30, y: 184, r: -3, w: 86, kind: "box",
+        id: "receipt", label: `Receipt, the set so far: ${lines.join(", ")}`, x: 40, y: 208, r: -3, w: 86, kind: "box",
         node: (
             <div className="dbf-receipt dbf-grain">
                 <span aria-hidden style={{ position: "absolute", left: "50%", top: -15, marginLeft: -17, zIndex: 3, filter: "drop-shadow(0 2px 1.5px rgba(0,0,0,.35))" }}><BulldogClip /></span>
@@ -529,9 +540,9 @@ export default function FridgeBoard(props: FridgeBoardProps) {
         ),
     })
 
-    // torn lined note
-    items.push({
-        id: "note", label: `Note to self: ${noteLine}`, x: 122, y: 182, r: 2, w: 90, kind: "box",
+    // torn lined note (extra)
+    if (extras) items.push({
+        id: "note", label: `Note to self: ${noteLine}`, x: 140, y: 186, r: 3, w: 90, kind: "box",
         node: (
             <div className="dbf-note dbf-grain">
                 <div style={{ fontFamily: HAND, fontWeight: 600, fontSize: 14, lineHeight: "15px", color: INK }}>note to self —</div>
@@ -542,7 +553,7 @@ export default function FridgeBoard(props: FridgeBoardProps) {
     })
 
     // block-print tile
-    items.push({ id: "tile", label: "Block-print tile", x: 216, y: 182, r: 5, w: 58, kind: "box", node: <div className="dbf-grain" style={{ position: "relative" }}><BlockTile /></div> })
+    if (extras && !compact) items.push({ id: "tile", label: "Block-print tile", x: 262, y: 292, r: 5, w: 58, kind: "box", node: <div className="dbf-grain" style={{ position: "relative" }}><BlockTile /></div> })
 
     // polaroids
     const polaroid = (img: Img, cap: string, alt: string, n: number, empty: boolean) => (
@@ -554,8 +565,8 @@ export default function FridgeBoard(props: FridgeBoardProps) {
             <span style={{ display: "block", fontFamily: HAND, fontWeight: 600, fontSize: 13, lineHeight: 1, color: INK, textAlign: "center", padding: "4px 2px 6px", minHeight: 19, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{cap}</span>
         </div>
     )
-    if (showPin1) items.push({ id: "pin1", label: pin1Alt || pin1Caption || "Pinned photo", x: 124, y: 264, r: -4, w: 70, kind: "box", node: polaroid(pin1, pin1Caption, pin1Alt, 1, !has1) })
-    if (showPin2) items.push({ id: "pin2", label: pin2Alt || pin2Caption || "Pinned photo", x: 202, y: 248, r: 5, w: 70, kind: "box", node: polaroid(pin2, pin2Caption, pin2Alt, 2, !has2) })
+    if (showPin1) items.push({ id: "pin1", label: pin1Alt || pin1Caption || "Pinned photo", x: 140, y: 208, r: -4, w: 70, kind: "box", node: polaroid(pin1, pin1Caption, pin1Alt, 1, !has1) })
+    if (showPin2) items.push({ id: "pin2", label: pin2Alt || pin2Caption || "Pinned photo", x: 212, y: 276, r: 5, w: 70, kind: "box", node: polaroid(pin2, pin2Caption, pin2Alt, 2, !has2) })
 
     // place magnets
     let extra = 0
@@ -566,18 +577,19 @@ export default function FridgeBoard(props: FridgeBoardProps) {
     })
 
     // little things
-    items.push({ id: "chai", label: "Cutting chai glass magnet", x: 34, y: 330, r: -5, w: 28, kind: "free", node: <ChaiGlass uid={uid} /> })
-    items.push({ id: "spark1", label: "Glitter star sticker", x: 204, y: 50, r: 12, w: 20, kind: "free", node: <GlitterStar uid={`${uid}a`} /> })
-    if (!compact) {
-        items.push({ id: "bangles", label: "Stack of bangles magnet", x: 68, y: 340, r: 6, w: 44, kind: "free", node: <Bangles /> })
-        items.push({ id: "sprig", label: "Pressed flower sprig, taped", x: 296, y: 290, r: 8, w: 28, kind: "free", node: <FlowerSprig /> })
-        items.push({ id: "spark2", label: "Glitter star sticker", x: 302, y: 372, r: -10, w: 16, kind: "free", node: <GlitterStar uid={`${uid}b`} s={16} /> })
+    items.push({ id: "chai", label: "Cutting chai glass magnet", x: 46, y: compact ? 346 : 356, r: -5, w: 28, kind: "free", node: <ChaiGlass uid={uid} /> })
+    if (extras) {
+        items.push({ id: "spark1", label: "Glitter star sticker", x: 210, y: 62, r: 12, w: 20, kind: "free", node: <GlitterStar uid={`${uid}a`} /> })
+        if (!compact) {
+            items.push({ id: "bangles", label: "Stack of bangles magnet", x: 84, y: 364, r: 6, w: 44, kind: "free", node: <Bangles /> })
+            items.push({ id: "sprig", label: "Pressed flower sprig, taped", x: 288, y: 370, r: 8, w: 28, kind: "free", node: <FlowerSprig /> })
+        }
     }
 
     // alphabet magnets
-    const LW = 27
+    const LW = 28
     const lx = Math.round((DESIGN_W - letters.length * LW) / 2)
-    const ly = compact ? 366 : 398
+    const ly = compact ? 362 : 394
     const jy = [0, 4, -2, 3, -1, 2, -3, 1, 4, -2]
     const jr = [-8, 6, -4, 9, -6, 5, -3, 7, -7, 4]
     letters.forEach((ch, i) => {
@@ -657,29 +669,39 @@ export default function FridgeBoard(props: FridgeBoardProps) {
 
     const LIGHT = `
         --st-base: #d3d7db; --st-sheen: .6; --st-line: .35; --st-line2: .04;
-        --dbf-sh: rgba(35,45,55,.32); --dbf-sh2: rgba(35,45,55,.14);
+        --dbf-sh: var(--db-shadow, rgba(0,0,0,.12)); --dbf-sh2: rgba(0,0,0,.06);
         --dbf-handle: linear-gradient(90deg, #8f969d, #ffffff 42%, #c3c8cd 62%, #858c93);
-        --dbf-hint: rgba(35,40,48,.6); --dbf-steam: rgba(90,90,100,.45); --dbf-dim: brightness(1);
+        --dbf-hint: rgba(35,40,48,.6); --dbf-steam: rgba(90,90,100,.45); --dbf-dim: saturate(.85);
         --dbf-edge: rgba(255,255,255,.8);
     `
     const css = `
         .dbf-root {
             --st-base: #2b2f34; --st-sheen: .07; --st-line: .03; --st-line2: .12;
-            --dbf-sh: rgba(0,0,0,.55); --dbf-sh2: rgba(0,0,0,.3);
+            --dbf-sh: var(--db-shadow, rgba(0,0,0,.25)); --dbf-sh2: rgba(0,0,0,.14);
             --dbf-handle: linear-gradient(90deg, #4f555b, #d9dee2 42%, #868d94 62%, #43484d);
-            --dbf-hint: rgba(232,236,240,.6); --dbf-steam: rgba(255,255,255,.55); --dbf-dim: brightness(.92) saturate(.95);
+            --dbf-hint: rgba(232,236,240,.6); --dbf-steam: rgba(255,255,255,.55); --dbf-dim: brightness(.95) saturate(.85);
             --dbf-edge: rgba(255,255,255,.12);
         }
         :root[data-db-theme="light"] .dbf-root, [data-db-theme="light"] .dbf-root { ${LIGHT} }
         @media (prefers-color-scheme: light) { :root:not([data-db-theme]) .dbf-root { ${LIGHT} } }
-        .dbf-door {
+        .door-steel {
             background-color: var(--st-base);
             background-image:
                 linear-gradient(100deg, rgba(255,255,255,0) 8%, rgba(255,255,255,var(--st-sheen)) 46%, rgba(255,255,255,0) 72%),
                 ${BRUSH},
                 repeating-linear-gradient(0deg, rgba(255,255,255,var(--st-line)) 0 1px, rgba(0,0,0,var(--st-line2)) 1px 2px, rgba(0,0,0,0) 2px 3px);
-            box-shadow: inset 0 1px 0 var(--dbf-edge), inset 0 0 0 1px rgba(0,0,0,.18), inset 0 -16px 28px -18px rgba(0,0,0,.35), 0 26px 46px -26px var(--dbf-sh), 0 2px 6px var(--dbf-sh2);
+            box-shadow: inset 0 1px 0 var(--dbf-edge), inset 0 0 0 1px rgba(0,0,0,.18), inset 0 -16px 28px -18px rgba(0,0,0,.35), 0 26px 46px -26px rgba(0,0,0,.45), 0 2px 6px var(--dbf-sh2);
         }
+        .dbf-panel { position:absolute; inset:0; border-radius: inherit; pointer-events:none; z-index:0;
+            background: rgba(255,255,255,.04);
+            background: color-mix(in srgb, var(--db-text, #ffffff) 4%, transparent);
+            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+            border: 1px solid var(--db-line, rgba(255,255,255,.1));
+            -webkit-mask-image: radial-gradient(ellipse closest-side at 50% 50%, #000 60%, rgba(0,0,0,0) 100%);
+            mask-image: radial-gradient(ellipse closest-side at 50% 50%, #000 60%, rgba(0,0,0,0) 100%); }
+        .door-glass .dbf-handle { left:12px; top:130px; width:4px; height:150px; border-radius:2px; box-shadow:none;
+            background: rgba(255,255,255,.2); background: color-mix(in srgb, var(--db-text, #ffffff) 22%, transparent); }
+        .door-glass .dbf-handle::before, .door-glass .dbf-handle::after { display:none; }
         .dbf-handle { position:absolute; left:10px; top:28px; width:9px; height:300px; border-radius:5px; background: var(--dbf-handle);
             box-shadow: 4px 6px 9px var(--dbf-sh), inset 0 0 0 .5px rgba(0,0,0,.25); z-index: 1; }
         .dbf-handle::before, .dbf-handle::after { content:""; position:absolute; left:-2px; width:13px; height:10px; border-radius:3px; background: var(--dbf-handle); box-shadow: 0 2px 3px var(--dbf-sh2); }
@@ -755,15 +777,16 @@ export default function FridgeBoard(props: FridgeBoardProps) {
                 role="region"
                 aria-label="fridge door"
                 aria-describedby={descId}
-                className={`dbf-door ${interactive ? "dbf-live" : "dbf-static"}`}
+                className={`dbf-door door-${door} ${interactive ? "dbf-live" : "dbf-static"}`}
                 onDoubleClick={interactive ? reset : undefined}
                 onPointerUp={onDoorPointerUp}
                 style={{ position: "absolute", left: "50%", top: "50%", width: DESIGN_W, height: H, marginLeft: -DESIGN_W / 2, marginTop: -H / 2, transform: `scale(${scale})`, transformOrigin: "50% 50%", borderRadius: 18, overflow: "hidden", userSelect: "none", WebkitUserSelect: "none", fontFamily: SANS, boxSizing: "border-box", isolation: "isolate" }}
             >
                 <span id={descId} style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}>
-                    A steel fridge door covered in a scrapbook collage: a postcard, a receipt, a note, a photo strip, place magnets, a block-print tile, a marigold garland and alphabet magnets spelling {letters.join("")}. Items can be moved with a mouse, touch, or the arrow keys. Double-click the door to put everything back.
+                    A fridge door scrapbook: a postcard, a receipt, a photo strip, a hello label, place magnets, a chai glass, a marigold garland and alphabet magnets spelling {letters.join("")}. Items can be moved with a mouse, touch, or the arrow keys. Double-click the door to put everything back.
                 </span>
-                <span aria-hidden className="dbf-handle" />
+                {door === "glass" && <span aria-hidden className="dbf-panel" />}
+                {door !== "none" && <span aria-hidden className="dbf-handle" />}
                 {items.map((it, i) => {
                     const p = pos[it.id]
                     return (
@@ -790,7 +813,7 @@ export default function FridgeBoard(props: FridgeBoardProps) {
                 })}
                 <Garland compact={compact} />
                 {showHint && !compact && (
-                    <span aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: 4, textAlign: "center", fontFamily: HAND, fontWeight: 600, fontSize: 12.5, color: "var(--dbf-hint)", pointerEvents: "none" }}>
+                    <span aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: 10, textAlign: "center", fontFamily: HAND, fontWeight: 600, fontSize: 12.5, color: "var(--dbf-hint)", pointerEvents: "none" }}>
                         {hintText}
                     </span>
                 )}
@@ -805,11 +828,13 @@ export default function FridgeBoard(props: FridgeBoardProps) {
 FridgeBoard.displayName = "Fridge Door"
 
 addPropertyControls(FridgeBoard, {
+    door: { type: ControlType.Enum, title: "Door", options: ["glass", "steel", "none"], optionTitles: ["Glass", "Steel", "None"], defaultValue: "glass", displaySegmentedControl: true },
+    extras: { type: ControlType.Boolean, title: "Extra trinkets", defaultValue: false },
     hellos: { type: ControlType.String, title: "Hellos (comma list)", defaultValue: "hello, नमस्ते, ನಮಸ್ಕಾರ" },
     quote: { type: ControlType.String, title: "Postcard quote", displayTextArea: true, defaultValue: "the best work happens when people feel seen enough to speak up." },
     places: { type: ControlType.String, title: "Places (comma list)", defaultValue: "Ann Arbor, East Lansing, Bangalore" },
     receiptLines: { type: ControlType.String, title: "Receipt lines (comma list)", defaultValue: "matcha ×2, research, one more prototype, dj set @ 1am" },
-    magnetWord: { type: ControlType.String, title: "Letter magnets", defaultValue: "DHWANI" },
+    magnetWord: { type: ControlType.String, title: "Letter magnets", defaultValue: "hi!" },
     noteLine: { type: ControlType.String, title: "Note (red line)", defaultValue: "ask the 'dumb' question." },
     photo1: { type: ControlType.ResponsiveImage, title: "Strip photo 1" },
     photo1Alt: { type: ControlType.String, title: "Strip 1 alt", defaultValue: "Photo-booth frame 1" },
