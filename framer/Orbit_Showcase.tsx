@@ -1,6 +1,9 @@
 // Responsive elliptical orbit component with project images around centered text
 // Images arranged in orbit, clickable to switch projects, scroll rotates orbit
 // Oct 2: colors follow the site theme tokens (--db-*) for light/dark.
+// Oct 4 ("make it blend"): transparent background by default so the page aurora shows through;
+// circles get a hairline ring + soft shadow and a gentle 1.06 hover (no motion under reduced-motion);
+// *word* in the center text is set in Pinyon Script.
 import {
     useEffect,
     useRef,
@@ -9,6 +12,39 @@ import {
     type CSSProperties,
 } from "react"
 import { addPropertyControls, ControlType } from "framer"
+
+const SCRIPT = "'Pinyon Script', 'Snell Roundhand', cursive"
+
+// The old defaults (white/black) painted a solid box; treat them as "no background".
+function isDefaultBg(c?: string) {
+    const v = String(c || "").replace(/\s+/g, "").toLowerCase()
+    return (
+        !v ||
+        v === "transparent" ||
+        v === "white" ||
+        v === "black" ||
+        v === "#fff" ||
+        v === "#ffffff" ||
+        v === "#000" ||
+        v === "#000000" ||
+        v === "rgb(255,255,255)" ||
+        v === "rgba(255,255,255,1)" ||
+        v === "rgb(0,0,0)" ||
+        v === "rgba(0,0,0,1)"
+    )
+}
+
+// Font pairing: wrap a word in *stars* to set it in the script face
+function renderScript(t: string) {
+    const parts = String(t || "").split(/(\*[^*]+\*)/g)
+    return parts.map((p, i) =>
+        p.startsWith("*") && p.endsWith("*") && p.length > 2 ? (
+            <span key={i} style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: "1.3em", lineHeight: 0.8, letterSpacing: 0, color: "inherit" }}>{p.slice(1, -1)}</span>
+        ) : (
+            <span key={i}>{p}</span>
+        )
+    )
+}
 
 interface ProjectImage {
     image: {
@@ -210,7 +246,7 @@ function EllipticalOrbit(props: EllipticalOrbitProps) {
             style={{
                 width: "100%",
                 height: "100%",
-                backgroundColor: `var(--db-bg, ${backgroundColor})`,
+                backgroundColor: isDefaultBg(backgroundColor) ? "transparent" : backgroundColor,
                 position: "relative",
                 overflow: "hidden",
                 display: "flex",
@@ -219,6 +255,12 @@ function EllipticalOrbit(props: EllipticalOrbitProps) {
                 cursor: "grab",
             }}
         >
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap');
+                @media (prefers-reduced-motion: reduce) {
+                    .orbit-circle { transition: none !important; }
+                }
+            `}</style>
             {/* Center content */}
             <div
                 style={{
@@ -250,7 +292,7 @@ function EllipticalOrbit(props: EllipticalOrbitProps) {
                             color: `var(--db-text, ${textColor})`,
                         }}
                     >
-                        {centerText}
+                        {renderScript(centerText)}
                     </p>
                 )}
             </div>
@@ -281,21 +323,23 @@ function EllipticalOrbit(props: EllipticalOrbitProps) {
 
                     const imageContent = (
                         <div
+                            className="orbit-circle"
                             style={{
                                 width: "100%",
                                 height: "100%",
                                 borderRadius: "50%",
                                 overflow: "hidden",
-                                backgroundColor: imageBackgroundColor,
+                                backgroundColor: `var(--db-surface, ${imageBackgroundColor})`,
                                 boxShadow: showShadow
-                                    ? `${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px ${shadowColor}`
-                                    : "none",
+                                    ? `0 0 0 1px var(--db-line, rgba(255,255,255,0.1)), ${shadowOffsetX}px ${shadowOffsetY}px ${shadowBlur}px ${shadowColor}, 0 14px 30px -14px rgba(0,0,0,0.35)`
+                                    : "0 0 0 1px var(--db-line, rgba(255,255,255,0.1))",
                                 transform: isSnapped
                                     ? "scale(1.25)"
                                     : isHovered
-                                      ? "scale(1.1)"
+                                      ? "scale(1.06)"
                                       : "scale(1)",
-                                transition: "transform 0.3s ease",
+                                transition:
+                                    "transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.3s ease",
                             }}
                         >
                             <img
@@ -675,6 +719,7 @@ addPropertyControls(EllipticalOrbit, {
         type: ControlType.String,
         title: "Center Text",
         defaultValue: "Objects for everyday rituals",
+        description: "Wrap a word in *stars* to set it in script.",
         displayTextArea: true,
         hidden: ({ useLogo }) => useLogo,
     },

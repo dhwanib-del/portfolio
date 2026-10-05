@@ -16,6 +16,7 @@
 // "Case pages live at": links written as /work/<slug> are sent there (the new CaseStudy pages
 // are at /projects/<slug>); set it back to /work/ if the pages move.
 // Oct 3: restored after the 2-up card grid from the Next.js site was rejected.
+// Oct 4: font pairing — wrap a word in *stars* in the heading to set it in Pinyon Script.
 import * as React from "react"
 import { addPropertyControls, ControlType } from "framer"
 import { startTransition, useCallback, useEffect, useRef, useState } from "react"
@@ -42,6 +43,19 @@ interface Props {
 }
 
 const FONT = "'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
+const SCRIPT = "'Pinyon Script', 'Snell Roundhand', cursive"
+
+// Font pairing: "Six *projects*." → "projects" in the script face. No stars → plain text.
+function renderHeading(t: string) {
+    const parts = String(t || "").split(/(\*[^*]+\*)/g)
+    return parts.map((p, i) =>
+        p.startsWith("*") && p.endsWith("*") && p.length > 2 ? (
+            <span key={i} className="sw-script">{p.slice(1, -1)}</span>
+        ) : (
+            <React.Fragment key={i}>{p}</React.Fragment>
+        )
+    )
+}
 
 const DEFAULT_CARDS: Card[] = [
     { title: "BRIEFS · UM DPSS", result: "Prototype + PRD, not shipped", tags: "Public safety, Research, AI", body: "The information was there. The hard part was finding it during a call. I gave every building profile the same sections, and an assistant that cites its source.", link: "/work/briefs", cta: "Read the study" },
@@ -167,10 +181,12 @@ export default function SelectedWork(props: Props) {
     }
 
     const css = `
+        @import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap');
         .sw { font-family: ${FONT}; color: var(--db-text, #fff); width: 100%; }
         .sw-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; max-width: 1104px; margin: 0 auto 32px; padding: 0 20px; }
         .sw-eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--db-text-2, rgba(255,255,255,.6)); margin: 0 0 12px; }
         .sw-h { font-size: clamp(28px, 3.6vw, 40px); line-height: 1.1; letter-spacing: -.02em; font-weight: 700; margin: 0; max-width: 20ch; }
+        .sw-script { font-family: ${SCRIPT}; font-weight: 400; font-size: 1.3em; line-height: .8; letter-spacing: 0; color: inherit; }
         .sw-ctrl { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .sw-count { font-size: 14px; font-variant-numeric: tabular-nums; color: var(--db-text-2, rgba(255,255,255,.6)); margin-right: 8px; }
         .sw-arrow { width: 44px; height: 44px; border-radius: 999px; border: 1px solid var(--db-line, rgba(255,255,255,.15)); background: transparent; color: var(--db-text, #fff); font-size: 18px; cursor: pointer; }
@@ -264,7 +280,7 @@ export default function SelectedWork(props: Props) {
         <div className="sw-head">
             <div>
                 <p className="sw-eyebrow">{eyebrow}</p>
-                <h2 className="sw-h">{heading}</h2>
+                <h2 className="sw-h">{renderHeading(heading)}</h2>
             </div>
             {mode !== "stack" && (
                 <div className="sw-ctrl">
@@ -311,7 +327,7 @@ export default function SelectedWork(props: Props) {
 
 addPropertyControls(SelectedWork, {
     eyebrow: { type: ControlType.String, title: "Eyebrow", defaultValue: "selected work" },
-    heading: { type: ControlType.String, title: "Heading", defaultValue: "Six projects. Real outcomes, or an honest status." },
+    heading: { type: ControlType.String, title: "Heading", defaultValue: "Six projects. Real outcomes, or an honest status.", description: "Wrap a word in *stars* to set it in script." },
     ndaLink: { type: ControlType.String, title: "NDA card link", defaultValue: "/#contact" },
     casePath: { type: ControlType.String, title: "Case pages live at", defaultValue: "/projects/" },
     cards: {

@@ -1,5 +1,7 @@
 // GalleryWall.tsx — Dhwani Bagrecha portfolio
 // About-me: draggable gallery wall with illustrated polaroids, pinned stickies, stamps, vinyl, playlist, field note, matcha doodle
+// Oct 4: blends with the page in light + dark (transparent board, --db-* tokens for the grid and page text;
+// the physical objects keep their own paper colours). *word* in the header is set in Pinyon Script.
 
 import { addPropertyControls, ControlType } from "framer"
 import { motion } from "framer-motion"
@@ -438,7 +440,7 @@ function MatchaDoodle() {
                 <rect x="22" y="72" width="44" height="3" rx="1" fill="#3d2200" />
                 {/* Shadow */}
                 <ellipse cx="44" cy="97" rx="23" ry="5" fill="rgba(0,0,0,0.18)" />
-                <text x="44" y="106" textAnchor="middle" fontFamily="'Patrick Hand', cursive" fontSize="8.5" fill="rgba(255,255,255,0.28)">matcha szn ☁️</text>
+                <text x="44" y="106" textAnchor="middle" fontFamily="'Patrick Hand', cursive" fontSize="8.5" style={{ fill: "var(--db-text-2, rgba(255,255,255,0.28))" }}>matcha szn ☁️</text>
             </svg>
         </div>
     )
@@ -485,6 +487,20 @@ function DraggableItem({ item, isOnTop, onDragStart }: {
 }
 
 // ── Header ─────────────────────────────────────────────────────────────────────
+const SCRIPT = "'Pinyon Script', 'Snell Roundhand', cursive"
+
+// Font pairing: wrap a word in *stars* to set it in the script face, e.g. "where i've touched *grass*"
+function renderTitle(t: string) {
+    const parts = String(t || "").split(/(\*[^*]+\*)/g)
+    return parts.map((p, i) =>
+        p.startsWith("*") && p.endsWith("*") && p.length > 2 ? (
+            <span key={i} style={{ fontFamily: SCRIPT, fontWeight: 400, fontSize: "1.3em", lineHeight: 0.8, letterSpacing: 0, color: "inherit" }}>{p.slice(1, -1)}</span>
+        ) : (
+            <span key={i}>{p}</span>
+        )
+    )
+}
+
 function GalleryHeader({ title }: { title: string }) {
     return (
         <div style={{
@@ -497,13 +513,13 @@ function GalleryHeader({ title }: { title: string }) {
                 <h2 style={{
                     fontFamily: "'Poppins', Inter, sans-serif",
                     fontSize: "clamp(22px, 4vw, 32px)",
-                    fontWeight: 600, color: "#FAFAFA",
+                    fontWeight: 600, color: "var(--db-text, #FAFAFA)",
                     margin: 0, letterSpacing: "-0.01em",
-                }}>{title}</h2>
+                }}>{renderTitle(title)}</h2>
             </div>
             <p style={{
                 fontFamily: "Inter, sans-serif",
-                fontSize: 12, color: "rgba(255,255,255,0.28)",
+                fontSize: 12, color: "var(--db-text-2, rgba(255,255,255,0.28))", opacity: 0.75,
                 margin: "6px 0 0 30px", letterSpacing: "0.02em",
             }}>drag to rearrange ✦ it's giving mood board</p>
         </div>
@@ -521,9 +537,9 @@ export default function GalleryWall({
     const [activeId, setActiveId] = useState<string | null>(null)
 
     return (
-        <div style={{ background: "#0A0A0A", minHeight: "100%", display: "flex", flexDirection: "column" }}>
+        <div style={{ background: "transparent", minHeight: "100%", display: "flex", flexDirection: "column" }}>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Patrick+Hand&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Patrick+Hand&family=Pinyon+Script&display=swap');
             `}</style>
 
             <GalleryHeader title={header} />
@@ -533,7 +549,7 @@ export default function GalleryWall({
                 width: "100%",
                 height: boardHeight,
                 overflow: "hidden",
-                background: "repeating-linear-gradient(0deg, transparent, transparent 23px, rgba(255,255,255,0.016) 24px), repeating-linear-gradient(90deg, transparent, transparent 23px, rgba(255,255,255,0.016) 24px)",
+                background: "repeating-linear-gradient(0deg, transparent, transparent 23px, color-mix(in srgb, var(--db-line, rgba(255,255,255,0.1)) 30%, transparent) 24px), repeating-linear-gradient(90deg, transparent, transparent 23px, color-mix(in srgb, var(--db-line, rgba(255,255,255,0.1)) 30%, transparent) 24px)",
                 backgroundSize: "24px 24px",
             }}>
                 <div style={{
@@ -562,7 +578,7 @@ export default function GalleryWall({
             <div style={{
                 padding: "10px 32px 32px",
                 fontFamily: "Inter, sans-serif",
-                fontSize: 10, color: "rgba(255,255,255,0.15)",
+                fontSize: 10, color: "var(--db-text-2, rgba(255,255,255,0.15))", opacity: 0.5,
                 letterSpacing: "0.06em",
                 pointerEvents: "none",
             }}>
@@ -577,6 +593,7 @@ addPropertyControls(GalleryWall, {
         type: ControlType.String,
         title: "Header",
         defaultValue: "where i've touched grass",
+        description: "Wrap a word in *stars* to set it in script.",
     },
     boardHeight: {
         type: ControlType.Number,
