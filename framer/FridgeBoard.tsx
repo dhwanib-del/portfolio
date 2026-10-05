@@ -1,16 +1,18 @@
-// FridgeBoard v2 (Oct 4) — a small, refined "fridge door" for one corner of the home hero.
-// Brief: smaller + responsive (designed ~340x460, scales to fit its frame), a tasteful enamel /
-// brushed-metal door with a subtle handle, and a cute pin-up feel: a taped photo-booth strip
-// (3 uploadable photos), a quote card on a pushpin, souvenir place magnets (Ann Arbor maize+blue,
-// East Lansing green+white, Bangalore marigold), up to 2 uploadable polaroids on magnets, crafted
-// SVG trinkets (matcha, star, Loop-style earplug, Tic Tac) and a label-maker magnet that cycles
-// "hello · नमस्ते · ನಮಸ್ಕಾರ" every ~2.2s with a soft crossfade.
-// Everything is draggable (pointer events, lift + shadow, rotation settles on drop), arrow keys
-// nudge 8px, double-click / double-tap the door resets. Theme-aware via --db-* CSS vars; the
-// vibe accent (--db-accent) drives pins and magnets. Respects prefers-reduced-motion.
+// FridgeBoard v3 (Oct 4) — a small, very cute "fridge door" for one corner of the home hero.
+// Brief: "make it a lot cuter" but crafted, never gaudy or clip-art. A soft retro pastel fridge
+// door (rounded Smeg-like enamel; colour = vibe accent mixed with lots of cream in light mode, a
+// cozy deeper tone in dark mode), chunky rounded handle, tiny shine, rubber-seal edge.
+// Items, all inline SVG/CSS: puffy magnets with dot eyes + blush (smiling matcha with steam, star
+// with a face, sleepy cloud, heart), souvenir place badges (Ann Arbor pennant, East Lansing leaf,
+// Bangalore marigold), a photo-booth strip under washi tape with a heart pin, a lined index card
+// quote with a heart pin (Caveat), up to 2 uploadable polaroids, a Loop-style earplug, a Tic Tac,
+// a speech-bubble magnet that cycles "hello · नमस्ते · ನಮಸ್ಕಾರ" every ~2.2s, and soft twinkles.
+// Micro-interactions: hover wiggle (±3deg) + lift, squash-and-bounce on drop, magnets snap-pop,
+// double-click / double-tap reset hops everything home with a stagger. Arrow keys nudge 8px.
+// prefers-reduced-motion = no motion. Designed ~340x460, scales to fit its frame.
 import * as React from "react"
 import { useCallback, useEffect, useId, useMemo, useRef, useState, startTransition } from "react"
-import { useInView } from "framer-motion"
+import { useInView, useReducedMotion } from "framer-motion"
 import { addPropertyControls, ControlType, RenderTarget, useIsStaticRenderer } from "framer"
 
 type Img = any
@@ -38,10 +40,10 @@ interface FridgeBoardProps {
     style?: React.CSSProperties
 }
 
-const SERIF = "'Instrument Serif', Georgia, serif"
-const HAND = "'Caveat', 'Segoe Print', cursive"
+const HAND = "'Caveat', 'Noto Sans Devanagari', 'Noto Sans Kannada', 'Segoe Print', cursive"
 const SANS = "'Poppins', 'Inter', system-ui, sans-serif"
-const MONO = "'IBM Plex Mono', 'Noto Sans Devanagari', 'Noto Sans Kannada', ui-monospace, monospace"
+const INK = "#3d2c2e"
+const HEART = "M14 24C6 18.5 2 14.3 2 9.2 2 5.3 5 2.5 8.6 2.5c2.3 0 4.2 1.2 5.4 3 1.2-1.8 3.1-3 5.4-3C23 2.5 26 5.3 26 9.2c0 5.1-4 9.3-12 14.8Z"
 
 const DESIGN_W = 340
 const PAD = 6
@@ -54,141 +56,233 @@ type Pos = { x: number; y: number; r?: number; z?: number }
 const tf = (x: number, y: number, r: number, s: number) => `translate(${x}px, ${y}px) rotate(${r}deg) scale(${s})`
 const clamp = (v: number, a: number, b: number) => Math.min(Math.max(v, a), Math.max(a, b))
 
-/* ---------- small pieces ---------- */
+function play(el: Element | null, cls: string) {
+    if (!el) return
+    const n = el as HTMLElement
+    n.classList.remove("dbf-drop", "dbf-snap", "dbf-hop")
+    void n.offsetWidth
+    n.classList.add(cls)
+    const done = (e: AnimationEvent) => {
+        if (e.target !== n) return
+        n.classList.remove(cls)
+        n.removeEventListener("animationend", done)
+    }
+    n.addEventListener("animationend", done)
+}
 
-function Tape({ r = -3, left = "50%", w = 40 }: { r?: number; left?: string; w?: number }) {
-    return <span aria-hidden className="dbf-tape" style={{ left, width: w, marginLeft: -w / 2, transform: `rotate(${r}deg)` }} />
+/* ---------- little crafted bits ---------- */
+
+function Face({ cx, cy, gap = 8, sleepy = false }: { cx: number; cy: number; gap?: number; sleepy?: boolean }) {
+    const l = cx - gap / 2
+    const r = cx + gap / 2
+    return (
+        <g>
+            {sleepy ? (
+                <>
+                    <path d={`M${l - 1.5} ${cy}q1.5 1.3 3 0`} stroke={INK} strokeWidth="1" fill="none" strokeLinecap="round" />
+                    <path d={`M${r - 1.5} ${cy}q1.5 1.3 3 0`} stroke={INK} strokeWidth="1" fill="none" strokeLinecap="round" />
+                </>
+            ) : (
+                <>
+                    <circle cx={l} cy={cy} r="1.3" fill={INK} />
+                    <circle cx={r} cy={cy} r="1.3" fill={INK} />
+                    <circle cx={l + 0.45} cy={cy - 0.45} r=".42" fill="#fff" />
+                    <circle cx={r + 0.45} cy={cy - 0.45} r=".42" fill="#fff" />
+                </>
+            )}
+            <path d={`M${cx - 1.6} ${cy + 2.3}q1.6 1.5 3.2 0`} stroke={INK} strokeWidth="1" fill="none" strokeLinecap="round" />
+            <ellipse cx={l - 2.4} cy={cy + 2.6} rx="2.1" ry="1.2" fill="#ff8fa6" opacity=".55" />
+            <ellipse cx={r + 2.4} cy={cy + 2.6} rx="2.1" ry="1.2" fill="#ff8fa6" opacity=".55" />
+        </g>
+    )
 }
-function Pushpin() {
-    return <span aria-hidden className="dbf-pushpin" />
+
+function HeartPin({ left = "50%", top = -7 }: { left?: string; top?: number }) {
+    return (
+        <span aria-hidden className="dbf-heartpin" style={{ left, top }}>
+            <svg width="15" height="14" viewBox="0 0 28 26" style={{ display: "block", overflow: "visible" }}>
+                <path d={HEART} style={{ fill: "color-mix(in srgb, var(--db-accent, #F3500F) 72%, #ffffff)" }} />
+                <path d={HEART} fill="none" stroke="rgba(0,0,0,.08)" strokeWidth="1.2" />
+                <ellipse cx="8.8" cy="8.4" rx="3.2" ry="2" fill="#fff" opacity=".75" transform="rotate(-32 8.8 8.4)" />
+            </svg>
+        </span>
+    )
 }
-function RoundMagnet() {
-    return <span aria-hidden className="dbf-magnet" />
+
+function Washi({ left, top = -7, w = 44, r = -4, dots = false }: { left: string | number; top?: number; w?: number; r?: number; dots?: boolean }) {
+    return <span aria-hidden className={dots ? "dbf-washi dots" : "dbf-washi"} style={{ left, top, width: w, transform: `rotate(${r}deg)` }} />
+}
+
+function PuffMagnet({ color }: { color: string }) {
+    return <span aria-hidden className="dbf-puff" style={{ background: `radial-gradient(circle at 34% 30%, #fff 0 12%, rgba(255,255,255,0) 46%), ${color}` }} />
 }
 
 function Photo({ img, alt, placeholder }: { img: Img; alt: string; placeholder: string }) {
     if (img && img.src) {
         return <img src={img.src} srcSet={img.srcSet} sizes="90px" alt={alt || img.alt || ""} draggable={false} style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
     }
-    return <span aria-hidden style={{ display: "block", width: "100%", height: "100%", background: `radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), rgba(255,255,255,0) 45%), ${placeholder}` }} />
+    return <span aria-hidden style={{ display: "block", width: "100%", height: "100%", background: `radial-gradient(circle at 30% 25%, rgba(255,255,255,.45), rgba(255,255,255,0) 50%), ${placeholder}` }} />
 }
 
-/* ---------- place magnets ---------- */
+/* ---------- souvenir place badges ---------- */
 
-type Palette = { bg: string; fg: string; ring: string; radius: number; icon: "tree" | "leaf" | "flower" | "dot" }
+type Palette = { bg: string; fg: string; stitch: string; icon: "pennant" | "leaf" | "flower" | "heart" }
 const PLACE_PALETTES: Record<string, Palette> = {
-    "ann arbor": { bg: "linear-gradient(180deg,#FFD43B,#F2BE00)", fg: "#00274C", ring: "rgba(0,39,76,.85)", radius: 5, icon: "tree" },
-    "east lansing": { bg: "linear-gradient(180deg,#22594a,#173f35)", fg: "#ffffff", ring: "rgba(255,255,255,.8)", radius: 999, icon: "leaf" },
-    bangalore: { bg: "linear-gradient(180deg,#F8B347,#EC8A22)", fg: "#5A1B0E", ring: "rgba(255,246,222,.9)", radius: 9, icon: "flower" },
+    "ann arbor": { bg: "#FFE27D", fg: "#1F3A66", stitch: "rgba(31,58,102,.4)", icon: "pennant" },
+    "east lansing": { bg: "#5E9A80", fg: "#FFFBF2", stitch: "rgba(255,251,242,.6)", icon: "leaf" },
+    bangalore: { bg: "#FFBE6A", fg: "#6A2B12", stitch: "rgba(106,43,18,.32)", icon: "flower" },
 }
 PLACE_PALETTES["bengaluru"] = PLACE_PALETTES.bangalore
 const EXTRA_PALETTES: Palette[] = [
-    { bg: "linear-gradient(180deg,#d6cbf0,#bba9e6)", fg: "#2B2350", ring: "rgba(255,255,255,.8)", radius: 8, icon: "dot" },
-    { bg: "linear-gradient(180deg,#b3e3d2,#8fd0b9)", fg: "#123A2E", ring: "rgba(255,255,255,.8)", radius: 999, icon: "dot" },
-    { bg: "linear-gradient(180deg,#f9c6d4,#f2a6bb)", fg: "#4A1A2A", ring: "rgba(255,255,255,.85)", radius: 6, icon: "dot" },
-    { bg: "linear-gradient(180deg,#bcdcf5,#93c3ea)", fg: "#10304d", ring: "rgba(255,255,255,.85)", radius: 999, icon: "dot" },
+    { bg: "#DCD0F7", fg: "#3B2F66", stitch: "rgba(59,47,102,.32)", icon: "heart" },
+    { bg: "#C5EBD9", fg: "#1E4F3C", stitch: "rgba(30,79,60,.3)", icon: "heart" },
+    { bg: "#FFD0DC", fg: "#6A2338", stitch: "rgba(106,35,56,.3)", icon: "heart" },
+    { bg: "#CFE5FA", fg: "#1D3F63", stitch: "rgba(29,63,99,.3)", icon: "heart" },
 ]
 
-function MagnetIcon({ kind, color }: { kind: Palette["icon"]; color: string }) {
-    const s = { width: 10, height: 10, flex: "none" as const }
-    if (kind === "tree") return <svg viewBox="0 0 10 10" style={s} aria-hidden><path d="M5 .8 8.6 6H6.1v3H3.9V6H1.4Z" fill={color} /></svg>
-    if (kind === "leaf") return <svg viewBox="0 0 10 10" style={s} aria-hidden><path d="M1.6 8.6C1.4 3.6 4.6 1.4 9 1.2c.1 4.6-2.6 7.6-7.4 7.4Z" fill={color} /><path d="M1.8 8.4 6.4 3.8" stroke="rgba(0,0,0,.35)" strokeWidth=".8" /></svg>
-    if (kind === "flower")
+function BadgeIcon({ kind, fg, bg }: { kind: Palette["icon"]; fg: string; bg: string }) {
+    const s = { width: 11, height: 11, flex: "none" as const, display: "block" }
+    if (kind === "pennant")
         return (
-            <svg viewBox="0 0 10 10" style={s} aria-hidden>
-                {[0, 60, 120, 180, 240, 300].map((a) => <circle key={a} cx={5 + 2.6 * Math.cos((a * Math.PI) / 180)} cy={5 + 2.6 * Math.sin((a * Math.PI) / 180)} r="1.9" fill="#fff3d6" />)}
-                <circle cx="5" cy="5" r="1.7" fill={color} />
+            <svg viewBox="0 0 12 12" style={s} aria-hidden>
+                <path d="M2 1v10.5" stroke={fg} strokeWidth="1.2" strokeLinecap="round" />
+                <path d="M2.4 1.6 11 4.6 2.4 7.6Z" fill={fg} strokeLinejoin="round" />
+                <path d="M2.4 4 7 4.6 2.4 5.2Z" fill={bg} />
             </svg>
         )
-    return <svg viewBox="0 0 10 10" style={s} aria-hidden><circle cx="5" cy="5" r="2.6" fill={color} /></svg>
+    if (kind === "leaf")
+        return (
+            <svg viewBox="0 0 12 12" style={s} aria-hidden>
+                <path d="M1.8 10.4C1.4 4.6 5 1.8 10.4 1.6c.2 5.4-3 8.9-8.6 8.8Z" fill="#cdeccc" />
+                <path d="M2.2 10 7.4 4.8" stroke="#3f7a60" strokeWidth=".9" strokeLinecap="round" />
+            </svg>
+        )
+    if (kind === "flower")
+        return (
+            <svg viewBox="0 0 12 12" style={s} aria-hidden>
+                {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => <ellipse key={a} cx="6" cy="2.9" rx="1.5" ry="2.4" fill="#ff8c2b" transform={`rotate(${a} 6 6)`} />)}
+                <circle cx="6" cy="6" r="2" fill="#ffe08a" />
+            </svg>
+        )
+    return <svg viewBox="0 0 28 26" style={{ ...s, width: 10, height: 9 }} aria-hidden><path d={HEART} fill={fg} opacity=".75" /></svg>
 }
 
-function PlaceMagnet({ name, pal }: { name: string; pal: Palette }) {
+function PlaceBadge({ name, pal }: { name: string; pal: Palette }) {
     return (
-        <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 10px 6px 8px", borderRadius: pal.radius, background: pal.bg, color: pal.fg, fontFamily: SANS, fontWeight: 600, fontSize: 9.5, letterSpacing: ".1em", textTransform: "uppercase", whiteSpace: "nowrap", lineHeight: 1, boxShadow: "inset 0 1px 0 rgba(255,255,255,.45), inset 0 -1.5px 0 rgba(0,0,0,.18), 0 1.5px 0 rgba(0,0,0,.22)" }}>
-            <span aria-hidden style={{ position: "absolute", inset: 2.5, borderRadius: pal.radius, border: `1px solid ${pal.ring}`, pointerEvents: "none" }} />
-            <span aria-hidden style={{ position: "absolute", left: 2, right: 2, top: 1, height: "48%", borderRadius: pal.radius, background: "linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,0))", pointerEvents: "none" }} />
-            <MagnetIcon kind={pal.icon} color={pal.fg} />
+        <span className="dbf-badge" style={{ background: pal.bg, color: pal.fg }}>
+            <span aria-hidden style={{ position: "absolute", inset: 2.5, borderRadius: 8, border: `1px dashed ${pal.stitch}`, pointerEvents: "none" }} />
+            <BadgeIcon kind={pal.icon} fg={pal.fg} bg={pal.bg} />
             <span style={{ position: "relative" }}>{name}</span>
         </span>
     )
 }
 
-/* ---------- trinkets ---------- */
+/* ---------- puffy trinkets ---------- */
 
 function Matcha({ uid }: { uid: string }) {
     return (
-        <svg width="52" height="56" viewBox="0 0 52 56" aria-hidden style={{ display: "block" }}>
+        <svg width="48" height="58" viewBox="0 0 50 60" aria-hidden style={{ display: "block" }}>
             <defs>
                 <linearGradient id={`${uid}cup`} x1="0" x2="1">
-                    <stop offset="0" stopColor="#e6dccb" />
-                    <stop offset=".35" stopColor="#fbf8f1" />
-                    <stop offset="1" stopColor="#d8ccb8" />
+                    <stop offset="0" stopColor="#c4e5ab" />
+                    <stop offset=".4" stopColor="#dcf0cb" />
+                    <stop offset="1" stopColor="#a9d48c" />
                 </linearGradient>
-                <radialGradient id={`${uid}tea`} cx=".4" cy=".35" r=".8">
-                    <stop offset="0" stopColor="#c3dd96" />
-                    <stop offset="1" stopColor="#6f9c46" />
-                </radialGradient>
             </defs>
-            <path d="M41 22c7.5 0 8.5 9.5 1 12.5" fill="none" stroke="#e2d8c6" strokeWidth="4" strokeLinecap="round" />
-            <path d="M41 22c7.5 0 8.5 9.5 1 12.5" fill="none" stroke="rgba(255,255,255,.7)" strokeWidth="1.2" strokeLinecap="round" />
-            <path d="M6.5 15h35l-3.4 32.4c-.3 3-2.5 5.1-5.5 5.1H15.4c-3 0-5.2-2.1-5.5-5.1Z" fill={`url(#${uid}cup)`} />
-            <path d="M9.6 40h28.8l-.7 7.3c-.3 3-2.5 5.2-5.5 5.2H15.8c-3 0-5.2-2.2-5.5-5.2Z" fill="#8db866" opacity=".9" />
-            <path d="M9.6 40h28.8" stroke="rgba(255,255,255,.55)" strokeWidth=".8" />
-            <path d="M24 25.5c3.2 2.6 3.2 6.6 0 9.2-3.2-2.6-3.2-6.6 0-9.2Z" fill="#7aa652" />
-            <path d="M24 26.5v7.4" stroke="#5b8a3a" strokeWidth=".7" />
-            <ellipse cx="24" cy="15" rx="17.5" ry="4.2" fill="#f1eadc" stroke="rgba(0,0,0,.1)" strokeWidth=".6" />
-            <ellipse cx="24" cy="15.4" rx="15" ry="3" fill={`url(#${uid}tea)`} />
-            <path d="M17 15.2c2.6-1.6 5.6.9 8.4-.4 1.6-.7 3.2-.6 4.6.3" fill="none" stroke="rgba(255,255,255,.65)" strokeWidth=".9" strokeLinecap="round" />
-            <path d="M10.5 19.5 12.6 42" stroke="rgba(255,255,255,.8)" strokeWidth="1.6" strokeLinecap="round" />
+            <path className="dbf-steam" d="M19 15c-3.2-3 3.2-5.2 0-8.5" fill="none" strokeWidth="1.8" strokeLinecap="round" />
+            <path className="dbf-steam s2" d="M28 14c-3.2-3 3.2-5.2 0-8.5" fill="none" strokeWidth="1.8" strokeLinecap="round" />
+            <path d="M39 29c6.5 0 7.5 9.5.5 11.5" fill="none" stroke="#b5d99a" strokeWidth="4.2" strokeLinecap="round" />
+            <path d="M39 29c6.5 0 7.5 9.5.5 11.5" fill="none" stroke="rgba(255,255,255,.6)" strokeWidth="1.1" strokeLinecap="round" />
+            <path d="M8 24h32l-2.4 22.5a9 9 0 0 1-9 8.1h-9.2a9 9 0 0 1-9-8.1Z" fill={`url(#${uid}cup)`} />
+            <ellipse cx="24" cy="24" rx="16.4" ry="3.8" fill="#f8f2e8" />
+            <ellipse cx="24" cy="24.4" rx="13.8" ry="2.7" fill="#8fc46e" />
+            <path d="M24 26c-1.8-1.1-2.6-1.9-2.6-2.8 0-.7.6-1.2 1.2-1.2.6 0 1 .3 1.4.8.4-.5.8-.8 1.4-.8.7 0 1.2.5 1.2 1.2 0 .9-.8 1.7-2.6 2.8Z" fill="#f4fbe9" />
+            <path d="M11.6 29 13 44" stroke="rgba(255,255,255,.75)" strokeWidth="1.8" strokeLinecap="round" />
+            <Face cx={24} cy={37} gap={9} />
         </svg>
     )
 }
 
 function Star({ uid }: { uid: string }) {
+    const d = "M18 6.5 22 14 30.4 15.5 24.5 21.6 25.6 30 18 26.3 10.4 30 11.5 21.6 5.6 15.5 14 14Z"
     return (
-        <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden style={{ display: "block", overflow: "visible" }}>
+        <svg width="32" height="32" viewBox="0 0 36 36" aria-hidden style={{ display: "block", overflow: "visible" }}>
             <defs>
-                <linearGradient id={`${uid}star`} x1="0" y1="0" x2=".7" y2="1">
-                    <stop offset="0" stopColor="#fff" stopOpacity=".55" />
-                    <stop offset=".55" stopColor="#fff" stopOpacity="0" />
-                    <stop offset="1" stopColor="#000" stopOpacity=".12" />
+                <linearGradient id={`${uid}star`} x1="0" y1="0" x2=".6" y2="1">
+                    <stop offset="0" stopColor="#ffe9a6" />
+                    <stop offset="1" stopColor="#ffcf5c" />
                 </linearGradient>
             </defs>
-            <path d="M16 3.2 19.7 11.3 28.5 12.3 21.9 18.2 23.8 26.9 16 22.4 8.2 26.9 10.1 18.2 3.5 12.3 12.3 11.3Z" style={{ fill: "var(--db-accent, #F3500F)", stroke: "var(--db-accent, #F3500F)" }} strokeWidth="2.6" strokeLinejoin="round" />
-            <path d="M16 3.2 19.7 11.3 28.5 12.3 21.9 18.2 23.8 26.9 16 22.4 8.2 26.9 10.1 18.2 3.5 12.3 12.3 11.3Z" fill={`url(#${uid}star)`} stroke={`url(#${uid}star)`} strokeWidth="2.6" strokeLinejoin="round" />
-            <circle cx="12.6" cy="13.4" r="1.3" fill="#fff" opacity=".85" />
+            <path d={d} fill={`url(#${uid}star)`} stroke={`url(#${uid}star)`} strokeWidth="4.5" strokeLinejoin="round" />
+            <ellipse cx="13.6" cy="13.4" rx="2.4" ry="1.4" fill="#fff" opacity=".8" transform="rotate(-35 13.6 13.4)" />
+            <Face cx={18} cy={19.5} gap={7} />
+        </svg>
+    )
+}
+
+function Cloud({ uid }: { uid: string }) {
+    return (
+        <svg width="46" height="31" viewBox="0 0 50 34" aria-hidden style={{ display: "block" }}>
+            <defs>
+                <linearGradient id={`${uid}cloud`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="#ffffff" />
+                    <stop offset="1" stopColor="#e2eaf8" />
+                </linearGradient>
+            </defs>
+            <path d="M13 30h25a8 8 0 0 0 1.2-15.9A11.5 11.5 0 0 0 17.3 11.6 9.2 9.2 0 0 0 13 30Z" fill={`url(#${uid}cloud)`} stroke="rgba(110,130,170,.2)" strokeWidth=".8" />
+            <ellipse cx="22" cy="13.6" rx="3.4" ry="1.6" fill="#fff" transform="rotate(-18 22 13.6)" />
+            <Face cx={26} cy={21} gap={8} sleepy />
+        </svg>
+    )
+}
+
+function Heart({ uid }: { uid: string }) {
+    return (
+        <svg width="26" height="24" viewBox="0 0 28 26" aria-hidden style={{ display: "block" }}>
+            <defs>
+                <linearGradient id={`${uid}heart`} x1="0" y1="0" x2=".5" y2="1">
+                    <stop offset="0" stopColor="#ffc4d1" />
+                    <stop offset="1" stopColor="#ff94ae" />
+                </linearGradient>
+            </defs>
+            <path d={HEART} fill={`url(#${uid}heart)`} />
+            <ellipse cx="8.8" cy="8.4" rx="3.4" ry="2.1" fill="#fff" opacity=".8" transform="rotate(-32 8.8 8.4)" />
+            <circle cx="19.5" cy="7.6" r="1" fill="#fff" opacity=".7" />
         </svg>
     )
 }
 
 function Earplug() {
     return (
-        <svg width="66" height="32" viewBox="0 0 66 32" aria-hidden style={{ display: "block" }}>
-            <circle cx="15" cy="16" r="10.5" fill="none" style={{ stroke: "var(--db-accent, #F3500F)" }} strokeWidth="6.5" />
-            <circle cx="15" cy="16" r="10.5" fill="none" stroke="rgba(0,0,0,.14)" strokeWidth="6.5" strokeDasharray="0 33 33 0" />
-            <path d="M8.2 10.4a9 9 0 0 1 9.6-3.5" fill="none" stroke="rgba(255,255,255,.6)" strokeWidth="1.6" strokeLinecap="round" />
-            <rect x="24.5" y="12.4" width="11" height="7.2" rx="2.2" style={{ fill: "var(--db-accent, #F3500F)" }} />
-            <rect x="24.5" y="12.4" width="11" height="7.2" rx="2.2" fill="rgba(0,0,0,.18)" />
-            <ellipse cx="39" cy="16" rx="3.6" ry="9" fill="#d5dade" stroke="rgba(0,0,0,.12)" strokeWidth=".6" />
-            <ellipse cx="45.5" cy="16" rx="4.6" ry="7.6" fill="#e3e7ea" stroke="rgba(0,0,0,.12)" strokeWidth=".6" />
-            <path d="M48 9.6c7.2 0 12 2.9 12 6.4s-4.8 6.4-12 6.4Z" fill="#eff2f4" stroke="rgba(0,0,0,.12)" strokeWidth=".6" />
-            <path d="M50 11.6c4 .3 6.6 1.6 7.4 3" fill="none" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" />
-            <path d="M38 9.4v4" stroke="#fff" strokeWidth="1" strokeLinecap="round" opacity=".8" />
+        <svg width="52" height="26" viewBox="0 0 56 28" aria-hidden style={{ display: "block" }}>
+            <circle cx="13" cy="14" r="9" fill="none" className="dbf-accsoft-stroke" strokeWidth="6" />
+            <path d="M7.4 9.2a7.6 7.6 0 0 1 8.2-3" fill="none" stroke="rgba(255,255,255,.7)" strokeWidth="1.5" strokeLinecap="round" />
+            <rect x="20.5" y="10.8" width="10" height="6.4" rx="3.2" className="dbf-accsoft-fill" />
+            <ellipse cx="33" cy="14" rx="3.2" ry="7.6" fill="#ebe5f3" stroke="rgba(90,70,110,.15)" strokeWidth=".6" />
+            <ellipse cx="39" cy="14" rx="4" ry="6.4" fill="#f3eff8" stroke="rgba(90,70,110,.15)" strokeWidth=".6" />
+            <path d="M41 8.6c6 0 10 2.4 10 5.4s-4 5.4-10 5.4Z" fill="#f9f6fc" stroke="rgba(90,70,110,.15)" strokeWidth=".6" />
+            <path d="M43 10.4c3.2.3 5.4 1.3 6.2 2.6" fill="none" stroke="#fff" strokeWidth="1.1" strokeLinecap="round" />
         </svg>
     )
 }
 
 function TicTac() {
-    const mints = [[8, 18], [16, 20], [8.5, 27], [15.5, 29], [8, 36], [16, 38], [11.5, 43.5]]
+    const mints = [[7.5, 16], [14.5, 18], [8, 24.5], [14, 26.5], [7.5, 33], [14.5, 35]]
     return (
-        <svg width="24" height="50" viewBox="0 0 24 50" aria-hidden style={{ display: "block" }}>
-            <rect x="2" y="8" width="20" height="40" rx="5" fill="rgba(240,248,244,.55)" stroke="rgba(0,0,0,.2)" strokeWidth=".8" />
-            {mints.map(([cx, cy], i) => <ellipse key={i} cx={cx} cy={cy} rx="3.6" ry="2.4" fill="#fbfefc" stroke="rgba(0,0,0,.14)" strokeWidth=".5" transform={`rotate(${i % 2 ? 14 : -10} ${cx} ${cy})`} />)}
-            <rect x="4.2" y="11" width="2" height="33" rx="1" fill="#fff" opacity=".75" />
-            <rect x="1" y="1.5" width="22" height="9.5" rx="3" fill="#2fb46b" />
-            <rect x="2.2" y="2.4" width="19.6" height="3" rx="1.5" fill="#fff" opacity=".35" />
-            <rect x="1" y="9" width="22" height="2" fill="rgba(0,0,0,.15)" />
+        <svg width="20" height="40" viewBox="0 0 22 44" aria-hidden style={{ display: "block" }}>
+            <rect x="2" y="7" width="18" height="35" rx="6" fill="rgba(255,255,255,.62)" stroke="rgba(80,120,100,.25)" strokeWidth=".8" />
+            {mints.map(([cx, cy], i) => <ellipse key={i} cx={cx} cy={cy} rx="3.2" ry="2.2" fill="#fdfffe" stroke="rgba(80,120,100,.18)" strokeWidth=".5" transform={`rotate(${i % 2 ? 14 : -10} ${cx} ${cy})`} />)}
+            <rect x="4" y="10" width="1.8" height="28" rx=".9" fill="#fff" opacity=".85" />
+            <rect x="1" y="1.5" width="20" height="8.5" rx="3.5" fill="#9fe0bd" />
+            <rect x="2.4" y="2.4" width="17.2" height="2.6" rx="1.3" fill="#fff" opacity=".5" />
+        </svg>
+    )
+}
+
+function Sparkle({ x, y, s, delay }: { x: number; y: number; s: number; delay: number }) {
+    return (
+        <svg aria-hidden className="dbf-sparkle" width={s} height={s} viewBox="0 0 10 10" style={{ position: "absolute", left: x, top: y, animationDelay: `${delay}s` }}>
+            <path d="M5 0C5.6 3.4 6.6 4.4 10 5 6.6 5.6 5.6 6.6 5 10 4.4 6.6 3.4 5.6 0 5 3.4 4.4 4.4 3.4 5 0Z" />
         </svg>
     )
 }
@@ -220,10 +314,13 @@ export default function FridgeBoard(props: FridgeBoardProps) {
     const isStatic = useIsStaticRenderer()
     const onCanvas = RenderTarget.current() === RenderTarget.canvas
     const interactive = !isStatic && !onCanvas
+    const reduced = !!useReducedMotion()
     const uid = useId().replace(/[^a-zA-Z0-9]/g, "")
     const H = compact ? 420 : 460
 
     const rootRef = useRef<HTMLDivElement>(null)
+    const doorRef = useRef<HTMLElement>(null)
+    const itemEls = useRef<Record<string, HTMLDivElement | null>>({})
     const inView = useInView(rootRef)
     const [scale, setScale] = useState(1)
     const scaleRef = useRef(1)
@@ -262,7 +359,18 @@ export default function FridgeBoard(props: FridgeBoardProps) {
     const dragMoved = useRef(false)
     const lastTap = useRef({ t: 0, x: 0, y: 0 })
 
-    const reset = useCallback(() => startTransition(() => setPos({})), [])
+    const reset = useCallback(() => {
+        const door = doorRef.current
+        if (!reduced && door) {
+            door.classList.add("is-resetting")
+            Object.keys(itemEls.current).forEach((k) => {
+                const n = itemEls.current[k]
+                if (n) play(n.firstElementChild, "dbf-hop")
+            })
+            window.setTimeout(() => door.classList.remove("is-resetting"), 1200)
+        }
+        startTransition(() => setPos({}))
+    }, [reduced])
 
     // content
     const placeList = useMemo(() => places.split(",").map((s) => s.trim()).filter(Boolean).slice(0, compact ? 3 : 5), [places, compact])
@@ -274,76 +382,81 @@ export default function FridgeBoard(props: FridgeBoardProps) {
     const stripEmpty = !(photo1 && photo1.src) && !(photo2 && photo2.src) && !(photo3 && photo3.src)
 
     const placeAnchors = hasPins
-        ? [[28, 258, -4], [118, 290, 3], [214, 292, -3], [150, 326, 4], [232, 332, -3]]
-        : [[146, 184, -4], [204, 226, 5], [134, 258, -2], [28, 258, 3], [218, 280, -4]]
+        ? [[34, 258, -4], [120, 300, 3], [212, 304, -3], [146, 336, 4], [232, 340, -3]]
+        : [[146, 190, -4], [206, 232, 5], [136, 266, -2], [34, 258, 3], [222, 290, -4]]
 
     const items: Item[] = []
 
     items.push({
-        id: "hello", label: `Hello magnet: ${words.join(", ")}`, x: 140, y: 18, r: -2, kind: "free",
+        id: "hello", label: `Hello magnet: ${words.join(", ")}`, x: 146, y: 16, r: -3, kind: "free",
         node: (
-            <span className="dbf-hello" style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 11px 5px 6px", borderRadius: 4, background: "var(--db-accent, #F3500F)", color: "#fff", fontFamily: MONO, fontWeight: 500, fontSize: 12, letterSpacing: ".05em", lineHeight: 1.2, boxShadow: "inset 0 1px 0 rgba(255,255,255,.35), inset 0 -1.5px 0 rgba(0,0,0,.2), 0 1.5px 0 rgba(0,0,0,.2)" }}>
-                <span aria-hidden style={{ width: 10, height: 10, borderRadius: "50%", flex: "none", background: "radial-gradient(circle at 35% 30%, #fff, #c9ced3 55%, #8a9097)", boxShadow: "0 1px 1px rgba(0,0,0,.35)" }} />
-                <span aria-hidden style={{ display: "grid", textShadow: "0 1px 0 rgba(0,0,0,.22)" }}>
+            <span className="dbf-bubble">
+                <span aria-hidden style={{ display: "grid" }}>
                     {words.map((w, i) => (
-                        <span key={i} className="dbf-word" style={{ gridArea: "1 / 1", whiteSpace: "nowrap", opacity: i === activeWord ? 1 : 0 }}>{w}</span>
+                        <span key={i} className="dbf-word" style={{ gridArea: "1 / 1", whiteSpace: "nowrap", opacity: i === activeWord ? 1 : 0, transform: i === activeWord ? "none" : "translateY(3px)" }}>{w}</span>
                     ))}
                 </span>
-                <span aria-hidden style={{ position: "absolute", left: 1, right: 1, top: 1, height: "45%", borderRadius: 3, background: "linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0))", pointerEvents: "none" }} />
+                <svg aria-hidden width="9" height="8" viewBox="0 0 28 26" style={{ display: "block", flex: "none" }}>
+                    <path d={HEART} style={{ fill: "color-mix(in srgb, var(--db-accent, #F3500F) 70%, #ffffff)" }} />
+                </svg>
+                <span aria-hidden className="dbf-bubble-tail" />
             </span>
         ),
     })
 
-    const PH = ["linear-gradient(150deg,#ecc9a3,#b9875f)", "linear-gradient(150deg,#dcb3bd,#9a6f88)", "linear-gradient(150deg,#bccfdc,#6f8ba3)"]
+    const PH = ["linear-gradient(150deg,#ffd9c2,#f5b8a0)", "linear-gradient(150deg,#ffd3df,#e9a9c0)", "linear-gradient(150deg,#d4e6f7,#a9c6e6)"]
     items.push({
-        id: "strip", label: "Photo-booth strip", x: 30, y: 36, r: -5, w: 80, kind: "box",
+        id: "strip", label: "Photo-booth strip", x: 36, y: 38, r: -5, w: 78, kind: "box",
         node: (
-            <div style={{ position: "relative", background: "#f7f4ee", padding: "6px 6px 0", display: "grid", gap: 5 }}>
-                <Tape r={-4} w={42} />
+            <div style={{ position: "relative", background: "#fffdf8", padding: "6px 6px 0", display: "grid", gap: 5, borderRadius: 3 }}>
+                <Washi left={10} top={-7} w={44} r={-8} />
+                <HeartPin left="82%" top={-5} />
                 {[photo1, photo2, photo3].map((p, i) => (
-                    <div key={i} style={{ height: 54, overflow: "hidden", background: "#ddd" }}>
+                    <div key={i} style={{ height: 54, overflow: "hidden", borderRadius: 3, background: "#eee" }}>
                         <Photo img={p} alt={[photo1Alt, photo2Alt, photo3Alt][i]} placeholder={PH[i]} />
                     </div>
                 ))}
-                <span style={{ fontFamily: HAND, fontSize: 14, color: "#3a332a", textAlign: "center", lineHeight: 1, padding: "3px 0 6px" }}>{stripEmpty && onCanvas ? "add photos ↑" : stripCaption}</span>
+                <span style={{ fontFamily: HAND, fontWeight: 600, fontSize: 15, color: "#5a4646", textAlign: "center", lineHeight: 1, padding: "3px 0 6px" }}>{stripEmpty && onCanvas ? "add photos ↑" : stripCaption}</span>
             </div>
         ),
     })
 
     items.push({
-        id: "quote", label: `Quote card: ${quote}`, x: 128, y: 58, r: 3, w: 172, kind: "box",
+        id: "quote", label: `Quote card: ${quote}`, x: 128, y: 62, r: 3, w: 176, kind: "box",
         node: (
-            <div style={{ position: "relative", background: "#fffaf0", padding: "16px 14px 13px", borderRadius: 2, backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0) 92%, rgba(0,0,0,.04))" }}>
-                <Pushpin />
-                <p style={{ margin: 0, fontFamily: SERIF, fontSize: 15.5, lineHeight: 1.2, color: "#2a2620" }}>“{quote}”</p>
+            <div className="dbf-card">
+                <HeartPin />
+                <p style={{ margin: 0, fontFamily: HAND, fontWeight: 500, fontSize: 19, lineHeight: "20px", color: "#4a3a3c" }}>{quote}</p>
             </div>
         ),
     })
 
     const polaroid = (img: Img, cap: string, alt: string, n: number, empty: boolean) => (
-        <div style={{ position: "relative", background: "#fff", padding: "5px 5px 0" }}>
-            <RoundMagnet />
-            <div style={{ height: 66, overflow: "hidden", background: empty ? "transparent" : "#eee", border: empty ? "1.5px dashed rgba(0,0,0,.25)" : "none", display: "grid", placeItems: "center" }}>
-                {empty ? <span style={{ fontFamily: SANS, fontSize: 9, color: "rgba(0,0,0,.45)", textAlign: "center", padding: 4 }}>pin {n}: add an image</span> : <Photo img={img} alt={alt} placeholder="#ddd" />}
+        <div style={{ position: "relative", background: "#fffdf9", padding: "5px 5px 0", borderRadius: 3 }}>
+            {n === 1 ? <Washi left="50%" top={-6} w={34} r={4} dots /> : <PuffMagnet color="#d9cdf5" />}
+            <div style={{ height: 64, overflow: "hidden", borderRadius: 2, background: empty ? "transparent" : "#eee", border: empty ? "1.5px dashed rgba(0,0,0,.2)" : "none", display: "grid", placeItems: "center" }}>
+                {empty ? <span style={{ fontFamily: SANS, fontSize: 9, color: "rgba(0,0,0,.4)", textAlign: "center", padding: 4 }}>pin {n}: add an image</span> : <Photo img={img} alt={alt} placeholder="#eee" />}
             </div>
-            <span style={{ display: "block", fontFamily: HAND, fontSize: 13, lineHeight: 1, color: "#2b2b2b", textAlign: "center", padding: "4px 2px 6px", minHeight: 19, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{cap}</span>
+            <span style={{ display: "block", fontFamily: HAND, fontWeight: 600, fontSize: 14, lineHeight: 1, color: "#4a3a3c", textAlign: "center", padding: "4px 2px 6px", minHeight: 20, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{cap}</span>
         </div>
     )
-    if (showPin1) items.push({ id: "pin1", label: pin1Alt || pin1Caption || "Pinned photo", x: 136, y: 180, r: -4, w: 78, kind: "box", node: polaroid(pin1, pin1Caption, pin1Alt, 1, !has1) })
-    if (showPin2) items.push({ id: "pin2", label: pin2Alt || pin2Caption || "Pinned photo", x: 228, y: 188, r: 5, w: 78, kind: "box", node: polaroid(pin2, pin2Caption, pin2Alt, 2, !has2) })
+    if (showPin1) items.push({ id: "pin1", label: pin1Alt || pin1Caption || "Pinned photo", x: 134, y: 188, r: -4, w: 76, kind: "box", node: polaroid(pin1, pin1Caption, pin1Alt, 1, !has1) })
+    if (showPin2) items.push({ id: "pin2", label: pin2Alt || pin2Caption || "Pinned photo", x: 226, y: 196, r: 5, w: 76, kind: "box", node: polaroid(pin2, pin2Caption, pin2Alt, 2, !has2) })
 
     let extra = 0
     placeList.forEach((name, i) => {
         const pal = PLACE_PALETTES[name.toLowerCase()] || EXTRA_PALETTES[extra++ % EXTRA_PALETTES.length]
         const [x, y, r] = placeAnchors[i]
-        items.push({ id: `place${i}`, label: `${name} magnet`, x, y, r, kind: "free", node: <PlaceMagnet name={name} pal={pal} /> })
+        items.push({ id: `place${i}`, label: `${name} badge`, x, y, r, kind: "free", node: <PlaceBadge name={name} pal={pal} /> })
     })
 
-    items.push({ id: "matcha", label: "Matcha cup magnet", x: 32, y: compact ? 336 : 352, r: -6, w: 52, kind: "free", node: <Matcha uid={uid} /> })
-    items.push({ id: "star", label: "Star magnet", x: 96, y: compact ? 352 : 370, r: 12, w: 30, kind: "free", node: <Star uid={uid} /> })
+    items.push({ id: "matcha", label: "Smiling matcha cup magnet", x: 36, y: compact ? 330 : 350, r: -6, w: 48, kind: "free", node: <Matcha uid={uid} /> })
+    items.push({ id: "star", label: "Little star magnet", x: 94, y: compact ? 352 : 372, r: 10, w: 32, kind: "free", node: <Star uid={uid} /> })
+    items.push({ id: "heart", label: "Heart magnet", x: compact ? 150 : 292, y: compact ? 360 : 396, r: -8, w: 26, kind: "free", node: <Heart uid={uid} /> })
     if (!compact) {
-        items.push({ id: "earplug", label: "Loop-style earplug", x: 140, y: 378, r: -8, w: 66, kind: "free", node: <Earplug /> })
-        items.push({ id: "tictac", label: "Tic Tac box", x: 240, y: 360, r: 18, w: 24, kind: "free", node: <TicTac /> })
+        items.push({ id: "cloud", label: "Sleepy cloud magnet", x: 132, y: 388, r: 4, w: 46, kind: "free", node: <Cloud uid={uid} /> })
+        items.push({ id: "earplug", label: "Loop-style earplug", x: 188, y: 394, r: -8, w: 52, kind: "free", node: <Earplug /> })
+        items.push({ id: "tictac", label: "Tic Tac box", x: 256, y: 366, r: 16, w: 20, kind: "free", node: <TicTac /> })
     }
 
     /* ---------- interaction ---------- */
@@ -387,6 +500,7 @@ export default function FridgeBoard(props: FridgeBoardProps) {
             d.el.classList.remove("is-lifted")
             const r = it.r + (Math.random() * 6 - 3)
             d.el.style.transform = tf(d.x, d.y, r, 1)
+            if (!reduced) play(d.el.firstElementChild, it.kind === "free" ? "dbf-snap" : "dbf-drop")
             const { x, y, z } = d
             startTransition(() => setPos((p) => ({ ...p, [it.id]: { x, y, r, z } })))
         } else {
@@ -405,7 +519,7 @@ export default function FridgeBoard(props: FridgeBoardProps) {
         const y = clamp(cur.y + dir[1] * NUDGE, b.minY, b.maxY)
         startTransition(() => setPos((p) => ({ ...p, [it.id]: { ...cur, x, y } })))
     }
-    const onDoorPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const onDoorPointerUp = (e: React.PointerEvent<HTMLElement>) => {
         if (!interactive || e.pointerType === "mouse") return
         if (dragMoved.current) { dragMoved.current = false; return }
         const now = Date.now()
@@ -416,78 +530,124 @@ export default function FridgeBoard(props: FridgeBoardProps) {
         } else lastTap.current = { t: now, x: e.clientX, y: e.clientY }
     }
 
+    const LIGHT = `
+        --dbf-door: color-mix(in srgb, var(--db-accent, #F3500F) 18%, #fff7f0);
+        --dbf-glow: .55; --dbf-seal: rgba(140,90,80,.12); --dbf-sealhi: .6; --dbf-shine: .7;
+        --dbf-sh: rgba(150,95,85,.28); --dbf-sh2: rgba(150,95,85,.12);
+        --dbf-handle: linear-gradient(90deg, #ece5df, #ffffff 40%, #ddd3cb 88%);
+        --dbf-hint: rgba(110,75,70,.55); --dbf-steam: rgba(150,115,115,.45);
+        --dbf-sparkle: #ffffff; --dbf-dim: brightness(1);
+    `
     const css = `
+        .dbf-root {
+            --dbf-door: color-mix(in srgb, var(--db-accent, #F3500F) 22%, #3b3340);
+            --dbf-glow: .12; --dbf-seal: rgba(0,0,0,.26); --dbf-sealhi: .07; --dbf-shine: .16;
+            --dbf-sh: rgba(12,6,18,.5); --dbf-sh2: rgba(12,6,18,.25);
+            --dbf-handle: linear-gradient(90deg, #6f6675, #bdb3c3 40%, #6c6372 88%);
+            --dbf-hint: rgba(255,238,230,.55); --dbf-steam: rgba(255,255,255,.55);
+            --dbf-sparkle: #ffe7b0; --dbf-dim: brightness(.93) saturate(.9);
+            --dbf-acc-soft: color-mix(in srgb, var(--db-accent, #F3500F) 68%, #ffffff);
+        }
+        :root[data-db-theme="light"] .dbf-root, [data-db-theme="light"] .dbf-root { ${LIGHT} }
+        @media (prefers-color-scheme: light) { :root:not([data-db-theme]) .dbf-root { ${LIGHT} } }
         .dbf-door {
-            background-color: #3b3e42;
-            background-color: color-mix(in srgb, var(--db-surface-2, #26282b) 72%, #a3a9b0 28%);
-            background-image:
-                linear-gradient(100deg, rgba(0,0,0,.2) 0%, rgba(255,255,255,0) 26%, rgba(255,255,255,.09) 50%, rgba(255,255,255,0) 68%, rgba(0,0,0,.16) 100%),
-                repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, rgba(0,0,0,.02) 1px 2px, transparent 2px 4px);
-            border: 1px solid var(--db-line, rgba(255,255,255,.12));
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 -18px 30px -18px rgba(0,0,0,.35), 0 28px 50px -28px rgba(0,0,0,.6), 0 2px 6px rgba(0,0,0,.16);
+            background-color: var(--dbf-door);
+            background-image: radial-gradient(130% 90% at 18% 0%, rgba(255,255,255,var(--dbf-glow)), rgba(255,255,255,0) 55%), linear-gradient(180deg, rgba(0,0,0,0) 62%, rgba(0,0,0,.06));
+            box-shadow: inset 0 0 0 3px var(--dbf-seal), inset 0 2px 0 3px rgba(255,255,255,var(--dbf-sealhi)), inset 0 -10px 22px -14px rgba(0,0,0,.18), 0 22px 40px -22px var(--dbf-sh), 0 2px 6px var(--dbf-sh2);
         }
-        :root[data-db-theme="light"] .dbf-door {
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -18px 30px -18px rgba(0,0,0,.1), 0 24px 44px -26px rgba(40,30,20,.32), 0 1px 3px rgba(0,0,0,.08);
-        }
-        .dbf-handle { position:absolute; left:10px; top:66px; width:7px; height:150px; border-radius:5px;
-            background: linear-gradient(90deg, #7f858b, #e6e9ec 45%, #a0a6ac 80%, #80868c);
-            box-shadow: 1px 3px 6px rgba(0,0,0,.3), inset 0 0 0 .5px rgba(0,0,0,.2); }
-        .dbf-handle::before, .dbf-handle::after { content:""; position:absolute; left:-2px; width:11px; height:7px; border-radius:3px;
-            background: linear-gradient(90deg, #8b9197, #d7dbdf, #8b9197); box-shadow: 0 1px 2px rgba(0,0,0,.25); }
-        .dbf-handle::before { top:6px } .dbf-handle::after { bottom:6px }
-        .dbf-item { position:absolute; transform-origin:50% 40%; outline:none; -webkit-tap-highlight-color: transparent;
-            transition: transform .5s cubic-bezier(.34,1.56,.64,1); }
+        .dbf-shine { position:absolute; border-radius:6px; background: rgba(255,255,255,var(--dbf-shine)); transform: rotate(32deg); pointer-events:none; }
+        .dbf-handle { position:absolute; left:12px; top:80px; width:13px; height:126px; border-radius:8px; background: var(--dbf-handle);
+            box-shadow: 2px 4px 8px var(--dbf-sh), inset 0 -2px 0 rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.6); }
+        .dbf-handle::before, .dbf-handle::after { content:""; position:absolute; left:9px; width:10px; height:9px; border-radius:4px; background: var(--dbf-handle);
+            box-shadow: 1px 2px 3px var(--dbf-sh2); z-index:-1; }
+        .dbf-handle::before { top:10px } .dbf-handle::after { bottom:10px }
+        .dbf-item { position:absolute; outline:none; -webkit-tap-highlight-color: transparent;
+            transition: transform .55s cubic-bezier(.34,1.56,.64,1); }
+        .is-resetting .dbf-item { transition-delay: calc(var(--i) * 40ms); }
         .dbf-item.is-lifted { transition: none; cursor: grabbing !important; }
-        .dbf-item:focus-visible { outline: 2px solid var(--db-accent, #F3500F); outline-offset: 3px; border-radius: 4px; }
-        .dbf-skin-box { box-shadow: 0 1px 1px rgba(0,0,0,.12), 0 6px 12px -5px rgba(0,0,0,.45); transition: box-shadow .25s ease; }
-        .is-lifted .dbf-skin-box { box-shadow: 0 2px 3px rgba(0,0,0,.12), 0 18px 26px -10px rgba(0,0,0,.5); }
-        .dbf-skin-free { filter: drop-shadow(0 3px 3px rgba(0,0,0,.32)); transition: filter .25s ease; }
-        .is-lifted .dbf-skin-free { filter: drop-shadow(0 11px 9px rgba(0,0,0,.32)); }
-        .dbf-tape { position:absolute; top:-8px; height:15px; z-index:2; opacity:.9;
-            background: rgba(245,236,214,.85);
-            background: color-mix(in srgb, var(--db-accent, #F3500F) 28%, rgba(248,242,228,.9));
-            clip-path: polygon(0 8%, 6% 0, 12% 10%, 18% 0, 82% 0, 88% 8%, 94% 0, 100% 10%, 100% 92%, 94% 100%, 88% 90%, 82% 100%, 18% 100%, 12% 92%, 6% 100%, 0 90%);
-            box-shadow: 0 1px 2px rgba(0,0,0,.12); }
-        .dbf-pushpin { position:absolute; top:-6px; left:50%; margin-left:-7px; width:14px; height:14px; border-radius:50%; z-index:2;
-            background: radial-gradient(circle at 34% 30%, rgba(255,255,255,.9) 0 9%, rgba(255,255,255,0) 40%), var(--db-accent, #F3500F);
-            box-shadow: inset 0 -2px 3px rgba(0,0,0,.28), 1.5px 3px 3px rgba(0,0,0,.35); }
-        .dbf-magnet { position:absolute; top:-7px; left:50%; margin-left:-8px; width:16px; height:16px; border-radius:50%; z-index:2;
-            background: linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,0) 55%), var(--db-accent, #F3500F);
-            box-shadow: inset 0 -2px 0 rgba(0,0,0,.2), 0 2px 3px rgba(0,0,0,.35); }
-        .dbf-word { transition: opacity .6s ease; }
-        .dbf-reset { position:absolute; right:10px; bottom:10px; z-index:200; padding:6px 10px; border-radius:999px; border:1px solid var(--db-line, rgba(255,255,255,.2));
-            background: var(--db-surface, #141414); color: var(--db-text, #fff); font: 500 11px ${SANS}; cursor:pointer;
-            clip-path: inset(50%); opacity:0; }
-        .dbf-reset:focus-visible { clip-path:none; opacity:1; outline: 2px solid var(--db-accent, #F3500F); outline-offset: 2px; }
+        .dbf-item:focus-visible { outline: 2px dashed color-mix(in srgb, var(--db-accent, #F3500F) 80%, #fff); outline-offset: 4px; border-radius: 10px; }
+        .dbf-anim { transform-origin: 50% 0%; transition: transform .25s ease; }
+        .dbf-skin-box { filter: var(--dbf-dim); box-shadow: 0 1px 1px var(--dbf-sh2), 0 6px 12px -6px var(--dbf-sh); transition: box-shadow .25s ease; border-radius: 3px; }
+        .dbf-skin-free { filter: var(--dbf-dim) drop-shadow(0 2.5px 2.5px var(--dbf-sh)); transition: filter .25s ease; }
+        .is-lifted .dbf-skin-box { box-shadow: 0 2px 3px var(--dbf-sh2), 0 18px 24px -10px var(--dbf-sh); }
+        .is-lifted .dbf-skin-free { filter: var(--dbf-dim) drop-shadow(0 10px 8px var(--dbf-sh)); }
+        @media (hover: hover) and (pointer: fine) {
+            .dbf-live .dbf-item:not(.is-lifted):hover > .dbf-anim { transform: translateY(-3px); animation: dbf-wiggle .7s ease-in-out; }
+            .dbf-live .dbf-item:not(.is-lifted):hover .dbf-skin-box { box-shadow: 0 2px 3px var(--dbf-sh2), 0 12px 18px -9px var(--dbf-sh); }
+        }
+        @keyframes dbf-wiggle { 0% { transform: translateY(-3px) rotate(0) } 25% { transform: translateY(-3px) rotate(-3deg) } 50% { transform: translateY(-3px) rotate(2.5deg) } 75% { transform: translateY(-3px) rotate(-1.2deg) } 100% { transform: translateY(-3px) rotate(0) } }
+        .dbf-item > .dbf-anim.dbf-drop { transform-origin: 50% 100%; animation: dbf-squash .5s cubic-bezier(.3,.7,.4,1) !important; }
+        .dbf-item > .dbf-anim.dbf-snap { transform-origin: 50% 50%; animation: dbf-snap .38s ease-out !important; }
+        .dbf-item > .dbf-anim.dbf-hop { transform-origin: 50% 100%; animation: dbf-hop .6s cubic-bezier(.3,.7,.4,1) both !important; animation-delay: calc(var(--i) * 40ms) !important; }
+        @keyframes dbf-squash { 0% { transform: scale(1.07,.9) } 35% { transform: scale(.95,1.06) } 65% { transform: scale(1.02,.98) } 100% { transform: none } }
+        @keyframes dbf-snap { 0% { transform: scale(1.14) } 6% { transform: scale(.9) } 35% { transform: scale(1.04) } 100% { transform: none } }
+        @keyframes dbf-hop { 0% { transform: none } 30% { transform: translateY(-12px) scale(.97,1.04) } 58% { transform: translateY(0) scale(1.06,.93) } 80% { transform: scale(.98,1.02) } 100% { transform: none } }
+        .dbf-washi { position:absolute; height:14px; z-index:3; opacity:.93; margin-left:0;
+            background-color: color-mix(in srgb, var(--db-accent, #F3500F) 30%, #fff3f5);
+            background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,.6) 0 3px, rgba(255,255,255,0) 3px 7px);
+            clip-path: polygon(3% 0, 97% 0, 100% 15%, 96% 30%, 100% 48%, 97% 66%, 100% 84%, 96% 100%, 3% 100%, 0 86%, 4% 70%, 0 52%, 3% 34%, 0 16%); }
+        .dbf-washi.dots { margin-left:-17px; background-color: #cfe6f6; background-image: radial-gradient(circle, rgba(255,255,255,.9) 1.1px, rgba(255,255,255,0) 1.5px); background-size: 6px 6px; }
+        .dbf-heartpin { position:absolute; margin-left:-7.5px; z-index:4; filter: drop-shadow(1px 2px 1.5px rgba(0,0,0,.25)); }
+        .dbf-puff { position:absolute; top:-7px; left:50%; margin-left:-8px; width:16px; height:16px; border-radius:50%; z-index:3;
+            box-shadow: inset 0 -2px 2px rgba(0,0,0,.08), 0 2px 3px rgba(0,0,0,.22); }
+        .dbf-card { position:relative; background-color:#fffdf7; border-radius:6px; padding: 24px 14px 12px;
+            background-image: linear-gradient(180deg, rgba(0,0,0,0) 15px, rgba(240,128,150,.5) 15px, rgba(240,128,150,.5) 16px, rgba(0,0,0,0) 16px),
+                repeating-linear-gradient(180deg, rgba(0,0,0,0) 0 19px, rgba(120,160,210,.22) 19px 20px);
+            background-position: 0 0, 0 25px; background-repeat: no-repeat, repeat; }
+        .dbf-badge { position:relative; display:inline-flex; align-items:center; gap:4px; padding:5px 9px 5px 7px; border-radius:10px;
+            font: 600 9px/1 ${SANS}; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+            box-shadow: inset 0 1.5px 0 rgba(255,255,255,.55), inset 0 -2px 0 rgba(0,0,0,.08); }
+        .dbf-bubble { position:relative; display:inline-flex; align-items:center; gap:6px; padding:5px 12px 6px; border-radius:14px;
+            background: #fff4ee; background: color-mix(in srgb, var(--db-accent, #F3500F) 20%, #fffaf5); color:#4b3440;
+            font: 600 18px/1.05 ${HAND}; box-shadow: inset 0 1.5px 0 rgba(255,255,255,.7), inset 0 -2px 0 rgba(0,0,0,.05); }
+        .dbf-bubble-tail { position:absolute; left:14px; bottom:-4px; width:10px; height:10px; border-radius:2px; transform: rotate(45deg); background: inherit; z-index:-1; }
+        .dbf-word { transition: opacity .6s ease, transform .6s ease; }
+        .dbf-steam { stroke: var(--dbf-steam); }
+        .dbf-accsoft-stroke { stroke: var(--dbf-acc-soft); }
+        .dbf-accsoft-fill { fill: var(--dbf-acc-soft); }
+        .dbf-sparkle { fill: var(--dbf-sparkle); pointer-events:none; animation: dbf-twinkle 2.8s ease-in-out infinite; transform-origin: 50% 50%; }
+        @keyframes dbf-twinkle { 0%, 100% { opacity:.25; transform: scale(.6) rotate(0) } 50% { opacity:1; transform: scale(1) rotate(25deg) } }
+        .dbf-paused .dbf-sparkle { animation-play-state: paused; }
+        .dbf-static .dbf-sparkle { animation: none; opacity: .85; }
+        .dbf-reset { position:absolute; right:12px; bottom:12px; z-index:200; padding:6px 10px; border-radius:999px; border:0;
+            background: #fffaf5; color: #4b3440; font: 500 11px ${SANS}; cursor:pointer; clip-path: inset(50%); opacity:0; }
+        .dbf-reset:focus-visible { clip-path:none; opacity:1; outline: 2px dashed color-mix(in srgb, var(--db-accent, #F3500F) 80%, #fff); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) {
-            .dbf-item, .dbf-word, .dbf-skin-box, .dbf-skin-free { transition: none !important; }
+            .dbf-root *, .dbf-root *::before, .dbf-root *::after { animation: none !important; transition: none !important; }
+            .dbf-sparkle { opacity: .85; }
         }
     `
 
     const descId = `${uid}desc`
+    const sparkles = [[118, 22, 8, 0], [316, 84, 7, 0.9], [308, 268, 9, 1.7], [30, 232, 6, 0.4]]
 
     return (
-        <div ref={rootRef} style={{ position: "relative", width: "100%", height: "100%", minHeight: H * scale, overflow: "hidden", ...style }}>
+        <div ref={rootRef} className="dbf-root" style={{ position: "relative", width: "100%", height: "100%", minHeight: H * scale, overflow: "hidden", ...style }}>
             <style>{css}</style>
-            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Instrument+Serif&family=IBM+Plex+Mono:wght@500&family=Noto+Sans+Devanagari:wght@500&family=Noto+Sans+Kannada:wght@500&display=swap" />
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Noto+Sans+Devanagari:wght@500&family=Noto+Sans+Kannada:wght@500&display=swap" />
             <section
+                ref={doorRef}
                 role="region"
                 aria-label="fridge door"
                 aria-describedby={descId}
-                className="dbf-door"
+                className={`dbf-door ${interactive ? "dbf-live" : "dbf-static"} ${inView ? "" : "dbf-paused"}`}
                 onDoubleClick={interactive ? reset : undefined}
                 onPointerUp={onDoorPointerUp}
-                style={{ position: "absolute", left: "50%", top: "50%", width: DESIGN_W, height: H, marginLeft: -DESIGN_W / 2, marginTop: -H / 2, transform: `scale(${scale})`, transformOrigin: "50% 50%", borderRadius: "22px 22px 14px 14px", overflow: "hidden", userSelect: "none", WebkitUserSelect: "none", fontFamily: SANS, boxSizing: "border-box" }}
+                style={{ position: "absolute", left: "50%", top: "50%", width: DESIGN_W, height: H, marginLeft: -DESIGN_W / 2, marginTop: -H / 2, transform: `scale(${scale})`, transformOrigin: "50% 50%", borderRadius: 34, overflow: "hidden", userSelect: "none", WebkitUserSelect: "none", fontFamily: SANS, boxSizing: "border-box", isolation: "isolate" }}
             >
                 <span id={descId} style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}>
-                    A fridge door with a photo strip, a quote, place magnets and little trinkets. Items can be moved with a mouse, touch, or the arrow keys. Double-click the door to put everything back.
+                    A cute fridge door with a photo strip, a quote card, place badges and little magnets. Items can be moved with a mouse, touch, or the arrow keys. Double-click the door to put everything back.
                 </span>
+                <span aria-hidden className="dbf-shine" style={{ right: 30, top: 14, width: 6, height: 34 }} />
+                <span aria-hidden className="dbf-shine" style={{ right: 20, top: 46, width: 4, height: 12 }} />
                 <span aria-hidden className="dbf-handle" />
+                {sparkles.map(([x, y, s, d], i) => <Sparkle key={i} x={x} y={y} s={s} delay={d} />)}
                 {items.map((it, i) => {
                     const p = pos[it.id]
                     return (
                         <div
                             key={it.id}
+                            ref={(n) => { itemEls.current[it.id] = n }}
                             className="dbf-item"
                             tabIndex={0}
                             role="group"
@@ -498,14 +658,16 @@ export default function FridgeBoard(props: FridgeBoardProps) {
                             onPointerUp={(e) => onUp(e, it)}
                             onPointerCancel={(e) => onUp(e, it)}
                             onKeyDown={(e) => onKey(e, it)}
-                            style={{ left: it.x, top: it.y, width: it.w, transform: tf(p ? p.x : 0, p ? p.y : 0, p && p.r !== undefined ? p.r : it.r, 1), zIndex: p && p.z ? p.z : i + 1, touchAction: interactive ? "none" : "auto", cursor: interactive ? "grab" : "default" }}
+                            style={{ ...({ "--i": i } as React.CSSProperties), left: it.x, top: it.y, width: it.w, transform: tf(p ? p.x : 0, p ? p.y : 0, p && p.r !== undefined ? p.r : it.r, 1), zIndex: p && p.z ? p.z : i + 1, touchAction: interactive ? "none" : "auto", cursor: interactive ? "grab" : "default" }}
                         >
-                            <div className={it.kind === "box" ? "dbf-skin-box" : "dbf-skin-free"}>{it.node}</div>
+                            <div className="dbf-anim">
+                                <div className={it.kind === "box" ? "dbf-skin-box" : "dbf-skin-free"}>{it.node}</div>
+                            </div>
                         </div>
                     )
                 })}
                 {showHint && !compact && (
-                    <span aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: 12, textAlign: "center", fontFamily: HAND, fontSize: 15, color: "var(--db-text-2, rgba(255,255,255,.7))", opacity: 0.75, pointerEvents: "none" }}>
+                    <span aria-hidden style={{ position: "absolute", left: 0, right: 0, bottom: 10, textAlign: "center", fontFamily: HAND, fontWeight: 600, fontSize: 15, color: "var(--dbf-hint)", pointerEvents: "none" }}>
                         {hintText}
                     </span>
                 )}
