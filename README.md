@@ -1,5 +1,9 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## DhwaniGPT backend
+
+The Framer chat bot can use Claude via `src/app/api/dhwanigpt/route.ts`. Deploy to Vercel, set `ANTHROPIC_API_KEY` (optional `DHWANIGPT_MODEL`), then paste `https://<your-app>.vercel.app/api/dhwanigpt` into the DhwaniGPT component's **API URL** prop in Framer. Details: [docs/dhwanigpt.md](docs/dhwanigpt.md).
+
 ## Getting Started
 
 First, run the development server:
