@@ -12,6 +12,7 @@ import { useEffect, useRef, useState, CSSProperties } from "react"
  * Never catches the mouse (clicks and hovers pass through to the page).
  * Respects reduced-motion.
  *
+ * Oct 4: stronger breathing (bigger drift, deeper opacity swing) per Dhwani.
  * @framerSupportedLayoutWidth any
  * @framerSupportedLayoutHeight any
  */
@@ -61,7 +62,7 @@ export default function AuroraBackground(props: any) {
     const C = followVibe && vibe ? vibe.c : colorC
 
     const dur = `${speed}s`
-    const breatheDur = `${Math.max(6, speed * 0.45)}s`
+    const breatheDur = `${Math.max(4, speed * 0.3)}s`
     const full = layout === "full"
 
     const orb = (color: string, size: string, top: string, left: string, delay: string): CSSProperties => ({
@@ -92,11 +93,11 @@ export default function AuroraBackground(props: any) {
             <style>{`
                 @keyframes auroraDrift {
                     0%   { transform: translate(0px, 0px) scale(1); }
-                    50%  { transform: translate(40px, -30px) scale(1.15); }
-                    100% { transform: translate(-30px, 20px) scale(0.95); }
+                    50%  { transform: translate(90px, -70px) scale(1.3); }
+                    100% { transform: translate(-70px, 50px) scale(0.85); }
                 }
                 @keyframes auroraBreathe {
-                    0%, 100% { opacity: ${intensity * 0.55}; }
+                    0%, 100% { opacity: ${intensity * 0.25}; }
                     50%      { opacity: ${intensity}; }
                 }
             `}</style>
