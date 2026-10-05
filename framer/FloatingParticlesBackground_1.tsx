@@ -1,5 +1,6 @@
 // Floating dust particles background with mouse interaction
 // Oct 2: colors follow the site theme tokens (--db-*) for light/dark.
+// Oct 4: brand-orange particles follow the vibe accent (--db-accent).
 import { useEffect, useRef, useState, useCallback, useMemo, type CSSProperties } from "react"
 import { addPropertyControls, ControlType, useIsStaticRenderer } from "framer"
 
@@ -39,19 +40,31 @@ const normColor = (c: string) => String(c || "").replace(/\s+/g, "").toLowerCase
 const isPureWhite = (c: string) => ["#fff", "#ffffff", "#ffffffff", "rgb(255,255,255)", "rgba(255,255,255,1)", "white"].includes(normColor(c))
 const isPureBlack = (c: string) => ["#000", "#000000", "#000000ff", "rgb(0,0,0)", "rgba(0,0,0,1)", "black"].includes(normColor(c))
 
-function useThemeInk(enabled: boolean): string | null {
-    const [ink, setInk] = useState<string | null>(null)
+const isBrandOrange = (c: string) => ["#f3500f", "rgb(243,80,15)", "rgba(243,80,15,1)"].includes(normColor(c))
+
+// Reads a site token (e.g. --db-text, --db-accent) and re-reads it on theme or vibe change
+function useThemeToken(token: string | null): string | null {
+    const [val, setVal] = useState<string | null>(null)
     useEffect(() => {
-        if (!enabled || typeof window === "undefined") return
+        if (!token || typeof window === "undefined") return
         const read = () => {
-            const v = window.getComputedStyle(document.documentElement).getPropertyValue("--db-text").trim()
-            setInk(v || null)
+            const v = window.getComputedStyle(document.documentElement).getPropertyValue(token).trim()
+            setVal(v || null)
         }
         read()
+        const late = window.setTimeout(read, 400)
         window.addEventListener("db-theme", read)
-        return () => window.removeEventListener("db-theme", read)
-    }, [enabled])
-    return enabled ? ink : null
+        window.addEventListener("db-vibe", read)
+        const mo = new MutationObserver(read)
+        mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-vibe", "data-db-theme", "style", "class"] })
+        return () => {
+            window.clearTimeout(late)
+            window.removeEventListener("db-theme", read)
+            window.removeEventListener("db-vibe", read)
+            mo.disconnect()
+        }
+    }, [token])
+    return token ? val : null
 }
 
 /**
@@ -75,7 +88,9 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
         interactionType = "bounce",
     } = props
 
-    const themeInk = useThemeInk(isPureWhite(particleColor))
+    // Pure white follows the theme text colour; brand orange follows the vibe accent
+    const inkToken = isPureWhite(particleColor) ? "--db-text" : isBrandOrange(particleColor) ? "--db-accent" : null
+    const themeInk = useThemeToken(inkToken)
     const inkColor = themeInk || particleColor
     const bgColor = isPureBlack(backgroundColor) ? "var(--db-bg, #000000)" : backgroundColor
 
@@ -394,7 +409,7 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
     }, [animate, isStatic])
 
     if (isStatic) {
-        const staticInk = isPureWhite(particleColor) ? "var(--db-text, #FFFFFF)" : particleColor
+        const staticInk = isPureWhite(particleColor) ? "var(--db-text, #FFFFFF)" : isBrandOrange(particleColor) ? "var(--db-accent, #F3500F)" : particleColor
         return (
             <div
                 style={{
