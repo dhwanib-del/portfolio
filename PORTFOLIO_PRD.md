@@ -125,7 +125,7 @@ Story anchors already supported by the brief:
 - [x] Keyboard activation and note expansion verified in the public Vercel browser. Final build READY on `2fc51c4`; both screenshot images loaded and switched correctly with no horizontal overflow at the desktop viewport.
 - [x] All other public case routes returned HTTP 200 with note controls. Prime Video returned only its NDA notice, with no note or handoff.
 - Responsive layout uses wrapping controls and fluid images; reduced-motion styles disable movement. Mobile viewport verification remains pending.
-- [ ] Add each remaining project's signature interaction using verified or clearly labeled illustrative material; this iteration delivers marginalia and the Intel handoff.
+- [x] Add each remaining project's signature interaction using verified or clearly labeled illustrative material; the seven-scene redo adds BRIEFS lookup, GM pivot, Open Library support and BudgetCart cue restoration alongside the Intel handoff.
 
 ## Character-led depth · October 5 evening
 Direction: follow one person's task → let the first design fall short → show the documented finding → reveal the revised decision → explain the behavioral mechanism → close with evidence and limits. Use named speaker roles and Dhwani's narration. Clearly label illustrative dialogue; never present it as a participant quote.
@@ -172,3 +172,18 @@ Direction: follow one person's task → let the first design fall short → show
 - [ ] Replace reconstructed working notes with cleared sketches, research artifacts and final screens where available. Figma denied editor access to the linked BudgetCart prototype; do not imply its original screens were inspected.
 - [ ] Verify mobile viewports and reduced-motion behavior in a browser; styles support both but these modes were not independently exercised in this pass.
 - [ ] Refine character art and adapt approved interactions to Framer after concept review. This remains the concept playground.
+
+## Full case-story redo · October 6
+- [x] Rewrite all five public cases in plain language, keeping core narrative text around 177–207 words per case before optional notes. Lead with the decision, personal role and supported outcome.
+- [x] Replace repeated scroll blocks with a seven-scene player: task → friction → finding → decision → behavior → personal contribution → outcome. Adapt Growth.Design’s Apple sleep story pacing, with explicit attribution. Include a native one-page reading option.
+- [x] Integrate signature interactions at the decision: observed BRIEFS lookup vs proposed pinned profile; Intel fictional Overview/Workup handoff; GM driver-to-group pivot and phone/in-car split; Open Library contextual support; BudgetCart hide/restore cues.
+- [x] Preserve optional connected notes and plan-versus-learning folder. Add case-specific authored commentary, handwritten marginal notes and task prompts labeled as illustrative rather than participant quotations.
+- [x] Source recognition, system-status and contextual-help explanations to Nielsen’s heuristics. GM’s sunk-cost interpretation cites Arkes & Blumer (1985), DOI 10.1016/0749-5978(85)90049-4; abstract reviewed. No psychological effect or bias is claimed as measured.
+- [x] Make cursor labels specific to verified methods. Open Library says Research recommendations; it does not imply a Figma file was inspected.
+- [x] Fix first-load clicks arriving before client hydration: controls enable only when the story player is ready. Preserve native reading access without JavaScript.
+- [x] Targeted ESLint and diff checks passed. Local TypeScript reported only the existing borrowed-dependency framer-motion gaps; Vercel’s full production build passed on cef85a4, including the ready-state fix.
+- [x] Browser verified seven-scene navigation, ArrowRight, outcome/replay, all five signature interactions, Intel image load/switch, optional reading and folder, guide expand/switch/skip, dark theme and no desktop horizontal overflow. Fresh first-load chapter click works. Prime Video still renders only its NDA notice.
+- [x] Preserve existing statistics, statuses, resource links and media fields; add no metrics. Keep missing media hidden.
+- [x] Save docs/case-study-storyboards.md with evidence gates, scene outlines and a 12-frame structure for each future whiteboard presentation. Presentations themselves are the next task.
+- [ ] Original cleared screenshots, detailed enterprise artifacts and measured test results still need source access before expansion. No invented data, original comments or participant quotes.
+- [ ] Mobile viewport and reduced-motion browser verification remain pending. Responsive and motion-preference styles are implemented.
