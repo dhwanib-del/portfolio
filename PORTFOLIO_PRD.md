@@ -126,3 +126,13 @@ Story anchors already supported by the brief:
 - [x] All other public case routes returned HTTP 200 with note controls. Prime Video returned only its NDA notice, with no note or handoff.
 - Responsive layout uses wrapping controls and fluid images; reduced-motion styles disable movement. Mobile viewport verification remains pending.
 - [ ] Add each remaining project's signature interaction using verified or clearly labeled illustrative material; this iteration delivers marginalia and the Intel handoff.
+
+## Character-led depth · October 5 evening
+Direction: follow one person's task → let the first design fall short → show the documented finding → reveal the revised decision → explain the behavioral mechanism → close with evidence and limits. Use named speaker roles and Dhwani's narration. Clearly label illustrative dialogue; never present it as a participant quote.
+
+- [x] Rebuild BudgetCart's first two beats with shopper/narrator dialogue and a keyboard-accessible hide/restore decision-cues interaction. This is a labeled schematic, not a fabricated screenshot or usability test.
+- [x] Add recognition-versus-recall and task-focused minimalism as editorial HCI lenses, sourced to Jakob Nielsen's heuristics 6 and 8: https://www.nngroup.com/articles/ten-usability-heuristics/ (reviewed Jan. 30, 2024). State explicitly that these interpretations do not establish revised-prototype impact.
+- [x] Preserve Dhwani's contribution, prototype status, next research question, and outcome limits. Add no prices, quotations, or metrics.
+- [x] TSX syntax passed; Vercel build READY on `bfdd97e`. Browser verified hide/restore with keyboard and click, live content changes, source link, and no desktop horizontal overflow.
+- [ ] Apply this story direction to the other public cases using each case's specific documented evidence. Avoid assigning psychological effects without a source and a concrete design mechanism.
+- [ ] Replace schematic and speaker initials with cleared project screens and an authored character treatment where available; do not call the illustrated storytelling complete yet.
