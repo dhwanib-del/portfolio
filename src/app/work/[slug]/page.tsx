@@ -1,10 +1,10 @@
 import Link from "next/link"
-import Image from "next/image"
+import { IntelHandoff, MarginalDecision } from "@/components/case/StoryInteractions"
 import styles from "./story.module.css"
 import { notFound } from "next/navigation"
 import { cases } from "@/content/cases"
 import { projects } from "@/content/site"
-import { CaseVideo, Claim, Decision, Stats } from "@/components/case/Scenes"
+import { CaseVideo, Claim, Stats } from "@/components/case/Scenes"
 import { BriefsBeforeAfter } from "@/components/case/BeforeAfter"
 
 export function generateStaticParams() {
@@ -71,7 +71,7 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
       </div>
       {c.scene === "briefs" && <BriefsBeforeAfter />}
       <div className="container case-body">
-        {c.decision && <div id="story-decision" className={styles.turn}><p className="eyebrow">The choice that changed the direction</p><Decision {...c.decision} /></div>}
+        {c.decision && <div id="story-decision" className={styles.turn}><p className="eyebrow">The choice that changed the direction</p><MarginalDecision {...c.decision} /></div>}
       </div>
       {c.slug === "intel" && <IntelHandoff />}
       <div className="container case-body">
@@ -126,35 +126,6 @@ function Sec({ s, index }: { s: { heading: string; body: string[] }; index: numb
         <h2>{s.heading}</h2>
         {s.body.map((p) => <p key={p}>{p}</p>)}
       </div>
-    </section>
-  )
-}
-
-function IntelHandoff() {
-  return (
-    <section className={`container ${styles.handoff}`} aria-labelledby="handoff-title">
-      <p className="eyebrow">One handoff · three moments</p>
-      <h2 id="handoff-title">Keep the request. Continue the work.</h2>
-      <p className={styles.disclaimer}>Portfolio demo with fictional records. These screens illustrate the workflow; they do not measure its impact.</p>
-      <div className={styles.fragmented}>
-        <p className="eyebrow">Before · workflow schematic</p>
-        <ul aria-label="Where the case history was spread">
-          <li>Email</li><li>Phone</li><li>Spreadsheets</li>
-        </ul>
-        <p>First, piece together what already happened.</p>
-      </div>
-      <figure className={styles.storyShot}>
-        <figcaption><span>01</span><div><strong>Start with the original request.</strong><p>The overview brings the request, current status, and assigned team into the same case.</p></div></figcaption>
-        <a href="/case-shots/intel/05-case-detail.jpg" target="_blank" rel="noreferrer" aria-label="Open the case overview screenshot at full size">
-          <Image src="/case-shots/intel/05-case-detail.jpg" alt="Fictional Intel case overview showing the original request, status, and assigned team." width={2000} height={1250} sizes="(max-width: 1104px) 100vw, 1104px" />
-        </a>
-      </figure>
-      <figure className={styles.storyShot}>
-        <figcaption><span>02</span><div><strong>Move into the work without losing the request.</strong><p>The Workup view keeps the same case header and states that the original request remains preserved.</p></div></figcaption>
-        <a href="/case-shots/intel/06-case-workup.jpg" target="_blank" rel="noreferrer" aria-label="Open the case workup screenshot at full size">
-          <Image src="/case-shots/intel/06-case-workup.jpg" alt="Fictional Intel Workup view showing the persistent case header and guidance to preserve the request before secondary review." width={2000} height={1250} sizes="(max-width: 1104px) 100vw, 1104px" />
-        </a>
-      </figure>
     </section>
   )
 }
