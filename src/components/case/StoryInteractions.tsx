@@ -23,8 +23,8 @@ export function IntelHandoff() {
     <div className={styles.controls} role="group" aria-label="Choose a case view">
       {views.map((v, i) => <button key={v.src} type="button" aria-pressed={active === i} aria-controls="handoff-panel" onClick={() => setActive(i)}>{v.label}</button>)}
     </div>
-    <figure id="handoff-panel" className={styles.panel} key={view.src}>
-      <Image src={view.src} alt={view.alt} width={2000} height={1250} sizes="(max-width: 1104px) 100vw, 1104px" />
+    <figure id="handoff-panel" className={styles.panel}>
+      {views.map((v, i) => <Image key={v.src} src={v.src} alt={v.alt} hidden={active !== i} loading="eager" width={2000} height={1250} sizes="(max-width: 1104px) 100vw, 1104px" />)}
       <figcaption aria-live="polite"><strong>{view.title}</strong>{view.caption}</figcaption>
       <a className={styles.full} href={view.src} target="_blank" rel="noreferrer">Open this screen at full size ↗</a>
     </figure>
