@@ -1,0 +1,12 @@
+.chapters { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:48px; }
+.chapters a { display:flex; align-items:center; gap:12px; padding:12px 18px; border:1px solid var(--line-strong); border-radius:999px; text-decoration:none; font-size:14px; min-height:44px; }
+.chapters a:hover { background:var(--surface-2); }
+.chapters span { color:var(--accent); font-weight:700; }
+.scene { display:grid; grid-template-columns:72px minmax(0,1fr); gap:24px; padding:48px 0; border-top:1px solid var(--line); scroll-margin-top:100px; }
+.number { font-size:48px; line-height:1; letter-spacing:-.06em; color:var(--accent); font-weight:700; }
+.scene h2 { text-wrap:balance; max-width:24ch; }
+.scene p { max-width:62ch; }
+.turn { padding:32px clamp(20px,4vw,48px); margin:24px 0 48px; background:var(--surface); border:1px solid var(--line-strong); border-left:3px solid var(--accent); border-radius:20px; scroll-margin-top:100px; }
+.turn > :last-child { margin:0; }
+.evidence { padding:32px clamp(20px,4vw,48px); background:var(--surface); border:1px solid var(--line); border-radius:20px; scroll-margin-top:100px; }
+@media(max-width:600px) { .scene { grid-template-columns:36px minmax(0,1fr); gap:16px; padding:32px 0; } .number { font-size:28px; } .chapters { gap:8px; margin-bottom:32px; } .chapters a { padding:10px 14px; font-size:13px; } }
