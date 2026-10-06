@@ -16,7 +16,12 @@ export function PhotoBooth() {
   return (
     <aside className={styles.booth} aria-label="Dhwani’s photo-strip printer">
       <div className={styles.machine}>
-        <div className={styles.top}><span>little moments</span><span className={styles.light} aria-hidden="true" /></div>
+        <div className={styles.top}>
+          <span className={styles.screw} aria-hidden="true" />
+          <div className={styles.controls}><span className={styles.light} aria-hidden="true" /><button type="button" className={styles.button} aria-label="Print again" onClick={() => { setPrint((p) => p + 1); setPrinting(true) }}>↻</button></div>
+          <span className={styles.brand} aria-hidden="true">PHOTO / 03</span>
+          <span className={styles.screw} aria-hidden="true" />
+        </div>
         <div className={styles.slot} aria-hidden="true" />
         <div className={styles.feed}>
           <div key={print} className={`${styles.strip} ${printing ? styles.printing : ""}`} onAnimationEnd={() => setPrinting(false)}>
@@ -25,11 +30,11 @@ export function PhotoBooth() {
               // eslint-disable-next-line @next/next/no-img-element
               <img key={photo.src} src={photo.src} alt={photo.alt} width={280} height={210} draggable={false} />
             ))}
-            <span className={styles.caption}>a little outside the frame.</span>
+            <span className={styles.caption}>DHWANI · VOL. 01</span>
           </div>
         </div>
       </div>
-      <button type="button" className={styles.button} onClick={() => { setPrint((p) => p + 1); setPrinting(true) }}>Print again <span aria-hidden="true">↻</span></button>
+      <span className={styles.note} aria-hidden="true">fresh off the press ↗</span>
       <span className={styles.status} role="status">{print > 0 ? "Another little strip, coming right up." : "Three moments. One strip."}</span>
     </aside>
   )
