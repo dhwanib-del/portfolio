@@ -21,6 +21,7 @@ export function Companion() {
   const [vw, setVw] = useState({ w: 1200, h: 800 })
   const [on, setOn] = useState(false)
   const [say, setSay] = useState("")
+  const [method, setMethod] = useState("")
   const [greet, setGreet] = useState(false)
   const [time, setTime] = useState("")
   const [open, setOpen] = useState(false)
@@ -47,6 +48,7 @@ export function Companion() {
       cancelAnimationFrame(raf)
       raf = requestAnimationFrame(() => { setPt({ x: e.clientX, y: e.clientY }); setOn(true); setVw({ w: window.innerWidth, h: window.innerHeight }) })
       const t = e.target instanceof Element ? e.target : null
+      setMethod(t?.closest("[data-cursor]")?.getAttribute("data-cursor") || "")
       const nda = t?.closest("[data-nda]") ?? null
       const link = nda || t?.closest("a[href]") || null
       if (link === active) return
@@ -84,7 +86,7 @@ export function Companion() {
       {on && (
         <div aria-hidden className="companion" style={{ transform: `translate(${cx}px, ${cy}px)` }}>
           <svg width="16" height="16" viewBox="0 0 16 16"><path d="M1 1l5.5 13 2-5.5L14 6.5z" fill="var(--accent)" stroke="var(--bg)" strokeWidth="1" /></svg>
-          <span>dhwani</span>
+          <span>{method ? `dhwani · ${method.toLowerCase()}` : "dhwani"}</span>
         </div>
       )}
       {on && text && (
