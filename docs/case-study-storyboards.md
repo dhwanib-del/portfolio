@@ -28,7 +28,7 @@ The website uses seven scenes: task, friction, finding, decision, behavior, cont
 3. **Turning point:** The field notes identified outdated contacts and building information. A faster search could surface the wrong record sooner. The unresolved question was ownership: who would maintain it? That finding changed my priorities. Retrieval, verification and maintenance needed to be considered together.
 4. **Decision:** Keep the urgent details visible; give everything else a predictable place. A pinned strip takes screen space, but keeps mid-call details in view as someone moves through a building profile. Alternative not chosen: Giving every detail equal urgency.
 5. **Behavioral explanation:** Use the case-specific lens in src/content/caseStories.ts. Label interpretation separately from research.
-6. **Personal contribution:** There were no existing Figma files. I built the information architecture and building-profile prototype around five stable areas, with urgent details pinned in view. The pinned strip uses space that other information could occupy; I chose it for the mid-call task. My work included contextual inquiry, the prototype and PRD, plus a Sheets-backed Apps Script exploration. I handed off the concept and specification. The next step is testing with dispatchers and confirming record ownership.
+6. **Personal contribution:** There were no existing Figma files. I built the information architecture and building-profile prototype around stable information areas, with urgent details pinned in view. The pinned strip uses space that other information could occupy; I chose it for the mid-call task. My work included contextual inquiry, the prototype and PRD, plus a Sheets-backed Apps Script exploration. I handed off the concept and specification. The next step is testing with dispatchers and confirming record ownership.
 7. **Outcome:** Prototype and PRD handed to DPSS. Not launched, and the 30-second goal hasn't been tested yet. Next question: Put it in front of dispatchers: can they find a detail, check the answer, and trust the structure on a real shift?
 
 **Confirmed numbers and their meaning:** 7: screens at one dispatch workstation; 10+: tools in the lookup; 30s: goal to find a detail · not yet tested
@@ -36,20 +36,14 @@ The website uses seven scenes: task, friction, finding, decision, behavior, cont
 **Visual plan:** Observed PDF → separate verification schematic; proposed pinned profile. Replace the schematic only with cleared prototype media.
 
 ## Intel workspace · U-M Division of Public Safety & Security
-
-**Headline:** The next analyst needed the whole story.
-
-1. **Task:** Requests arrived by email or phone, and work continued in spreadsheets. A handoff meant piecing the case back together. I interviewed six analysts and built a shared workspace around the information the next person needed to continue.
-2. **Friction:** Email and phone handled intake; spreadsheets held the work. I interviewed six analysts to understand how they found the request, current status and ownership when picking up a case. I made space for quieter stakeholders in those conversations so the workflow would not reflect only the most vocal person.
-3. **Turning point:** The analysts already relied on monitoring tools. Replacing those tools would enlarge the project before resolving the handoff. I narrowed the scope to a shared case-management workflow: keep the request, status, ownership and related information connected.
-4. **Decision:** Connect the case history before trying to replace the surrounding tools. The analysts needed continuity across handoffs while keeping the monitoring tools they already relied on. Alternative not chosen: Replacing the monitoring apps with one platform.
-5. **Behavioral explanation:** Use the case-specific lens in src/content/caseStories.ts. Label interpretation separately from research.
-6. **Personal contribution:** I designed the workflow and built the first Google Apps Script version outside production systems. The Intelligence Group uses the workspace and has begun building its own server version. Adoption is the outcome I can support. A faster intake or handoff still needs measurement. The screens here contain fictional demo records, not operational case data.
-7. **Outcome:** In use by the Intelligence Group. Shown here at workflow level with invented records. Next question: Measure time from intake to first review now that reports arrive structured.
-
-**Confirmed numbers and their meaning:** No numerical impact claim. Do not manufacture one.
-
-**Visual plan:** Existing fictional Overview and Workup screens. Keep the fictional-record caption visible.
+**Source gate:** The source notes require approved evidence before publishing interview counts, adoption, launch or server-migration claims. Earlier versions overstated these; keep the outline at workflow level.
+1. **Task:** Intelligence Hub is separate from BRIEFS: it focuses on requests and investigation work. My design focus was a shared workspace where each role can understand current status and the next action.
+2. **Friction:** I explored how related requests and investigation work could stay connected in a shared workspace. The design question was how to make status and the next step clear across roles.
+3. **Turning point:** A useful overview has to respect role-appropriate access. The design direction connects related work while keeping the current state reviewable.
+4. **Decision:** Connect related requests and investigation work in a role-aware workspace. A shared picture should clarify status without exposing the same information to every role.
+5. **Behavioral lens:** Visibility of system status, as an editorial interpretation of the fictional demo—not evidence of improved performance.
+6. **Public demo:** The screens here use fictional records to illustrate the proposed handoff between views. They are not operational screens or evidence of adoption. Delivery and launch status need confirmation against an approved project source; no speed improvement is claimed.
+7. **Outcome:** Workflow direction and fictional portfolio demo. Launch status and impact are not claimed. Next question: Confirm the approved delivery status, then evaluate whether each role can identify the next action.
 
 ## Convoy · General Motors
 
@@ -103,3 +97,9 @@ The website uses seven scenes: task, friction, finding, decision, behavior, cont
 Use a 12-frame outline for each project: headline → person/task → observed friction → research and my part → turning point → rejected alternative → chosen experience → behavioral interpretation → craft and implementation → evidence of delivery/adoption/testing → limits → next question. Use actual artifacts to expand the story; do not add decorative “data” without a source.
 
 Evidence still needed: cleared before/after screens, original annotated research artifacts, documented test task results and participant counts where absent, source-backed enterprise trade-offs, and any measured product outcomes. Missing results stay explicitly unknown. No Prime Video presentation until cleared.
+
+## Accuracy follow-up · October 6
+- The live BRIEFS page and earlier PRD notes disagree on the final tab count; avoid a count until current artifacts are reconciled.
+- Intel interview count, adoption and server claims require an approved source. Use the revised workflow-level outline above.
+- GM Convoy is not an HVAC project; keep its convoy and multi-screen interaction focus.
+- Treat this as an evidence-gated presentation plan, not proof that the complete content audit is finished.
