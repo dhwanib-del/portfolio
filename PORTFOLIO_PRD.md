@@ -134,7 +134,7 @@ Direction: follow one person's task → let the first design fall short → show
 - [x] Add recognition-versus-recall and task-focused minimalism as editorial HCI lenses, sourced to Jakob Nielsen's heuristics 6 and 8: https://www.nngroup.com/articles/ten-usability-heuristics/ (reviewed Jan. 30, 2024). State explicitly that these interpretations do not establish revised-prototype impact.
 - [x] Preserve Dhwani's contribution, prototype status, next research question, and outcome limits. Add no prices, quotations, or metrics.
 - [x] TSX syntax passed; Vercel build READY on `bfdd97e`. Browser verified hide/restore with keyboard and click, live content changes, source link, and no desktop horizontal overflow.
-- [ ] Apply this story direction to the other public cases using each case's specific documented evidence. Avoid assigning psychological effects without a source and a concrete design mechanism.
+- [x] Apply this story direction to the other public cases using each case's specific documented evidence. Avoid assigning psychological effects without a source and a concrete design mechanism.
 - [ ] Replace schematic and speaker initials with cleared project screens and an authored character treatment where available; do not call the illustrated storytelling complete yet.
 
 ## Live-site elements and story order · October 5 evening
@@ -160,3 +160,15 @@ Direction: follow one person's task → let the first design fall short → show
 - [x] Align hero columns at the top with a 24px inset for intro copy; remove inherited minimum height and tighten copy/control spacing.
 - [x] Reduce desktop work-section top padding from 118px to 48px and hero bottom padding from 48px to 32px. Use 32px work top padding in the stacked layout.
 - [x] Vercel build READY on `6f9c217`. Browser confirmed the deployed padding and reviewed the desktop layout: Selected Work begins closer to the strip. Mobile browser verification remains pending.
+
+## Evidence-led story playground · October 6
+- [x] Deepen all five public narratives around the documented turning point and Dhwani’s contribution. Preserve existing statistics, project status, media and NDA restrictions.
+- Evidence reviewed: Portfolio Content (Dhwani-authored source notes); UMSI x Open Library Final Report (8 interviews, 330 affinity points); Contextual Inquiry - Dispatch Group (retrieval, separate verification, record ownership). GM and Intel use previously confirmed project facts. BudgetCart uses the authored project account; original Figma access remains blocked.
+- [x] Add a theme-aware working folder with Problem → Finding → Decision controls, a connected-thread mode, and a plan-versus-learning notebook. Notes are explicitly reconstructed summaries, not original comments or screenshots; the notebook uses project sequence without invented dates.
+- [x] Add an illustrated, skippable Dhwani guide with explicitly authored narration. Add contextual method labels to the existing decorative Figma-style cursor. Visible method labels and native buttons keep the reasoning accessible without a mouse.
+- [x] Replace the placeholder About gallery with a compact photo archive using the three existing live-site photos, overlapping paper cards, caption reveal, Tidy up reset, and the printed strip. Preserve reduced-motion support.
+- [x] New components and story/content files passed targeted ESLint (one existing image warning). Companion lint still reports the pre-existing synchronous clock-state effect; the added pointer-event label introduces no new lint finding. Diff checks passed.
+- [x] Vercel production build READY on 9896f24. Browser verified all five case routes, keyboard note selection, thread advance, notebook switch, guide skip/restore control, contextual cursor label, photo loading, keyboard caption reveal and reset. No desktop horizontal overflow. Prime Video renders only the NDA notice.
+- [ ] Replace reconstructed working notes with cleared sketches, research artifacts and final screens where available. Figma denied editor access to the linked BudgetCart prototype; do not imply its original screens were inspected.
+- [ ] Verify mobile viewports and reduced-motion behavior in a browser; styles support both but these modes were not independently exercised in this pass.
+- [ ] Refine character art and adapt approved interactions to Framer after concept review. This remains the concept playground.
