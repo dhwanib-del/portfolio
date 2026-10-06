@@ -59,13 +59,11 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
         {c.decision && <a href="#story-decision"><span>02</span> The decision</a>}
         <a href="#story-evidence"><span>03</span> The evidence</a>
       </nav>
-      {(c.video || figures[0] || c.stats) && <div className="container case-media">
+      {(c.video || figures[0]) && <div className="container case-media">
         {c.video ? <CaseVideo src={c.video} label="Project walkthrough video" /> :
           figures[0] ? <Figure f={figures[0]} /> : null}
-        {c.stats && <Stats items={c.stats} />}
       </div>}
 
-      {c.claim && <div className="container"><Claim {...c.claim} /></div>}
 
       <div className="container case-body">
         {c.slug !== "budgetcart" && c.sections.slice(0, 1).map((s) => <Sec key={s.heading} s={s} index={0} />)}
@@ -85,6 +83,9 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
           </aside>
         )}
       </div>
+
+      {c.claim && <div className="container"><Claim {...c.claim} /></div>}
+      {c.stats && <div className="container case-media"><Stats items={c.stats} /></div>}
 
       {figures.slice(c.video ? 0 : 1).map((f) => <Figure key={f.src} f={f} />)}
 
