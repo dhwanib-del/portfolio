@@ -19,3 +19,5 @@
 .full { display:inline-block; padding:10px 0; min-height:44px; font-size:14px; text-underline-offset:4px; }
 @keyframes appear { from { opacity:.6; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 @media(prefers-reduced-motion:reduce) { .note,.controls button { transform:none!important; transition:none; } .panel { animation:none; } }
+
+.panel img[hidden] { display:none; }
