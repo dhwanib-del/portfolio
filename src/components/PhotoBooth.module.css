@@ -6,7 +6,7 @@
 .feed { position: relative; z-index: 2; width: 170px; height: 375px; margin: -14px auto 0; overflow: hidden; padding: 0 10px 14px; }
 .strip { background: #f7f2e9; color: #242424; padding: 10px 9px 15px; box-shadow: 2px 5px 10px #0004; transform: rotate(-2deg); transform-origin: center top; }
 .strip img { display: block; width: 100%; height: auto; margin-bottom: 7px; aspect-ratio: 4/3; object-fit: cover; filter: saturate(.8) contrast(1.04); }
-.caption { display: block; font: 15px/1.15 var(--font-hand); padding: 4px 0 0; }
+.caption { display: block; font: 15px/1.15 "Patrick Hand", cursive; padding: 4px 0 0; }
 .printing { animation: feed 2.6s linear both; }
 .button { display: inline-flex; align-items: center; gap: 12px; min-height: 44px; padding: 9px 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--text); cursor: pointer; font: 500 13px/1.2 var(--font-sans); }
 .button:hover { border-color: var(--accent); }
