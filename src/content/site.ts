@@ -48,8 +48,8 @@ export const projects: Project[] = [
     title: "Intel workspace · UM DPSS",
     result: "Case history in one shared workspace",
     tags: ["Case management", "Stakeholder research", "Workflow"],
-    body: "I interviewed six analysts and adjusted my questions to bring quieter voices in. The concept brought case history, status, ownership, and related information into one workspace.",
-    hint: "in use by a real intel team →",
+    body: "The concept connects requests and investigation work in a shared, role-aware workspace. The public screens use fictional demo records.",
+    hint: "explore the fictional workflow demo →",
   },
   {
     slug: "general-motors",
@@ -57,7 +57,7 @@ export const projects: Project[] = [
     result: "I challenged the biometric direction",
     tags: ["HMI", "Advanced prototyping", "Design system"],
     body: "I pushed us from biometrics toward a community-centered convoy. I built advanced Figma interactions and reusable components in our first shared design system; cab testing helped us weigh the trade-offs.",
-    hint: "HVAC prototyping in a 3D-printed cab →",
+    hint: "group coordination across phone and vehicle →",
     brand: "gm",
   },
   {
@@ -75,7 +75,7 @@ export const projects: Project[] = [
     title: "Open Library · Internet Archive",
     result: "Language help, inside the reading flow",
     tags: ["Research", "Multilingual", "Accessibility"],
-    body: "My first affinity map organized 330 data points from eight interviews. In client calls, I focused on international students’ language barriers; the partner later improved its feedback system and invested more in Open Library.",
+    body: "I contributed to interviews, client calls and my first affinity map. Our team synthesized 330 data points into recommendations for multilingual reading access.",
     hint: "language help in the reading flow →",
     brand: "openlibrary",
   },
@@ -94,8 +94,8 @@ export type Role = { org: string; role: string; dates: string; summary: string; 
 // Newest first
 export const experience: Role[] = [
   { org: "Adobe", role: "Student Ambassador", dates: "Jul 2026 – now", summary: "Workshops, content and campus events for creative students.", current: true },
-  { org: "U-M Division of Public Safety & Security", role: "UX Design Intern", dates: "May – Aug 2026", summary: "Designed tools for campus dispatch and the Intelligence Group. The Intel workspace is in use." },
-  { org: "General Motors", role: "UX Researcher & Designer", dates: "Jan – May 2026", summary: "In-cab HVAC prototyping on real screens, tested in a 3D-printed truck cab." },
+  { org: "U-M Division of Public Safety & Security", role: "UX Design Intern", dates: "Summer 2026", summary: "Designed building-information and case-management workflows for DPSS." },
+  { org: "General Motors", role: "UX Researcher & Designer", dates: "Jan – May 2026", summary: "In-vehicle interaction prototyping for the GM-affiliated Convoy project." },
   { org: "Iska Press for African Perspectives", role: "UX Researcher & Project Manager", dates: "Jan – May 2026", summary: "Led a research and project-management consulting engagement." },
   { org: "SOCHI, University of Michigan", role: "Project Manager & UX Researcher", dates: "Sep 2025 – May 2026", summary: "Product strategy, research and project management." },
   { org: "U-M Global Scholars Program", role: "Project Manager & Social Media Coordinator", dates: "Aug 2025 – May 2026", summary: "Led project teams and global community programming." },
