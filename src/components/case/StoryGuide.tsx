@@ -10,7 +10,7 @@ export function StoryOpening({ story }: { story: Story }) {
 }
 export function StoryGuide({ story }: { story: Story }) {
  const [active,setActive]=useState(0)
- const [show,setShow]=useState(true)
+ const [show,setShow]=useState(false)
  return <aside className={styles.guide} aria-label="Dhwani’s commentary">
   <div className={styles.guideTop}>
    <svg viewBox="0 0 64 76" width="48" height="56" aria-hidden="true"><path d="M12 68V34C12 7 52 7 52 34v34" fill="currentColor"/><ellipse cx="32" cy="35" rx="15" ry="19" fill="#edbd9b"/><path d="M16 28c0-19 32-20 32 0-10-1-15-8-16-10-4 7-11 9-16 10" fill="currentColor"/><circle cx="26" cy="34" r="1.5"/><circle cx="38" cy="34" r="1.5"/><path d="M27 43q5 5 10 0" fill="none" stroke="#713e36" strokeWidth="2"/><path d="M8 76q0-23 24-23t24 23" fill="var(--accent)"/></svg>
