@@ -58,7 +58,7 @@ export default async function CasePage({params}:{params:Promise<{slug:string}>})
    <details className={styles.fullRead}><summary>Read the whole story on one page <span>↗</span></summary><div className={styles.readingCopy}>
     <p>{c.hook}</p>{c.sections.map(s=><section key={s.heading}><h2>{s.heading}</h2>{s.body.map(p=><p key={p}>{p}</p>)}</section>)}
     <section><h2>The decision</h2><p>{c.decision?.decision}</p><p>{c.decision?.why}</p></section>
-    <section><h2>{story.lens}</h2><p>{story.theory} {story.interpretation}</p><a href="https://www.nngroup.com/articles/ten-usability-heuristics/" target="_blank" rel="noreferrer">Nielsen · heuristic {story.source} ↗</a></section>
+    <section><h2>{story.lens}</h2><p>{story.theory} {story.interpretation}</p><a href={story.sourceUrl || "https://www.nngroup.com/articles/ten-usability-heuristics/"} target="_blank" rel="noreferrer">{story.sourceLabel || `Nielsen · heuristic ${story.source}`} ↗</a></section>
     {c.ai && <section><h2>Where AI fit</h2><p>{c.ai}</p></section>}
     <section><h2>Where it stands</h2><p>{c.status}</p><p><strong>Next question:</strong> {c.next}</p></section>
    </div></details>
