@@ -1,0 +1,4 @@
+.hero { display: grid; grid-template-columns: minmax(0, 650px) minmax(240px, 290px); gap: clamp(24px, 5vw, 80px); max-width: 1220px; margin-inline: auto; }
+.intro { min-width: 0; }
+.hero h1 { font-size: clamp(64px, 8vw, 112px); }
+@media (max-width: 850px) { .hero { grid-template-columns: minmax(0, 1fr); padding-bottom: 48px; gap: 28px; } }
