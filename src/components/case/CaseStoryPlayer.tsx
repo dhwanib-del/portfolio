@@ -18,11 +18,12 @@ export function CaseStoryPlayer({ project, story }: { project: Case; story: Stor
  const ready=useSyncExternalStore(subscribeReady,clientReady,serverReady)
  const frame=useRef<HTMLDivElement>(null)
  const go=(next:number)=>{setStep(Math.max(0,Math.min(chapters.length-1,next)));frame.current?.focus({preventScroll:true});frame.current?.scrollIntoView({behavior:"auto",block:"start"})}
+ const decisionMethod: Record<string,string>={briefs:"Information architecture",intel:"Apps Script prototype","general-motors":"Figma prototyping",openlibrary:"Research recommendations",budgetcart:"Figma components"}
  const titles=[({briefs:"A building contact, mid-call.",intel:"A case reaches the next analyst.","general-motors":"A trip involves more than one driver.",openlibrary:"An unfamiliar term interrupts the page.",budgetcart:"One item. Several things to weigh."} as Record<string,string>)[project.slug],project.sections[0].heading,project.sections[1].heading,project.decision?.decision||story.move,story.lens,project.sections[2].heading,"What happened next."]
  return <section id="story" className={styles.player} aria-label="Interactive case story">
   <div className={styles.toolbar}><span>the story / {project.org.split(" · ")[0]}</span><span>{String(step+1).padStart(2,"0")} / 07</span></div>
   <div className={styles.chapterTabs} role="group" aria-label="Choose a story chapter">
-   {chapters.map((label,i)=><button type="button" key={label} disabled={!ready} aria-pressed={step===i} aria-controls="story-frame" onClick={()=>go(i)} data-cursor={i<3?"Research synthesis":i===3?"Figma prototyping":"Explaining the decision"}><span aria-hidden="true">{String(i+1).padStart(2,"0")}</span>{label}</button>)}
+   {chapters.map((label,i)=><button type="button" key={label} disabled={!ready} aria-pressed={step===i} aria-controls="story-frame" onClick={()=>go(i)} data-cursor={i<3?"Research synthesis":i===3?decisionMethod[project.slug]:"Explaining the decision"}><span aria-hidden="true">{String(i+1).padStart(2,"0")}</span>{label}</button>)}
   </div>
   <div id="story-frame" ref={frame} className={styles.frame} tabIndex={0} onKeyDown={e=>{if(e.target!==e.currentTarget)return;if(e.key==="ArrowRight"){e.preventDefault();go(step+1)}if(e.key==="ArrowLeft"){e.preventDefault();go(step-1)}}} aria-label={`Chapter ${step+1}: ${chapters[step]}. Use left and right arrows to navigate.`}>
    <div className={styles.content} key={step}>
