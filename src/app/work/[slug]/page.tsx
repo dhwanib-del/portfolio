@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { BudgetStory } from "@/components/case/BudgetStory"
 import { IntelHandoff, MarginalDecision } from "@/components/case/StoryInteractions"
 import styles from "./story.module.css"
 import { notFound } from "next/navigation"
@@ -67,15 +68,16 @@ export default async function CasePage({ params }: { params: Promise<{ slug: str
       {c.claim && <div className="container"><Claim {...c.claim} /></div>}
 
       <div className="container case-body">
-        {c.sections.slice(0, 1).map((s) => <Sec key={s.heading} s={s} index={0} />)}
+        {c.slug !== "budgetcart" && c.sections.slice(0, 1).map((s) => <Sec key={s.heading} s={s} index={0} />)}
       </div>
       {c.scene === "briefs" && <BriefsBeforeAfter />}
+      {c.slug === "budgetcart" && <BudgetStory />}
       <div className="container case-body">
-        {c.decision && <div id="story-decision" className={styles.turn}><p className="eyebrow">The choice that changed the direction</p><MarginalDecision {...c.decision} /></div>}
+        {c.slug !== "budgetcart" && c.decision && <div id="story-decision" className={styles.turn}><p className="eyebrow">The choice that changed the direction</p><MarginalDecision {...c.decision} /></div>}
       </div>
       {c.slug === "intel" && <IntelHandoff />}
       <div className="container case-body">
-        {c.sections.slice(1).map((s, index) => <Sec key={s.heading} s={s} index={index + 1} />)}
+        {c.sections.slice(c.slug === "budgetcart" ? 2 : 1).map((s, index) => <Sec key={s.heading} s={s} index={index + (c.slug === "budgetcart" ? 2 : 1)} />)}
         {c.ai && (
           <aside className="case-ai" aria-label="Where AI fit">
             <p className="eyebrow">where AI fit</p>
