@@ -34,7 +34,8 @@ Story anchors already supported by the brief:
 - BudgetCart: grocery decisions under budget and SNAP/WIC constraints → interviews/prototypes → a clearly labeled concept.
 
 - [x] Adopt this story framework in the rebuild brief.
-- [ ] Rewrite and visually sequence each public case using its verified evidence and available cleared media.
+- [x] Rewrite the five public case narratives around a concrete task, friction, a change in understanding, Dhwani's decision, and the documented result.
+- [ ] Complete the illustrated sequence with cleared before/after project media. Existing media slots and the BRIEFS workflow illustration remain available.
 
 ## Project story checklist
 - [x] **Open Library:** uneven team collaboration; first affinity mapping; client calls; international-student language needs; partner adopted feedback-process improvements and increased project investment. The case page states the recommendations were not implemented or tested with readers; no reader outcome is claimed. Evidence: final report plus Dhwani-confirmed partner follow-through.
@@ -95,3 +96,10 @@ Story anchors already supported by the brief:
 - Evidence: Dhwani's confirmed account recorded in this brief and the existing GM project card in `src/content/site.ts`. Added no metrics or implementation outcomes.
 - Checks: TypeScript syntax/module loading; preserved all other case records, existing GM metrics and NDA status; Vercel build READY; updated copy confirmed in the deployed page response.
 - The broader GM story checklist remains open pending cleared source evidence for enterprise constraints.
+
+## Story narrative pass · October 5
+- [x] Rewrote BRIEFS, Intelligence Hub, GM, Open Library, and BudgetCart in `src/content/cases.ts` using the framework above. Each has three short sections and a task-specific opening.
+- Evidence: existing confirmed case records, the project cards, and the evidence gates in this brief. No invented dialogue or new metrics; existing statistics, statuses, resource links, and NDA exclusions preserved.
+- [x] TypeScript syntax/module loading and content-shape checks passed; verified preservation of metrics, media slots, links, project statuses, and confidential-case exclusion.
+- [ ] Add cleared project screenshots and annotations before treating the visual storytelling pass as complete.
+- [x] Vercel build READY on `a4d8a4a`; all five deployed case routes returned HTTP 200 and their rewritten headlines were confirmed in the page responses. This verifies deployed copy, not a full browser layout review.
