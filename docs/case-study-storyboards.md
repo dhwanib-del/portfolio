@@ -9,6 +9,7 @@ The website uses seven scenes: task, friction, finding, decision, behavior, cont
 - Keep GM cleared at workflow level; exclude Prime Video project details.
 - Borrow Growth.Design’s scene pacing, not its characters, artwork or psychological claims.
 - HCI interpretations are grounded in Nielsen’s original heuristics: https://www.nngroup.com/articles/ten-usability-heuristics/
+- GM uses an editorial sunk-cost lens, sourced to Arkes & Blumer (1985): https://www.sciencedirect.com/science/article/pii/0749597885900494. The abstract was reviewed; no team bias is claimed or measured.
 - Story reference: https://growth.design/case-studies/apple-sleep-notification
 
 ## Reviewed sources
