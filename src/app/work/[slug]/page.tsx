@@ -65,7 +65,7 @@ export default async function CasePage({params}:{params:Promise<{slug:string}>})
   </header>
   <div className="container"><CaseStoryPlayer project={c} story={story} readMinutes={readMinutes}/></div>
   {c.video && <div className="container case-media"><CaseVideo src={c.video} label="Project walkthrough video"/></div>}
-  {c.figures.filter(f=>f.src).map(f=><figure className="case-fig container" key={f.src}>{f.video?<video src={f.src} controls muted playsInline aria-label={f.alt}/>:<Image src={f.src!} alt={f.alt} width={1600} height={1000} sizes="(max-width:1104px) 100vw,1104px" style={{width:"100%",height:"auto"}}/>}<figcaption>{f.caption}</figcaption></figure>)}
+  {c.figures.slice(2).filter(f=>f.src).map(f=><figure className="case-fig container" key={f.src}>{f.video?<video src={f.src} controls muted playsInline aria-label={f.alt}/>:<Image src={f.src!} alt={f.alt} width={1600} height={1000} sizes="(max-width:1104px) 100vw,1104px" style={{width:"100%",height:"auto"}}/>}<figcaption>{f.caption}</figcaption></figure>)}
   <div className={`container ${styles.appendix}`}>
    <details className={styles.fullRead}><summary>Text-only version <span>↗</span></summary><div className={styles.readingCopy}>
     <p>{c.hook}</p>{c.sections.map(s=><section key={s.heading}><h2>{s.heading}</h2>{s.body.map(p=><p key={p}>{p}</p>)}</section>)}
