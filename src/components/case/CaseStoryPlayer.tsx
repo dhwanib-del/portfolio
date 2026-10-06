@@ -32,7 +32,7 @@ export function CaseStoryPlayer({ project, story }: { project: Case; story: Stor
       <details className={styles.margin}><summary>What I chose against ↗</summary><p>{project.decision?.rejected}</p></details>
       <div className={styles.signature}>{project.slug==="intel"?<IntelHandoff/>:project.slug==="budgetcart"?<BudgetStory/>:<CaseExperiment slug={project.slug}/>}</div>
     </>}
-    {step===4 && <><p className={styles.lead}>{story.theory}</p><p>{story.interpretation}</p><div className={styles.source}><span>HCI lens · interpretation, not a measured effect</span><a href="https://www.nngroup.com/articles/ten-usability-heuristics/" target="_blank" rel="noreferrer">Jakob Nielsen · heuristic {story.source} ↗</a></div></>}
+    {step===4 && <><p className={styles.lead}>{story.theory}</p><p>{story.interpretation}</p><div className={styles.source}><span>Behavioral lens · interpretation, not a measured effect</span><a href={story.sourceUrl || "https://www.nngroup.com/articles/ten-usability-heuristics/"} target="_blank" rel="noreferrer">{story.sourceLabel || `Jakob Nielsen · heuristic ${story.source}`} ↗</a></div></>}
     {step===5 && project.sections[2].body.map(p=><p key={p}>{p}</p>)}
     {step===6 && <><div className={styles.outcome}><span>DELIVERED / OBSERVED</span><p>{project.status}</p></div>
      {project.stats && <dl className={styles.evidenceNumbers}>{project.stats.map(s=><div key={s.label}><dt>{s.label}</dt><dd>{s.prefix}{s.value}{s.suffix}</dd></div>)}</dl>}
