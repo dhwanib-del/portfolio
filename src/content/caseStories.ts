@@ -2,7 +2,7 @@
 // Evidence: confirmed case records, Portfolio Content, Open Library report and dispatch field notes.
 export type Story = {
  role: string; question: string; doubt: string; finding: string; call: string;
- move: string; result: string; lens: string; theory: string; interpretation: string; source: string
+ move: string; result: string; lens: string; theory: string; interpretation: string; source: string; sourceUrl?: string; sourceLabel?: string
 }
 export const caseStories: Record<string, Story> = {
   "briefs": {
@@ -39,10 +39,12 @@ export const caseStories: Record<string, Story> = {
     "call": "I built the interactions and reusable components. Three cab tests did not answer every question about group control.",
     "move": "Pivot from one driver to a convoy; separate planning from in-car coordination.",
     "result": "Concept evaluated in three truck-cab usability tests.",
-    "lens": "Aesthetic and minimalist design",
-    "theory": "Prioritize information relevant to the task.",
-    "interpretation": "Planning stays on the phone; the in-car concept focuses on group coordination. This is a task-based rationale, not evidence of reduced distraction or road safety.",
-    "source": "8"
+    "lens": "Sunk cost: four weeks already invested.",
+    "theory": "Time already spent can make it harder to change direction.",
+    "interpretation": "The team had invested four weeks. My pushback asked us to judge the next step against the interview and the group task it revealed. I use sunk cost as an editorial lens on that decision; we did not measure a psychological bias.",
+    "source": "8",
+    "sourceUrl": "https://www.sciencedirect.com/science/article/pii/0749597885900494",
+    "sourceLabel": "Arkes & Blumer · The psychology of sunk cost (1985)"
   },
   "openlibrary": {
     "role": "Multilingual reader",
