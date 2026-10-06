@@ -1,5 +1,5 @@
 "use client"
-import { useRef, useState } from "react"
+import { useRef, useState, useSyncExternalStore } from "react"
 import type { Case } from "@/content/cases"
 import type { Story } from "@/content/caseStories"
 import { CaseExperiment } from "./CaseExperiment"
@@ -8,17 +8,21 @@ import { IntelHandoff } from "./StoryInteractions"
 import { StoryOpening, StoryGuide } from "./StoryGuide"
 import styles from "./CaseStoryPlayer.module.css"
 
+const subscribeReady = () => () => {}
+const clientReady = () => true
+const serverReady = () => false
 const chapters=["The task","The friction","What changed","My decision","The behavior","My contribution","The outcome"]
 
 export function CaseStoryPlayer({ project, story }: { project: Case; story: Story }) {
  const [step,setStep]=useState(0)
+ const ready=useSyncExternalStore(subscribeReady,clientReady,serverReady)
  const frame=useRef<HTMLDivElement>(null)
  const go=(next:number)=>{setStep(Math.max(0,Math.min(chapters.length-1,next)));frame.current?.focus({preventScroll:true});frame.current?.scrollIntoView({behavior:"auto",block:"start"})}
  const titles=[({briefs:"A building contact, mid-call.",intel:"A case reaches the next analyst.","general-motors":"A trip involves more than one driver.",openlibrary:"An unfamiliar term interrupts the page.",budgetcart:"One item. Several things to weigh."} as Record<string,string>)[project.slug],project.sections[0].heading,project.sections[1].heading,project.decision?.decision||story.move,story.lens,project.sections[2].heading,"What happened next."]
  return <section id="story" className={styles.player} aria-label="Interactive case story">
   <div className={styles.toolbar}><span>the story / {project.org.split(" · ")[0]}</span><span>{String(step+1).padStart(2,"0")} / 07</span></div>
   <div className={styles.chapterTabs} role="group" aria-label="Choose a story chapter">
-   {chapters.map((label,i)=><button type="button" key={label} aria-pressed={step===i} aria-controls="story-frame" onClick={()=>go(i)} data-cursor={i<3?"Research synthesis":i===3?"Figma prototyping":"Explaining the decision"}><span aria-hidden="true">{String(i+1).padStart(2,"0")}</span>{label}</button>)}
+   {chapters.map((label,i)=><button type="button" key={label} disabled={!ready} aria-pressed={step===i} aria-controls="story-frame" onClick={()=>go(i)} data-cursor={i<3?"Research synthesis":i===3?"Figma prototyping":"Explaining the decision"}><span aria-hidden="true">{String(i+1).padStart(2,"0")}</span>{label}</button>)}
   </div>
   <div id="story-frame" ref={frame} className={styles.frame} tabIndex={0} onKeyDown={e=>{if(e.target!==e.currentTarget)return;if(e.key==="ArrowRight"){e.preventDefault();go(step+1)}if(e.key==="ArrowLeft"){e.preventDefault();go(step-1)}}} aria-label={`Chapter ${step+1}: ${chapters[step]}. Use left and right arrows to navigate.`}>
    <div className={styles.content} key={step}>
@@ -42,8 +46,8 @@ export function CaseStoryPlayer({ project, story }: { project: Case; story: Stor
    </div>
    <aside className={styles.sideNote}><span className={styles.paperClip} aria-hidden="true">⌇</span><span className={styles.noteLabel}>in my notebook</span><p>{step<=1?story.doubt:step===2?story.finding:story.call}</p><small>Dhwani · authored narration</small></aside>
   </div>
-  <div className={styles.navigation}><button type="button" disabled={step===0} onClick={()=>go(step-1)}>← Back</button><p role="status" aria-live="polite">Chapter {step+1} of 7 · {chapters[step]}</p><button type="button" onClick={()=>go(step===6?0:step+1)} data-cursor="Story time">{step===6?"Read again ↻":`Next: ${chapters[step+1]} →`}</button></div>
+  <div className={styles.navigation}><button type="button" disabled={!ready || step===0} onClick={()=>go(step-1)}>← Back</button><p role="status" aria-live="polite">Chapter {step+1} of 7 · {chapters[step]}</p><button type="button" disabled={!ready} onClick={()=>go(step===6?0:step+1)} data-cursor="Story time">{step===6?"Read again ↻":`Next: ${chapters[step+1]} →`}</button></div>
   <p className={styles.keyboardHint}>Focus the story card to use ← →, or choose any chapter above.</p>
-  <StoryGuide story={story}/>
+  <StoryGuide story={story} ready={ready}/>
  </section>
 }
