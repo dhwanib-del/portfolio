@@ -136,3 +136,10 @@ Direction: follow one person's task → let the first design fall short → show
 - [x] TSX syntax passed; Vercel build READY on `bfdd97e`. Browser verified hide/restore with keyboard and click, live content changes, source link, and no desktop horizontal overflow.
 - [ ] Apply this story direction to the other public cases using each case's specific documented evidence. Avoid assigning psychological effects without a source and a concrete design mechanism.
 - [ ] Replace schematic and speaker initials with cleared project screens and an authored character treatment where available; do not call the illustrated storytelling complete yet.
+
+## Live-site elements and story order · October 5 evening
+- [x] Port the existing `framer/ExperienceFormats.tsx` two-deck experience mixer into the rebuilt homepage, adapting it to the current theme and React version. Use existing repository role records and explicit project-backed skills; disable inferred fallback skills.
+- [x] Move case summary claims and statistics after the story and contribution sections, before closing evidence. Preserve project facts, existing metrics, and the Prime Video NDA branch.
+- [x] TSX syntax checks passed; Vercel build READY on `1c26b41`. Public preview browser verified the mixer, loading General Motors into deck A, and keyboard crossfade changing from 50 to 51.
+- [ ] Copy the remaining live-site elements: photo-strip treatment, project media cards, preferred footer, and About gallery. Do not mark full visual replication complete from the mixer port.
+- [ ] Verify the mixer at mobile viewport sizes and complete character-led sequences for the remaining cases with cleared media.
