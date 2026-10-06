@@ -28,8 +28,8 @@ export const cases: Case[] = [
   {
     "slug": "briefs",
     "org": "BRIEFS · U-M Division of Public Safety & Security",
-    "headline": "One building question. Seven screens to search.",
-    "hook": "During a call, a dispatcher needed a building detail. I watched the lookup move from Dropbox to a long PDF, then to another system to check the contact. The call was still waiting.",
+    "headline": "Finding the contact was only half the job.",
+    "hook": "A dispatcher needed a building contact. The lookup meant opening Dropbox, scrolling a PDF, then checking another system to see whether that person still worked there. I started with the search problem. The fieldwork showed me a second one: the information could be out of date.",
     "meta": [
       {
         "label": "Role",
@@ -71,23 +71,23 @@ export const cases: Case[] = [
     ],
     "sections": [
       {
-        "heading": "The lookup kept pulling the dispatcher away from the call.",
+        "heading": "The document was there. The answer was not ready to use.",
         "body": [
-          "This was my first contextual inquiry. At one workstation, I saw seven screens and a lookup spread across more than ten tools. Finding a detail meant knowing which file to open, where to scroll, and which system to check next."
+          "In my first contextual inquiry, I watched dispatchers work across seven screens and more than ten tools. A building lookup crossed several sources before the information was ready to act on. Improving search alone would still leave the verification step."
         ]
       },
       {
-        "heading": "I gave every building the same places to look.",
+        "heading": "A faster lookup would not fix an outdated record.",
         "body": [
-          "There were no existing Figma files to start from. I mapped the workflow and built the prototype around five sections: response, contacts, maps and floor plans, documents, and details. A pinned strip keeps the details needed mid-call visible.",
-          "The structure trades some screen space for a predictable lookup. Someone can move between buildings without learning a new document each time."
+          "The field notes identified outdated contacts and building information, alongside an unanswered ownership question: who keeps these records current? I treated retrieval and verification as two parts of the same task.",
+          "That changed the prototype’s priorities: give information a consistent home, keep urgent details visible, and make proposed assistant answers checkable against approved sources. These were design intentions, not measured improvements."
         ]
       },
       {
-        "heading": "An answer also needed a way to check it.",
+        "heading": "I built the structure—and kept the remaining questions visible.",
         "body": [
-          "The assistant concept uses approved records and links each answer to its source. Missing information stays missing. AI-assisted document changes require a person to approve them.",
-          "I delivered a prototype and PRD and explored a Sheets-backed Apps Script. The next test is whether dispatchers can find and verify a detail during a real shift."
+          "With no existing Figma files to start from, I mapped the workflow and built a building-profile concept around five stable information areas. A pinned strip keeps mid-call details in view; it also takes space from the rest of the page.",
+          "My work included contextual inquiry, information architecture, prototyping and the PRD, plus exploration of a Sheets-backed Apps Script. The handoff was a prototype and specification. Testing the lookup and confirming record ownership remain necessary."
         ]
       }
     ],
@@ -106,8 +106,8 @@ export const cases: Case[] = [
   {
     "slug": "intel",
     "org": "Intel workspace · U-M Division of Public Safety & Security",
-    "headline": "Picking up a case should not mean reconstructing its history.",
-    "hook": "A case could begin by email or phone and continue across spreadsheets. Before an analyst could decide what to do next, they had to piece together what had already happened.",
+    "headline": "The next analyst needed the history, not another spreadsheet.",
+    "hook": "A request arrived by email or phone. The work continued across spreadsheets. When someone else picked up the case, understanding what had happened became a task of its own. I focused on that handoff.",
     "meta": [
       {
         "label": "My part",
@@ -128,23 +128,23 @@ export const cases: Case[] = [
     ],
     "sections": [
       {
-        "heading": "Six analysts helped me understand the handoff.",
+        "heading": "I asked six analysts how they picked up someone else’s work.",
         "body": [
-          "I interviewed six analysts about how they tracked cases. I adjusted my questions to bring quieter voices into the discussion. The recurring design problem was retrieval: finding the history, current status, and ownership of a case."
+          "The stakeholder interviews helped me map what an analyst needed to retrieve: case history, current status and ownership. I adjusted my questions to include quieter voices, rather than letting the most vocal person define the workflow."
         ]
       },
       {
-        "heading": "I brought the case history into one workspace.",
+        "heading": "The scope was continuity—not replacing every tool.",
         "body": [
-          "I designed a case-management workspace around status, ownership, and related information. Someone picking up a case should see what needs attention and what happens next, with access appropriate to their role.",
-          "The team still needed its monitoring tools. I focused the workspace on connecting the work around them."
+          "The team already relied on monitoring tools. Replacing them would broaden the project without first resolving the handoff.",
+          "I focused the design on a shared case workspace: connect the request, status, ownership and related information so the next analyst can continue the work."
         ]
       },
       {
-        "heading": "The first version gave the team something to use.",
+        "heading": "I made a version the team could actually try.",
         "body": [
-          "I built the first version in Google Apps Script so the team could try the workflow without touching production systems. The Intelligence Group uses the workspace and has started building its own server version.",
-          "Public tips also arrive through structured chatbot intake. Time from intake to review remains a question to measure."
+          "I designed the workflow and built the first version in Google Apps Script, separate from production systems. The Intelligence Group uses the workspace and has started building its own server version.",
+          "That adoption is the outcome I can report. It does not establish a measured time saving. The public screens below use fictional records to explain the workflow."
         ]
       }
     ],
@@ -162,8 +162,8 @@ export const cases: Case[] = [
   {
     "slug": "general-motors",
     "org": "Convoy · General Motors",
-    "headline": "Four weeks into biometrics, I challenged who we were designing for.",
-    "hook": "Our first direction personalized a vehicle for one driver. A driver interview exposed a different problem: a road trip meant a group coordinating across phones, screens, and messages.",
+    "headline": "We had four weeks of work. I argued for a different problem.",
+    "hook": "Our biometric concept centered on one driver. An interview pointed toward people coordinating a road trip across vehicles, phones and messages. I challenged the original direction: were we personalizing the car while missing the group?",
     "meta": [
       {
         "label": "My part",
@@ -184,23 +184,23 @@ export const cases: Case[] = [
     ],
     "sections": [
       {
-        "heading": "The interview changed the unit of design: one driver became a group.",
+        "heading": "The interview changed who the experience needed to serve.",
         "body": [
-          "I challenged the biometric direction and pushed us toward a community convoy. We set aside four weeks of work to address how people coordinate the whole trip."
+          "I pushed back on biometrics and advocated for a community convoy. The team set aside four weeks of work. The difficult choice was giving up an established direction before investing further in it."
         ]
       },
       {
-        "heading": "Planning stayed on the phone. Coordination moved into the cab.",
+        "heading": "The group needed coordination. The dashboard did not need everything.",
         "body": [
-          "Groups already organized on their phones. We kept planning there and focused the in-car view on position, spacing, and group status. A host coordinates the plan; other travelers can follow and signal when they need something.",
-          "That split gave each screen a job instead of moving the entire planning experience onto the dashboard."
+          "We kept planning on the phone, where groups already organized. The in-car concept focused on position, spacing and group status, with a host coordinating the plan.",
+          "This gave each screen a job. It also introduced a question we had not resolved: would a host make the group feel organized, or controlled?"
         ]
       },
       {
-        "heading": "I had to prototype beyond the Figma canvas.",
+        "heading": "I learned to build for the cab, not just the canvas.",
         "body": [
-          "I built advanced Figma interactions and reusable components in our first shared team design system. HVAC and in-drive views ran on vehicle-size screens alongside other prototyping tools.",
-          "The team conducted three usability tests in a 3D-printed truck cab. The concept remains a prototype; the next question is whether a host helps people feel coordinated or controlled."
+          "I built advanced Figma interactions and reusable components within our first shared team design system. The team explored HVAC and in-drive views on vehicle-size screens and conducted three usability tests in a 3D-printed cab.",
+          "Those tests describe the prototype work, not road-tested safety or a shipped outcome. Cleared details only are shown here; NDA restrictions still apply."
         ]
       }
     ],
@@ -231,8 +231,8 @@ export const cases: Case[] = [
   {
     "slug": "openlibrary",
     "org": "Open Library · Internet Archive",
-    "headline": "To understand the book, readers had to leave it.",
-    "hook": "A reader switches from a book to a dictionary or translation tool, then has to find their place again. Our international-student team started with language barriers. The research pointed us to the disruption around getting help.",
+    "headline": "The translation problem was also a reading problem.",
+    "hook": "We began with a question we recognized as international students: how could multilingual readers get better language support? The research changed the question. What happened to the reading experience every time someone left the book to find help?",
     "meta": [
       {
         "label": "My part",
@@ -268,23 +268,24 @@ export const cases: Case[] = [
     ],
     "sections": [
       {
-        "heading": "Our own language barriers gave us a question to investigate.",
+        "heading": "Our experience gave us a starting point, not the answer.",
         "body": [
-          "All five of us were international students. I joined client calls and interviews to check whether the difficulties we recognized matched other readers’ experiences. The team conducted eight interviews."
+          "All five of us were international students. I contributed to client calls and interviews, then helped synthesize the research in my first affinity map. The team conducted eight interviews and mapped 330 data points.",
+          "The research included students, academic-support staff and subject-matter experts. We looked beyond our own experience before making recommendations."
         ]
       },
       {
-        "heading": "My first affinity map made the switching visible.",
+        "heading": "Readers had workarounds. Each one interrupted the book.",
         "body": [
-          "I helped synthesize 330 research data points with the team. Readers moved between the book, dictionaries, and translation tools, losing their place and context along the way.",
-          "We recommended making existing language support easier to find within the reading flow. The design opportunity was helping someone continue reading while getting support."
+          "The final report describes switching between books, dictionaries and translation tools, alongside mistrust of academic or technical translations. Some readers cross-checked terms or built personal glossaries.",
+          "More translation options alone would not resolve that fragmentation. Our recommendation shifted toward making existing support visible and connected within the reading flow."
         ]
       },
       {
-        "heading": "The partner acted on feedback. Reader impact is still unmeasured.",
+        "heading": "The recommendation became specific—and the limits stayed clear.",
         "body": [
-          "After we shared our feedback, Open Library improved its feedback system and invested more in the project. Our reading-flow recommendations were not implemented or tested with readers.",
-          "Collaboration was uneven. I kept the work moving by making synthesis visible, organizing the report, and clarifying next steps. The final report and presentation document the team’s recommendations."
+          "We proposed moving translation out of a secondary menu, grouping comprehension tools, and offering contextual language prompts. These recommendations still needed technical and legal review; we did not implement or test them in the live interface.",
+          "Collaboration was uneven. I helped keep synthesis and next steps visible and organized the final report. Open Library later improved its feedback process and increased project investment, as I confirmed; that is separate from proving reader impact."
         ]
       }
     ],
@@ -322,8 +323,8 @@ export const cases: Case[] = [
   {
     "slug": "budgetcart",
     "org": "BudgetCart · UMSI",
-    "headline": "We hid the prices to simplify shopping. People trusted the cart less.",
-    "hook": "A shopper balancing a budget, SNAP/WIC eligibility, and dietary needs has to judge each item. Our early prototype removed brands, stores, and prices to simplify that decision. Testing showed why those details mattered.",
+    "headline": "Our simpler grocery screen hid what people needed to decide.",
+    "hook": "BudgetCart was a grocery concept for people balancing price, SNAP/WIC eligibility and dietary needs. We tried simplifying the interface by hiding brands, stores and prices. Prototype testing exposed the problem: those details helped people judge what they were choosing.",
     "meta": [
       {
         "label": "My part",
