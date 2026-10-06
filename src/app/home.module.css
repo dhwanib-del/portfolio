@@ -1,5 +1,9 @@
-.hero { display: grid; grid-template-columns: minmax(0, 680px) minmax(260px, 310px); gap: clamp(24px, 4vw, 64px); max-width: 1240px; margin-inline: auto; padding-top: 112px; padding-bottom: 48px; }
-.intro { min-width: 0; }
-.hero h1 { font-size: clamp(58px, 6.4vw, 86px); line-height: 1.12; }
+.hero { display: grid; grid-template-columns: minmax(0, 680px) minmax(260px, 310px); gap: clamp(24px, 4vw, 64px); align-items: start; min-height: 0; max-width: 1240px; margin-inline: auto; padding-top: 112px; padding-bottom: 32px; }
+.intro { min-width: 0; padding-top: 24px; }
+.hero h1 { font-size: clamp(58px, 6.4vw, 86px); line-height: 1.12; margin-bottom: 16px; }
 .hero h1::after { display: none; }
-@media (max-width: 850px) { .hero { grid-template-columns: minmax(0, 1fr); padding-top: 112px; padding-bottom: 48px; gap: 32px; } .hero h1 { font-size: clamp(58px, 10vw, 82px); } }
+.hero :global(.hero-line) { margin-bottom: 24px; }
+.hero :global(.welcome-chat) { margin-bottom: 20px; }
+.hero :global(.hero-meta) { margin-bottom: 20px; }
+.hero + :global(.reel) { padding-top: 48px; }
+@media (max-width: 850px) { .hero { grid-template-columns: minmax(0, 1fr); padding-top: 112px; padding-bottom: 24px; gap: 32px; } .intro { padding-top: 0; } .hero h1 { font-size: clamp(58px, 10vw, 82px); } .hero + :global(.reel) { padding-top: 32px; } }
