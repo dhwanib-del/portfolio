@@ -28,8 +28,8 @@ export const cases: Case[] = [
   {
     "slug": "briefs",
     "org": "BRIEFS · U-M Division of Public Safety & Security",
-    "headline": "One building lookup. Two places to check.",
-    "hook": "A dispatcher could find a contact in a building PDF and still need another system to check whether that person worked there. My first contextual inquiry turned a search problem into a question of trust—and who keeps the information current.",
+    "headline": "The critical detail should not be buried.",
+    "hook": "Dispatchers need building contacts, access details, hazards and floor plans during a call. I observed the cross-tool lookup and shaped a profile that keeps urgent details visible, with the rest organized into predictable sections.",
     "meta": [
       {
         "label": "Role",
@@ -87,7 +87,7 @@ export const cases: Case[] = [
       {
         "heading": "I gave the information a home—and a handoff.",
         "body": [
-          "There were no existing Figma files. I built the information architecture and building-profile prototype around five stable areas, with urgent details pinned in view. The pinned strip uses space that other information could occupy; I chose it for the mid-call task.",
+          "There were no existing Figma files. I built the information architecture and building-profile prototype around stable information areas, with urgent details pinned in view. The pinned strip uses space that other information could occupy; I chose it for the mid-call task.",
           "My work included contextual inquiry, the prototype and PRD, plus a Sheets-backed Apps Script exploration. I handed off the concept and specification. The next step is testing with dispatchers and confirming record ownership."
         ]
       }
@@ -108,7 +108,7 @@ export const cases: Case[] = [
     "slug": "intel",
     "org": "Intel workspace · U-M Division of Public Safety & Security",
     "headline": "The next analyst needed the whole story.",
-    "hook": "Requests arrived by email or phone, and work continued in spreadsheets. A handoff meant piecing the case back together. I interviewed six analysts and built a shared workspace around the information the next person needed to continue.",
+    "hook": "Intelligence Hub is separate from BRIEFS: it focuses on requests and investigation work. My design focus was a shared workspace where each role can understand current status and the next action.",
     "meta": [
       {
         "label": "My part",
@@ -124,40 +124,39 @@ export const cases: Case[] = [
       },
       {
         "label": "Status",
-        "value": "In use by the team"
+        "value": "Workflow and prototype"
       }
     ],
     "sections": [
       {
         "heading": "The case existed. Its context was scattered.",
         "body": [
-          "Email and phone handled intake; spreadsheets held the work. I interviewed six analysts to understand how they found the request, current status and ownership when picking up a case.",
-          "I made space for quieter stakeholders in those conversations so the workflow would not reflect only the most vocal person."
+          "I explored how related requests and investigation work could stay connected in a shared workspace.",
+          "The design question was how to make status and the next step clear across roles."
         ]
       },
       {
-        "heading": "We did not need to replace every tool.",
+        "heading": "A shared picture still needs boundaries.",
         "body": [
-          "The analysts already relied on monitoring tools. Replacing those tools would enlarge the project before resolving the handoff.",
-          "I narrowed the scope to a shared case-management workflow: keep the request, status, ownership and related information connected."
+          "A useful overview has to respect role-appropriate access.",
+          "The design direction connects related work while keeping the current state reviewable."
         ]
       },
       {
-        "heading": "I built a version people could work with.",
+        "heading": "The public demo explains the workflow.",
         "body": [
-          "I designed the workflow and built the first Google Apps Script version outside production systems. The Intelligence Group uses the workspace and has begun building its own server version.",
-          "Adoption is the outcome I can support. A faster intake or handoff still needs measurement. The screens here contain fictional demo records, not operational case data."
+          "The screens here use fictional records to illustrate the proposed handoff between views. They are not operational screens or evidence of adoption.",
+          "Delivery and launch status need confirmation against an approved project source; no speed improvement is claimed."
         ]
       }
     ],
-    "ai": "The public intake is a chatbot, so reports arrive structured instead of as free-form messages.",
-    "status": "In use by the Intelligence Group. Shown here at workflow level with invented records.",
-    "next": "Measure time from intake to first review now that reports arrive structured.",
+    "status": "Workflow direction and fictional portfolio demo. Launch status and impact are not claimed.",
+    "next": "Confirm the approved delivery status, then evaluate whether each role can identify the next action.",
     "decision": {
       "tension": "The scope decision",
-      "decision": "Connect the case history before trying to replace the surrounding tools.",
-      "why": "The analysts needed continuity across handoffs while keeping the monitoring tools they already relied on.",
-      "rejected": "Replacing the monitoring apps with one platform"
+      "decision": "Connect related requests and investigation work in a role-aware workspace.",
+      "why": "A shared picture should clarify status without exposing the same information to every role.",
+      "rejected": "A single undifferentiated view for every role"
     },
     "figures": []
   },
