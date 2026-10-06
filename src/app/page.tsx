@@ -1,3 +1,5 @@
+import { PhotoBooth } from "@/components/PhotoBooth"
+import styles from "./home.module.css"
 import { Bubble } from "@/components/Bubble"
 import { WelcomeChat } from "@/components/WelcomeChat"
 import { WorkReel } from "@/components/WorkReel"
@@ -7,8 +9,8 @@ import { bubbleLines, experience, person, projects } from "@/content/site"
 export default function Home() {
   return (
     <>
-      <section className="hero" aria-labelledby="hero-name">
-        <div>
+      <section className={`hero ${styles.hero}`} aria-labelledby="hero-name">
+        <div className={styles.intro}>
           <p className="hero-hi">hi, i&apos;m</p>
           <h1 id="hero-name" className="hero-name">{person.name}</h1>
           <p className="hero-line">I design thoughtful products for complicated, real-world workflows.</p>
@@ -20,6 +22,7 @@ export default function Home() {
           </ul>
           <Bubble lines={bubbleLines} />
         </div>
+        <PhotoBooth />
       </section>
 
 
