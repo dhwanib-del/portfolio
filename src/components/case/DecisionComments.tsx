@@ -29,7 +29,7 @@ export function DecisionComments({ notes, timeline }: { notes: Note[]; timeline:
       </div>
       <div id="decision-comment" className={styles.comment} aria-live="polite">
         <div className={styles.author}><span className={styles.avatar} aria-hidden="true">D</span><strong>Dhwani</strong><span>{note.method}</span></div>
-        <div key={active} className={styles.reveal}><p className={styles.caption}>{note.label} · evidence summary</p><h3>{note.title}</h3><p>{note.body}</p></div>
+        <div key={active} className={styles.reveal}><p className={styles.caption}>{["Problem","Finding","Decision"][active]} · evidence summary</p><h3>{note.title}</h3><p>{note.body}</p></div>
         {view==="thread" && <button className={styles.next} type="button" onClick={()=>setActive((active+1)%notes.length)} data-cursor="Connecting the dots">{active===2?"Trace it again ↻":"Follow the thread →"}</button>}
       </div>
     </>}
