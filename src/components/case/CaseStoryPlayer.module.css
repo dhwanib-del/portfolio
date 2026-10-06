@@ -18,3 +18,9 @@
 @media(hover:hover) and (prefers-reduced-motion:no-preference){.sideNote:hover{transform:rotate(1deg) translateY(-6px);box-shadow:0 8px 10px #0002,8px 22px 28px #0003}.sideNote:hover::after{width:36px;height:44px}}
 @media(max-width:850px){.sideNote{padding:22px 24px 36px;margin:16px 0 8px;max-width:420px;transform:none}}
 @media(prefers-reduced-motion:reduce){.sideNote,.sideNote::after{transition:none}.sideNote{transform:none}}
+
+/* Cursor spotlight adapted from the supplied WebX reference; local pointer events only. */
+.screenSlot{position:relative;isolation:isolate}
+.screenSlot::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(circle 180px at var(--spot-x,50%) var(--spot-y,40%),var(--accent),transparent 75%);opacity:0;transition:opacity .2s}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){.screenSlot:hover::after{opacity:.1}}
+@media(prefers-reduced-motion:reduce){.screenSlot::after{display:none;transition:none}}
