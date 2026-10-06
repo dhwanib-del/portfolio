@@ -12,6 +12,30 @@ A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwan
 - Make the voice warm, direct, and specific. Preserve the user's playful personality without hobby-list clutter.
 - Respect motion preferences, keyboard access, readable contrast, and responsive layouts.
 
+## Storytelling framework · Growth.Design reference
+Reference: https://growth.design/case-studies. Studied the Amber Alert and YouTube retention stories for their scene-led pacing, annotated friction, redesign reveals, and explanations tied to specific actions. This is an editorial adaptation for an authored portfolio, not a teardown template.
+
+Each case follows one central tension:
+1. **Enter the moment.** Start with a real person attempting a concrete task. Show the relevant interface or workflow. Use an observed scene, or explicitly label an illustrative scenario.
+2. **Expose the friction.** Show the exact step that interrupts the task and its consequence. One annotated visual should make the problem understandable before the methods are described.
+3. **Reveal what changed our understanding.** Use the interview, observation, or prototype finding that challenged the initial direction. Include a quotation only when its wording and source are verified.
+4. **Name my decision.** Say what Dhwani changed, why, and what she chose against. Distinguish her work from the team's output; retain the constraint that makes the decision interesting.
+5. **Show the changed experience.** Pair before/after views around the same task. Captions explain what the change allows someone to do. Label concepts and fictionalized records.
+6. **Explain the behavior.** Connect a design choice to the observed behavior. Add a psychology or HCI principle only when it clarifies the mechanism and has an appropriate source; do not present a principle as proof of impact.
+7. **Close with evidence.** State what was delivered, adopted, tested, or measured, then the remaining question. A recommendation, prototype, partner response, and shipped result are different outcomes.
+
+Pacing: a 30-second skim through the headline, personal contribution, decisive visual, and result; an optional three-minute deeper read. Give each section one story beat, one purposeful visual, and short copy. Use headlines that advance the story, not generic process labels. Avoid invented dialogue, dramatic stakes, causal claims, and unsupported metrics. Preserve all NDA restrictions, including Prime Video.
+
+Story anchors already supported by the brief:
+- BRIEFS: a building lookup during a call → scattered information → predictable building profiles and checkable answers.
+- GM: a biometric direction → interview-led reframing → Dhwani's pushback, convoy coordination, and vehicle-size prototyping.
+- Open Library: international-student language needs → leaving the reading flow for help → research recommendations and verified partner follow-through.
+- Intelligence Hub: fragmented case history → stakeholder interviews → a shared case-management workflow, kept separate from BRIEFS.
+- BudgetCart: grocery decisions under budget and SNAP/WIC constraints → interviews/prototypes → a clearly labeled concept.
+
+- [x] Adopt this story framework in the rebuild brief.
+- [ ] Rewrite and visually sequence each public case using its verified evidence and available cleared media.
+
 ## Project story checklist
 - [x] **Open Library:** uneven team collaboration; first affinity mapping; client calls; international-student language needs; partner adopted feedback-process improvements and increased project investment. The case page states the recommendations were not implemented or tested with readers; no reader outcome is claimed. Evidence: final report plus Dhwani-confirmed partner follow-through.
 - [ ] **GM:** user's critical pushback on biometrics; pivot to a community convoy; advanced prototyping, components, first team design system, and enterprise trade-offs.
