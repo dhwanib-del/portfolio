@@ -155,3 +155,8 @@ Direction: follow one person's task → let the first design fall short → show
 - [x] Replace chrome bar with a cream printer body, recessed output slot, screws, and a tactile vibe-colored replay button. Widen the strip, use a subtle paper edge/curl, and remove extra visible status copy in favor of a handwritten note. Keep status available to assistive technology.
 - [x] Refine feed/pause/settle animation and rebalance the hero with smaller name typography. Preserve existing photos and reduced-motion support; do not fabricate photo dates.
 - [x] Targeted ESLint and TSX syntax passed. Vercel build READY on `6c71efe`; browser verified the new layout, Enter replay, all photos loaded, and no desktop horizontal overflow. Mobile verification and Framer adaptation remain pending.
+
+## Hero spacing · October 6
+- [x] Align hero columns at the top with a 24px inset for intro copy; remove inherited minimum height and tighten copy/control spacing.
+- [x] Reduce desktop work-section top padding from 118px to 48px and hero bottom padding from 48px to 32px. Use 32px work top padding in the stacked layout.
+- [x] Vercel build READY on `6f9c217`. Browser confirmed the deployed padding and reviewed the desktop layout: Selected Work begins closer to the strip. Mobile browser verification remains pending.
