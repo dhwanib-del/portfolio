@@ -187,3 +187,12 @@ Direction: follow one person's task → let the first design fall short → show
 - [x] Save docs/case-study-storyboards.md with evidence gates, scene outlines and a 12-frame structure for each future whiteboard presentation. Presentations themselves are the next task.
 - [ ] Original cleared screenshots, detailed enterprise artifacts and measured test results still need source access before expansion. No invented data, original comments or participant quotes.
 - [ ] Mobile viewport and reduced-motion browser verification remain pending. Responsive and motion-preference styles are implemented.
+
+## Scroll-first, 30-second story pass · October 6
+- [x] Put an evidence-derived three-beat summary at the top of all five public cases: problem → discovery → Dhwani’s decision. Highlight the decision and pair it with a labeled before → design-direction workflow schematic.
+- [x] Restore scrolling as the default: all seven scenes render together, including without JavaScript. Keep optional slide view with a native, keyboard-accessible chapter range and Back/Next controls. Chapter jumps land below the main navigation.
+- [x] Use project-specific book, grocery and vehicle illustrations; keep schematic labels, verified personal contributions and supported outcome status visible. Reduce repeated authored notebook commentary to the turning points.
+- [x] Targeted ESLint and diff checks passed. Vercel full production build READY on 5e0632e.
+- [x] Public preview browser verified all five summary texts, seven scroll scenes per public case, no desktop horizontal overflow, optional slide view, keyboard range End, Back, return to scroll and decision anchor position. Prime Video has only its NDA notice and no story scenes.
+- [ ] Cleared original media and mobile viewport verification remain pending. These workflow diagrams are illustrative, not original screens or measured outcomes.
+- Whiteboard presentations are the next stage; use the existing evidence-gated storyboards and expand each turning point with verified research, original artifacts and supported results.
