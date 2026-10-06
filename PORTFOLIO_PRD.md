@@ -150,3 +150,8 @@ Direction: follow one person's task → let the first design fall short → show
 - [x] TSX syntax, targeted ESLint, and diff checks passed. Vercel build READY on `6c30c6b`. Browser verified all three photos loaded, click and Enter replay, live status change, and no desktop horizontal overflow.
 - Local full-build attempt was blocked by the borrowed dependency directory (Turbopack symlink root and missing existing packages); the successful Vercel build used the repository dependencies.
 - [ ] Verify the stacked layout on mobile, then adapt the approved concept to a Framer component with editable photos and controls.
+
+## Photobooth polish · October 6
+- [x] Replace chrome bar with a cream printer body, recessed output slot, screws, and a tactile vibe-colored replay button. Widen the strip, use a subtle paper edge/curl, and remove extra visible status copy in favor of a handwritten note. Keep status available to assistive technology.
+- [x] Refine feed/pause/settle animation and rebalance the hero with smaller name typography. Preserve existing photos and reduced-motion support; do not fabricate photo dates.
+- [x] Targeted ESLint and TSX syntax passed. Vercel build READY on `6c71efe`; browser verified the new layout, Enter replay, all photos loaded, and no desktop horizontal overflow. Mobile verification and Framer adaptation remain pending.
