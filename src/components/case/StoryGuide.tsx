@@ -3,6 +3,8 @@ import { useState } from "react"
 import type { Story } from "@/content/caseStories"
 import styles from "./CaseExperience.module.css"
 
+export function DhwaniAvatar(){return <span className={styles.guideAvatar}><svg viewBox="0 0 88 96" width="64" height="70" aria-hidden="true"><path d="M17 77V40C17 8 71 8 71 40v37" fill="#302329"/><path d="M21 77q23-15 46 0" fill="#302329"/><ellipse cx="44" cy="43" rx="22" ry="26" fill="#edbd9b"/><path d="M21 34C18 4 70 6 68 35 55 34 46 22 42 18c-5 10-12 14-21 16" fill="#302329"/><path d="M29 42q4-4 8 0m14 0q4-4 8 0" fill="none" stroke="#302329" strokeWidth="2.5" strokeLinecap="round"/><ellipse cx="30" cy="51" rx="5" ry="3" fill="#df8692" opacity=".6"/><ellipse cx="58" cy="51" rx="5" ry="3" fill="#df8692" opacity=".6"/><path d="M39 54q5 5 10 0" fill="none" stroke="#924a53" strokeWidth="2" strokeLinecap="round"/><circle cx="22" cy="53" r="3" fill="#ebbe67"/><circle cx="66" cy="53" r="3" fill="#ebbe67"/><path d="M14 96q1-27 30-27t30 27" fill="var(--accent)"/><path d="M34 70q10 14 20 0" fill="none" stroke="var(--on-accent)" strokeWidth="3"/><path d="M59 17q-12-12-13 0 6 7 13 0 14-7 13 2-7 7-13-2" fill="var(--accent)"/><path d="m7 24 2-6 2 6 6 2-6 2-2 6-2-6-6-2zM77 55l2-4 2 4 4 2-4 2-2 4-2-4-4-2z" fill="var(--accent)"/></svg></span>}
+
 export function StoryOpening({ story }: { story: Story }) {
  return <aside className={styles.opening} aria-label="The person’s task">
   <span className={styles.roleTag}>{story.role}</span><p>{story.question}</p><small>Illustrative task prompt · not a participant quote</small>
@@ -13,7 +15,7 @@ export function StoryGuide({ story, ready }: { story: Story; ready: boolean }) {
  const [show,setShow]=useState(false)
  return <aside className={styles.guide} aria-label="Dhwani’s commentary">
   <div className={styles.guideTop}>
-   <svg viewBox="0 0 64 76" width="48" height="56" aria-hidden="true"><path d="M12 68V34C12 7 52 7 52 34v34" fill="currentColor"/><ellipse cx="32" cy="35" rx="15" ry="19" fill="#edbd9b"/><path d="M16 28c0-19 32-20 32 0-10-1-15-8-16-10-4 7-11 9-16 10" fill="currentColor"/><circle cx="26" cy="34" r="1.5"/><circle cx="38" cy="34" r="1.5"/><path d="M27 43q5 5 10 0" fill="none" stroke="#713e36" strokeWidth="2"/><path d="M8 76q0-23 24-23t24 23" fill="var(--accent)"/></svg>
+   <DhwaniAvatar/>
    <div><strong>A note from me</strong><small>Dhwani · authored portfolio narration</small></div>
    <button type="button" disabled={!ready} onClick={()=>setShow(!show)} aria-expanded={show}>{show?"Skip commentary":"Hear my reasoning ↗"}</button>
   </div>
