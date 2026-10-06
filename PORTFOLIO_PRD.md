@@ -143,3 +143,10 @@ Direction: follow one person's task → let the first design fall short → show
 - [x] TSX syntax checks passed; Vercel build READY on `1c26b41`. Public preview browser verified the mixer, loading General Motors into deck A, and keyboard crossfade changing from 50 to 51.
 - [ ] Copy the remaining live-site elements: photo-strip treatment, project media cards, preferred footer, and About gallery. Do not mark full visual replication complete from the mixer port.
 - [ ] Verify the mixer at mobile viewport sizes and complete character-led sequences for the remaining cases with cleared media.
+
+## Photobooth concept · October 6
+- [x] Add a compact mechanical photo-strip printer beside the homepage intro, with a stepped feed animation, native Print again control, theme-colored light, and reduced-motion styling. Stack it beneath the intro on narrow layouts.
+- [x] Reuse three existing public live-site photographs, optimized and embedded in local SVG assets; no remote photo requests at runtime. This is a concept playground for later Framer adaptation, not a Framer release.
+- [x] TSX syntax, targeted ESLint, and diff checks passed. Vercel build READY on `6c30c6b`. Browser verified all three photos loaded, click and Enter replay, live status change, and no desktop horizontal overflow.
+- Local full-build attempt was blocked by the borrowed dependency directory (Turbopack symlink root and missing existing packages); the successful Vercel build used the repository dependencies.
+- [ ] Verify the stacked layout on mobile, then adapt the approved concept to a Framer component with editable photos and controls.
