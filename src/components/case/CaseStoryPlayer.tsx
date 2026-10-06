@@ -27,7 +27,7 @@ export function CaseStoryPlayer({ project, story }: { project: Case; story: Stor
   <div className={styles.chapterTabs} role="group" aria-label="Choose a story chapter">
    {chapters.map((label,i)=><button type="button" key={label} disabled={!ready} aria-pressed={view==="slides"?step===i:undefined} aria-controls={view==="scroll"?`story-scene-${i+1}`:"story-frame"} onClick={()=>go(i)} data-cursor={i<3?"Research synthesis":i===3?decisionMethod[project.slug]:"Explaining the decision"}><span aria-hidden="true">{String(i+1).padStart(2,"0")}</span>{label}</button>)}
   </div>
-  {(view==="scroll"?chapters.map((_,i)=>i):[step]).map(scene=>{const step=scene;return <div key={scene} id={view==="scroll"?`story-scene-${scene+1}`:"story-frame"} ref={view==="slides"?frame:undefined} className={styles.frame} tabIndex={0} onKeyDown={e=>{if(view!=="slides"||e.target!==e.currentTarget)return;if(e.key==="ArrowRight"){e.preventDefault();go(step+1)}if(e.key==="ArrowLeft"){e.preventDefault();go(step-1)}}} aria-label={`Chapter ${step+1}: ${chapters[step]}${view==="slides"?". Use left and right arrows to navigate.":""}`}>
+  {(view==="scroll"?chapters.map((_,i)=>i):[step]).map(scene=>{const step=scene;return <div key={scene} id={view==="scroll"?`story-scene-${scene+1}`:"story-frame"} ref={view==="slides"?frame:undefined} className={`${styles.frame} ${![0,2,3].includes(step)?styles.wide:""}`} tabIndex={0} onKeyDown={e=>{if(view!=="slides"||e.target!==e.currentTarget)return;if(e.key==="ArrowRight"){e.preventDefault();go(step+1)}if(e.key==="ArrowLeft"){e.preventDefault();go(step-1)}}} aria-label={`Chapter ${step+1}: ${chapters[step]}${view==="slides"?". Use left and right arrows to navigate.":""}`}>
    <div className={styles.content} key={step}>
     <p className={styles.beat}>{String(step+1).padStart(2,"0")} / {chapters[step]}</p>
     <h2>{titles[step]}</h2>
@@ -47,7 +47,7 @@ export function CaseStoryPlayer({ project, story }: { project: Case; story: Stor
      {!!project.links?.length && <nav className={styles.resources} aria-label="Project resources">{project.links.map(l=><a key={l.href} href={l.href} target="_blank" rel="noreferrer">{l.label} ↗</a>)}</nav>}
     </>}
    </div>
-   <aside className={styles.sideNote}><span className={styles.paperClip} aria-hidden="true">⌇</span><span className={styles.noteLabel}>in my notebook</span><p>{step<=1?story.doubt:step===2?story.finding:story.call}</p><small>Dhwani · authored narration</small></aside>
+   {[0,2,3].includes(step) && <aside className={styles.sideNote}><span className={styles.paperClip} aria-hidden="true">⌇</span><span className={styles.noteLabel}>in my notebook</span><p>{step<=1?story.doubt:step===2?story.finding:story.call}</p><small>Dhwani · authored narration</small></aside>}
   </div>})}
   {view==="slides" && <><label className={styles.scrubber}>Jump through the story<input type="range" min={0} max={6} value={step} disabled={!ready} aria-label="Story chapter" aria-valuetext={chapters[step]} onChange={e=>setStep(Number(e.target.value))}/></label>
   <div className={styles.navigation}><button type="button" disabled={!ready || step===0} onClick={()=>go(step-1)}>← Back</button><p role="status" aria-live="polite">Chapter {step+1} of 7 · {chapters[step]}</p><button type="button" disabled={!ready} onClick={()=>go(step===6?0:step+1)} data-cursor="Story time">{step===6?"Read again ↻":`Next: ${chapters[step+1]} →`}</button></div>
