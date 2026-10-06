@@ -103,3 +103,11 @@ Story anchors already supported by the brief:
 - [x] TypeScript syntax/module loading and content-shape checks passed; verified preservation of metrics, media slots, links, project statuses, and confidential-case exclusion.
 - [ ] Add cleared project screenshots and annotations before treating the visual storytelling pass as complete.
 - [x] Vercel build READY on `a4d8a4a`; all five deployed case routes returned HTTP 200 and their rewritten headlines were confirmed in the page responses. This verifies deployed copy, not a full browser layout review.
+
+## Visual story layout · October 6
+- [x] Adapt the Apple sleep-notification reference (https://growth.design/case-studies/apple-sleep-notification) into a concise scroll sequence: numbered friction scenes, an early decision reveal, solution details, then evidence and its limits.
+- [x] Add keyboard-accessible chapter anchors and responsive, theme-aware scene styling to all five public case pages. Keep the existing BRIEFS workflow illustration.
+- [x] Hide empty media placeholders and their authoring instructions from public pages; preserve content media slots for cleared assets. No project facts or metrics changed; Prime Video stays under NDA.
+- [x] TypeScript syntax check passed. Vercel build READY for `7d85a38`; all five case routes returned HTTP 200 with chapter, scene, decision, and evidence markup. Prime Video returned HTTP 200 with only its NDA notice.
+- [ ] Complete browser layout review: the Vercel alias redirects this browser to login. `dhwanibagrecha.com/work/budgetcart` still rendered the older portfolio in the browser on October 6, despite the new deployment listing that alias.
+- [ ] Add cleared screenshots and annotations; the illustrated sequence remains incomplete until real project media is available.
