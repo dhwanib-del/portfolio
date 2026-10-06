@@ -1,7 +1,7 @@
 import { Bubble } from "@/components/Bubble"
 import { WelcomeChat } from "@/components/WelcomeChat"
 import { WorkReel } from "@/components/WorkReel"
-import { Experience } from "@/components/Experience"
+import TheSet from "@/components/ExperienceMixer"
 import { bubbleLines, experience, person, projects } from "@/content/site"
 
 export default function Home() {
@@ -25,7 +25,18 @@ export default function Home() {
 
       <WorkReel projects={projects} eyebrow="selected work" heading="Complex work, made clearer." />
 
-      <Experience roles={experience} />
+      <section className="section"><div className="container"><TheSet roles={experience.map((r) => ({ ...r, skills: ({
+            "Adobe": "workshops, content, campus events",
+            "U-M Division of Public Safety & Security": "contextual inquiry, workflow mapping, prototyping, PRDs, stakeholder interviews",
+            "General Motors": "prototyping, usability testing, Figma",
+            "Iska Press for African Perspectives": "research, project management",
+            "SOCHI, University of Michigan": "product strategy, research, project management",
+            "U-M Global Scholars Program": "team leadership, community programming",
+            "Open Library": "interviews, affinity mapping, research synthesis",
+            "MSU College of Social Science": "eye-tracking data, analysis",
+            "Miller Johnson": "internal systems, operations",
+            "DDB Mudra Group": "accessibility research, representation"
+          } as Record<string, string>)[r.org] || "" }))} eyebrow="experience" title="The *set* so far" intro="Research, design and leading teams. Newest first." visibleCount={6} /></div></section>
 
 
 
