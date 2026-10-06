@@ -111,3 +111,10 @@ Story anchors already supported by the brief:
 - [x] TypeScript syntax check passed. Vercel build READY for `7d85a38`; all five case routes returned HTTP 200 with chapter, scene, decision, and evidence markup. Prime Video returned HTTP 200 with only its NDA notice.
 - [ ] Complete browser layout review: the Vercel alias redirects this browser to login. `dhwanibagrecha.com/work/budgetcart` still rendered the older portfolio in the browser on October 6, despite the new deployment listing that alias.
 - [ ] Add cleared screenshots and annotations; the illustrated sequence remains incomplete until real project media is available.
+
+## Intel illustrated sequence · October 5 evening
+- [x] Add a compact workflow schematic and two annotated existing screenshots: original-request overview → case workup. Use only the repository's fictional demo records; identify them as a portfolio demo, not evidence of measured impact.
+- [x] TypeScript syntax and diff checks passed; Vercel build READY for `85ed025`. Browser verified both screenshot panels on `portfolio-xi-lilac-73.vercel.app/work/intel`, with no horizontal overflow at the desktop viewport.
+- [x] Found an accessible public Vercel production alias; the browser login limitation applies to the protected aliases, not this public alias.
+- [ ] Custom-domain routing still needs Cloudflare DNS access. Vercel lists the domain as externally managed with Cloudflare nameservers; the current domain response identifies Framer. No DNS settings were changed.
+- [ ] User requested replication of the current dhwanibagrecha.com design with the new stories; source capture in progress. Keep NDA exclusions and evidence gates.
