@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { GalleryWall } from "@/components/GalleryWall"
+import { PhotoArchive } from "@/components/PhotoArchive"
 import { PersonalPlay } from "@/components/PersonalPlay"
 
 export const metadata = { title: "About · Dhwani Bagrecha" }
@@ -17,7 +17,7 @@ export default function About() {
         <Link className="btn btn-primary" href="/#contact">Let&apos;s talk ↗</Link>
       </section>
 
-      <GalleryWall />
+      <PhotoArchive />
       <PersonalPlay />
 
       <section className="container map-game-link-section">
