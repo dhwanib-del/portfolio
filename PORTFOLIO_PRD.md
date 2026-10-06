@@ -210,3 +210,12 @@ Direction: follow one person's task → let the first design fall short → show
 - [ ] Complete the broader fact audit. These corrections resolve identified mismatches, not every claim. Verify Intel delivery status and source counts, BRIEFS final information architecture, and cleared original project media before expansion.
 - [ ] Verify mobile viewports and reduced-motion behavior in a browser. Responsive and motion-preference styles are implemented; these modes were not independently exercised.
 - [ ] Adapt approved concepts to Framer. The rebuilt preview is available at https://portfolio-xi-lilac-73.vercel.app/about; the custom domain still serves the earlier Framer site and DNS was not changed.
+
+
+## Supplied interaction references and compact gallery · October 6
+- [x] Adapt the uploaded StickyNote reference into the existing case-study notebook narration: palette-aware paper gradients, curled corner, gentle hover lift and reduced-motion styling. No project facts changed.
+- [x] Adapt the uploaded WebX cursor spotlight inside screen frames using local pointer events and CSS variables, without adding global listeners or per-move React state. The decorative overlay has pointer-events:none; touch and reduced-motion modes omit the glow.
+- [x] Make the About photo wall smaller (920px maximum width and shorter photo stage), preserve all three existing local photos in full color, and move the photo-strip printer into a native optional disclosure. This is the existing three-photo archive, not a restoration of the full Framer gallery collection.
+- [x] Targeted ESLint and diff checks passed. Vercel full production build READY on f306e0d. Standalone local CSS parser was unavailable in the borrowed dependencies; deployment compilation succeeded.
+- [x] Desktop browser verified all three photo assets load, keyboard caption reveal/reset and printer disclosure, screen disclosure clicks through the spotlight, pointer coordinates update and glow reaches 0.1 opacity, and no horizontal overflow. Reviewed paper-note layout with chapter rail.
+- [ ] Mobile and reduced-motion browser review remain pending. Original cleared case screens and the rest of the gallery collection still need assets before expansion.
