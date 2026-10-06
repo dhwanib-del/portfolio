@@ -219,3 +219,10 @@ Direction: follow one person's task → let the first design fall short → show
 - [x] Targeted ESLint and diff checks passed. Vercel full production build READY on f306e0d. Standalone local CSS parser was unavailable in the borrowed dependencies; deployment compilation succeeded.
 - [x] Desktop browser verified all three photo assets load, keyboard caption reveal/reset and printer disclosure, screen disclosure clicks through the spotlight, pointer coordinates update and glow reaches 0.1 opacity, and no horizontal overflow. Reviewed paper-note layout with chapter rail.
 - [ ] Mobile and reduced-motion browser review remain pending. Original cleared case screens and the rest of the gallery collection still need assets before expansion.
+
+
+## Device presentation reference · October 6
+- [x] Adapt the supplied DeviceMockups reference into locally styled responsive silver phone shells for both BudgetCart screen slots. Angled frames straighten on hover/focus; narrow layouts and reduced-motion preferences use a static front view. No external mockup overlays or new runtime dependencies.
+- [x] Preserve explicit missing-screen labels and original media fields. Wider desktop and paired phone/dashboard GM frames remain wide; add a dedicated GM phone mockup when cleared individual screen media is available.
+- [x] Targeted ESLint and diff checks passed. Vercel production build READY on c33d73e. Desktop browser verified phone shells, keyboard caption disclosure, focus straightening and no horizontal overflow; saved preview proof.
+- [ ] Cleared original mobile screens and mobile/reduced-motion browser review remain pending. The shell is a visual adaptation, not an exact reproduction of the reference's iPhone overlay assets.
