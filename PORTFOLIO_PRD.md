@@ -1,7 +1,7 @@
 # Portfolio rebuild brief
 
 ## Goal
-A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwani's craft, judgment, personal contribution, and impact in about one minute per case study.
+A concise, distinctive portfolio that lets a senior UX reviewer understand Dhwani's craft, judgment, personal contribution, and impact in a 30-second skim, with optional deeper reading.
 
 ## Product principles
 - Lead with the decision, contribution, and outcome; keep process detail only when it proves a skill.
@@ -41,7 +41,7 @@ Story anchors already supported by the brief:
 - [x] **Open Library:** uneven team collaboration; first affinity mapping; client calls; international-student language needs; partner adopted feedback-process improvements and increased project investment. The case page states the recommendations were not implemented or tested with readers; no reader outcome is claimed. Evidence: final report plus Dhwani-confirmed partner follow-through.
 - [ ] **GM:** user's critical pushback on biometrics; pivot to a community convoy; advanced prototyping, components, first team design system, and enterprise trade-offs.
 - [ ] **BRIEFS:** high-stakes supporting case; first contextual inquiry; no existing Figma files; built the concept and design foundation; Apps Script + Sheets prototype and server/deployment work; explain the sensitive-data discovery without exposing real information. Verify any time-saved claim first.
-- [ ] **Intel / Intelligence Hub:** keep separate from BRIEFS; six analysts; email/phone intake and spreadsheets made case history hard to retrieve; case-management database; stakeholder interviews and inclusive facilitation; explain navigation choices with usability evidence and HCI principles.
+- [ ] **Intel / Intelligence Hub:** keep separate from BRIEFS; verify interview and analyst counts before publication; email/phone intake and spreadsheets made case history hard to retrieve; case-management database; stakeholder interviews and inclusive facilitation; explain navigation choices with usability evidence and HCI principles.
 - [ ] **BudgetCart:** SNAP/WIC-aware grocery budgeting; interviews and paper prototypes; first Figma project; self-taught components and visual language; make the concept's value clear without implying later DoorDash features were shipped by this project.
 - [ ] **Prime Video:** family-plan concept, but remain hidden or labeled under NDA until cleared.
 - [ ] **Lab / About:** concise personal introduction, tasteful photo wall, concise learning note (IoT/automotive UX), distinctive details, no long hobby list.
@@ -196,3 +196,17 @@ Direction: follow one person's task → let the first design fall short → show
 - [x] Public preview browser verified all five summary texts, seven scroll scenes per public case, no desktop horizontal overflow, optional slide view, keyboard range End, Back, return to scroll and decision anchor position. Prime Video has only its NDA notice and no story scenes.
 - [ ] Cleared original media and mobile viewport verification remain pending. These workflow diagrams are illustrative, not original screens or measured outcomes.
 - Whiteboard presentations are the next stage; use the existing evidence-gated storyboards and expand each turning point with verified research, original artifacts and supported results.
+
+
+## About direction, screen-led stories and accuracy follow-up · October 6
+- [x] Replace the About opening with a real existing portrait, a plain introduction, and three expandable project-backed examples of how Dhwani works: contextual observation (BRIEFS), collaborative synthesis (Open Library), and questioning a direction before prototyping it (GM Convoy). Keep the photo archive and personal extras below this introduction.
+- [x] Add approximate reading time, a slim collapsible scroll-aware chapter rail adapted from the existing Framer navigation, a softer illustrated guide, and more open scroll spacing. Preserve optional slide view and keyboard navigation.
+- [x] Bring two screen frames into each story's friction and decision scenes. Intel uses existing fictional demo images; other cases explicitly show placeholders awaiting cleared media. The first two case figures fill these frames; additional figures remain in the media appendix.
+- [x] Correct public copy: remove unresolved Intel interview counts, adoption and migration claims; remove the incorrect GM HVAC description; broaden BRIEFS beyond contact lookup and withhold the conflicting final tab count. Clarify team ownership in Open Library summary copy. Prime Video remains NDA-only.
+- Evidence: freshly reviewed Dhwani-authored Portfolio Content notes (https://docs.google.com/document/d/12OCsbwIuQLgdDO-PC9dVf6qBGZRcqodN_Cj4PSepj0w/edit), public project pages on dhwanibagrecha.com, existing repository media and Framer navigation, and previously confirmed personal contributions. The current BRIEFS page says four tabs while earlier PRD notes describe five areas; reconcile before publishing a count. Intel source notes explicitly require verification of counts and outcomes.
+- [x] Targeted ESLint for changed About, story, guide, route and content files passed; diff checks passed. ExperienceMixer retains the same baseline five lint errors and five warnings; this pass changes its copy only. Local TypeScript remains blocked by existing borrowed-dependency framer-motion gaps. Vercel full production build READY on fcfa86b.
+- [x] Desktop preview verified: About portrait loads; working notes expand with Enter; seven scenes on each public case; chapter selection closes the rail and lands below navigation; Escape restores toggle focus; active chapter follows scroll; guide controls work; no horizontal overflow. Prime Video exposes no story scenes or screen slots.
+- [x] Update docs/case-study-storyboards.md with corrected source gates. Whiteboard presentations remain the next stage.
+- [ ] Complete the broader fact audit. These corrections resolve identified mismatches, not every claim. Verify Intel delivery status and source counts, BRIEFS final information architecture, and cleared original project media before expansion.
+- [ ] Verify mobile viewports and reduced-motion behavior in a browser. Responsive and motion-preference styles are implemented; these modes were not independently exercised.
+- [ ] Adapt approved concepts to Framer. The rebuilt preview is available at https://portfolio-xi-lilac-73.vercel.app/about; the custom domain still serves the earlier Framer site and DNS was not changed.
