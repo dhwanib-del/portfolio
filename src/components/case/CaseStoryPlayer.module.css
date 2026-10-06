@@ -24,3 +24,16 @@
 .screenSlot::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(circle 180px at var(--spot-x,50%) var(--spot-y,40%),var(--accent),transparent 75%);opacity:0;transition:opacity .2s}
 @media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){.screenSlot:hover::after{opacity:.1}}
 @media(prefers-reduced-motion:reduce){.screenSlot::after{display:none;transition:none}}
+
+/* Responsive phone presentation inspired by the supplied DeviceMockups reference. */
+.deviceStage{min-width:0}.deviceScreen{min-width:0}
+.screenSlot[data-device=phone] .deviceStage{display:grid;place-items:center;padding:40px 24px;background:radial-gradient(ellipse at center,color-mix(in srgb,var(--accent) 10%,var(--surface)),var(--bg));perspective:1000px}
+.screenSlot[data-device=phone] .deviceScreen{position:relative;width:min(100%,260px);padding:11px;border-radius:36px;background:linear-gradient(130deg,#f2f0eb,#747779 18%,#232528 45%,#c1c3c4 75%,#65696b);box-shadow:12px 18px 28px #0004;transform:rotateY(-12deg) rotate(3deg);transition:transform .3s ease}
+.screenSlot[data-device=phone] .deviceScreen::before{content:"";position:absolute;z-index:1;top:20px;left:50%;transform:translateX(-50%);width:72px;height:18px;background:#141416;border-radius:20px;pointer-events:none}
+.screenSlot[data-device=phone] .deviceScreen::after{content:"";position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:70px;height:4px;background:#777;border-radius:4px;pointer-events:none}
+.screenSlot[data-device=phone] .deviceScreen>.screenBlank{min-height:0;aspect-ratio:402/874;border-radius:27px;padding:46px 18px 36px}
+.screenSlot[data-device=phone] .deviceScreen>img,.screenSlot[data-device=phone] .deviceScreen>video{border-radius:27px;min-height:0}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.screenSlot[data-device=phone]:hover .deviceScreen{transform:rotateY(0deg) rotate(0deg)}}
+.screenSlot[data-device=phone]:focus-within .deviceScreen{transform:none}
+@media(max-width:600px){.screenSlot[data-device=phone] .deviceStage{padding:28px 16px}.screenSlot[data-device=phone] .deviceScreen{width:min(100%,230px);transform:none}}
+@media(prefers-reduced-motion:reduce){.screenSlot[data-device=phone] .deviceScreen{transition:none;transform:none}}
