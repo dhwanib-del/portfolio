@@ -118,3 +118,11 @@ Story anchors already supported by the brief:
 - [x] Found an accessible public Vercel production alias; the browser login limitation applies to the protected aliases, not this public alias.
 - [ ] Custom-domain routing still needs Cloudflare DNS access. Vercel lists the domain as externally managed with Cloudflare nameservers; the current domain response identifies Framer. No DNS settings were changed.
 - [ ] User requested replication of the current dhwanibagrecha.com design with the new stories; source capture in progress. Keep NDA exclusions and evidence gates.
+
+## Story microinteractions · October 5 evening
+- [x] Add handwritten, native disclosure notes (“why this choice?”) to all five public case decisions. Reuse the existing verified rationale rather than adding dialogue, metrics, or duplicated copy.
+- [x] Make Intel's existing fictional Overview and Workup screenshots an interactive handoff scene, with persistent context, pressed-state buttons, live caption, and full-size screen links. Both images load ahead of switching to avoid a blank first transition.
+- [x] Keyboard activation and note expansion verified in the public Vercel browser. Final build READY on `2fc51c4`; both screenshot images loaded and switched correctly with no horizontal overflow at the desktop viewport.
+- [x] All other public case routes returned HTTP 200 with note controls. Prime Video returned only its NDA notice, with no note or handoff.
+- Responsive layout uses wrapping controls and fluid images; reduced-motion styles disable movement. Mobile viewport verification remains pending.
+- [ ] Add each remaining project's signature interaction using verified or clearly labeled illustrative material; this iteration delivers marginalia and the Intel handoff.
