@@ -9,4 +9,18 @@
 .turn { padding:32px clamp(20px,4vw,48px); margin:24px 0 48px; background:var(--surface); border:1px solid var(--line-strong); border-left:3px solid var(--accent); border-radius:20px; scroll-margin-top:100px; }
 .turn > :last-child { margin:0; }
 .evidence { padding:32px clamp(20px,4vw,48px); background:var(--surface); border:1px solid var(--line); border-radius:20px; scroll-margin-top:100px; }
+.handoff { margin:24px auto 64px; }
+.handoff h2 { font-size:clamp(26px,4vw,42px); letter-spacing:-.03em; line-height:1.15; margin:0 0 12px; }
+.disclaimer { color:var(--text-2); font-size:14px; max-width:65ch; }
+.fragmented { margin:32px 0; padding:24px; border:1px dashed var(--line-strong); border-radius:20px; background:var(--surface); }
+.fragmented ul { display:flex; flex-wrap:wrap; gap:12px; list-style:none; margin:0; padding:0; }
+.fragmented li { padding:10px 18px; border:1px solid var(--line-strong); border-radius:10px; }
+.fragmented > p:last-child { color:var(--text-2); margin:16px 0 0; }
+.storyShot { margin:40px 0; }
+.storyShot figcaption { display:flex; gap:18px; align-items:flex-start; margin:0 0 18px; }
+.storyShot figcaption > span { color:var(--accent); font-size:28px; font-weight:700; line-height:1.1; }
+.storyShot strong { font-size:clamp(18px,2.5vw,24px); }
+.storyShot p { margin:6px 0 0; color:var(--text-2); max-width:65ch; }
+.storyShot a { display:block; border-radius:16px; }
+.storyShot img { width:100%; height:auto; border:1px solid var(--line-strong); border-radius:16px; }
 @media(max-width:600px) { .scene { grid-template-columns:36px minmax(0,1fr); gap:16px; padding:32px 0; } .number { font-size:28px; } .chapters { gap:8px; margin-bottom:32px; } .chapters a { padding:10px 14px; font-size:13px; } }
