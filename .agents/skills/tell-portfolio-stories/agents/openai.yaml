@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tell Portfolio Stories"
+  short_description: "Visual case stories grounded in project evidence"
+  default_prompt: "Use $tell-portfolio-stories to turn this project into a concise visual case study with verified facts and clear personal decisions."
