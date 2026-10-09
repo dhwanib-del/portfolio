@@ -13,12 +13,16 @@
 // - showLegend (kind chips + counts), toggleLabel (switch to hide annotations), caption.
 // - Phones (<640px container): pins stay, cards become a list under the media.
 // - Keyboard: pins are buttons in order, arrows move between them, Esc closes.
+// - Oct 9 (case-study brief): layout "side" puts the notes beside the screen (phone screens stay
+//   readable; the explanation is always there as text), mediaMax caps the screen width, enlarge
+//   opens the original screen in a dialog (close button, Esc, focus returns), alt sets alt text.
 // - Respects prefers-reduced-motion. Theme tokens (--db-*) with fallbacks; root is data-db-keep
 //   because it handles light/dark itself.
 
 import { addPropertyControls, ControlType, useIsStaticRenderer } from "framer"
 import { useInView } from "framer-motion"
 import * as React from "react"
+import { createPortal } from "react-dom"
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, startTransition } from "react"
 
 type Kind = "feature" | "principle" | "decision" | "research" | "metric"
@@ -232,6 +236,10 @@ export default function AnnotatedScreen(props: any) {
         showLegend = true,
         toggleLabel = "Show annotations",
         caption = "",
+        layout = "overlay",
+        mediaMax = 0,
+        enlarge = true,
+        alt = "",
         style,
     } = props
 
@@ -260,6 +268,10 @@ export default function AnnotatedScreen(props: any) {
     const [visible, setVisible] = useState(true)
     const [active, setActive] = useState<number | null>(mode === "guided" ? 0 : null)
     const [locked, setLocked] = useState(false)
+    const [rootW, setRootW] = useState(0)
+    const [zoom, setZoom] = useState(false)
+    const zoomBtnRef = useRef<HTMLButtonElement | null>(null)
+    const closeRef = useRef<HTMLButtonElement | null>(null)
 
     const set = useCallback((i: number | null) => startTransition(() => setActive(i)), [])
 
@@ -302,6 +314,46 @@ export default function AnnotatedScreen(props: any) {
         return () => ro.disconnect()
     }, [])
 
+    // Measure the whole component (decides side-by-side vs stacked in "side" layout).
+    useLayoutEffect(() => {
+        const el = rootRef.current
+        if (!el) return
+        const read = () => {
+            const w = el.getBoundingClientRect().width
+            startTransition(() => setRootW((o) => (Math.abs(o - w) < 0.5 ? o : w)))
+        }
+        read()
+        if (typeof ResizeObserver === "undefined") return
+        const ro = new ResizeObserver(read)
+        ro.observe(el)
+        return () => ro.disconnect()
+    }, [])
+
+    // Enlarge dialog: Esc closes, focus moves in and returns to the button.
+    useEffect(() => {
+        if (!zoom || typeof document === "undefined") return
+        const prev = document.body.style.overflow
+        document.body.style.overflow = "hidden"
+        const t = setTimeout(() => closeRef.current && closeRef.current.focus(), 0)
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                e.preventDefault()
+                startTransition(() => setZoom(false))
+            } else if (e.key === "Tab") {
+                e.preventDefault()
+                if (closeRef.current) closeRef.current.focus()
+            }
+        }
+        document.addEventListener("keydown", onKey)
+        return () => {
+            clearTimeout(t)
+            document.body.style.overflow = prev
+            document.removeEventListener("keydown", onKey)
+            const b = zoomBtnRef.current
+            if (b) b.focus()
+        }
+    }, [zoom])
+
     const videoSrc = typeof video === "string" && video ? video : ""
     const imgSrc = media && media.src ? media.src : ""
 
@@ -322,7 +374,11 @@ export default function AnnotatedScreen(props: any) {
     }, [inView, reduced, videoSrc])
 
     const aspect = ratio === "auto" ? intrinsic || 16 / 10 : RATIOS[ratio] || 16 / 10
-    const phone = size.w > 0 && size.w < 640
+    const side = layout === "side"
+    const sideBySide = side && rootW >= 640
+    // "phone" = notes render as a list instead of cards on the media.
+    const phone = side || (size.w > 0 && size.w < 640)
+    const altText = alt || (media && media.alt) || caption || "Annotated screen"
     const showAll = mode === "all"
     const shownActive = isStatic && mode === "hover" && active === null ? 0 : active
     const cardW = Math.min(280, Math.max(160, size.w - PAD * 2))
@@ -519,7 +575,10 @@ export default function AnnotatedScreen(props: any) {
                 ...style,
             }}
         >
-            <div style={frameStyle}>
+            {sideBySide ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+                    <div style={{ flex: `0 1 ${mediaMax > 0 ? mediaMax : 360}px`, minWidth: 0 }}>
+            <div style={{ ...frameStyle, width: "100%", maxWidth: mediaMax > 0 ? mediaMax : undefined, margin: mediaMax > 0 && !sideBySide ? "0 auto" : undefined, boxSizing: "border-box" }}>
                 <div ref={boxRef} style={{ position: "relative", width: "100%", aspectRatio: String(aspect) }}>
                     {/* Clipped media layer */}
                     <div
@@ -553,7 +612,7 @@ export default function AnnotatedScreen(props: any) {
                                 ref={imgRef}
                                 src={imgSrc}
                                 srcSet={media.srcSet}
-                                alt={media.alt || caption || "Annotated screen"}
+                                alt={altText}
                                 draggable={false}
                                 onLoad={(e) => {
                                     const im = e.currentTarget
@@ -779,6 +838,439 @@ export default function AnnotatedScreen(props: any) {
                             })}
                         </div>
                     ) : null}
+                    {/* Enlarge */}
+                    {enlarge && (imgSrc || videoSrc) ? (
+                        <button
+                            ref={zoomBtnRef}
+                            type="button"
+                            className="db-as-btn"
+                            aria-label="Enlarge screen"
+                            aria-haspopup="dialog"
+                            onClick={() => startTransition(() => setZoom(true))}
+                            style={{
+                                position: "absolute",
+                                right: 10,
+                                top: 10,
+                                zIndex: 5,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 6,
+                                padding: "6px 10px",
+                                borderRadius: 999,
+                                border: `1px solid ${line}`,
+                                background: glass,
+                                backdropFilter: "blur(10px)",
+                                WebkitBackdropFilter: "blur(10px)",
+                                color: textCol,
+                                fontFamily: FONT,
+                                fontSize: 12,
+                                fontWeight: 500,
+                                cursor: "zoom-in",
+                                boxShadow: shadow,
+                            }}
+                        >
+                            <svg aria-hidden width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                <path d="M7 1h4v4M5 11H1V7M11 1 7 5M1 11l4-4" />
+                            </svg>
+                            Enlarge
+                        </button>
+                    ) : null}
+                </div>
+            </div>
+
+                    </div>
+                    <div style={{ flex: "1 1 280px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+            {/* Guided stepper */}
+            {on && mode === "guided" ? (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <button type="button" className="db-as-btn" onClick={() => step(-1)} disabled={!shownActive} style={btn(line, text2, !shownActive)}>
+                        ← Back
+                    </button>
+                    <span aria-live="polite" style={{ fontFamily: MONO, fontSize: 12, color: text2, letterSpacing: "0.06em" }}>
+                        {shownActive === null ? "—" : shownActive + 1} / {notes.length}
+                    </span>
+                    <button
+                        type="button"
+                        className="db-as-btn"
+                        onClick={() => step(1)}
+                        style={{
+                            ...btn(line, textCol, false),
+                            background: "var(--db-accent, #F3500F)",
+                            color: "var(--db-on-accent, #0A0A0A)",
+                            border: "1px solid transparent",
+                            fontWeight: 600,
+                        }}
+                    >
+                        {shownActive !== null && shownActive >= notes.length - 1 ? "Start over ↺" : "Next →"}
+                    </button>
+                </div>
+            ) : null}
+
+            {/* Phone list */}
+            {on && phone ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {notes.map((n, i) => {
+                        const k = kindOf(n)
+                        const open = showAll || shownActive === i
+                        return (
+                            <div
+                                key={"r" + i}
+                                id={`${uid}-row-${i}`}
+                                ref={(el) => {
+                                    rowRefs.current[i] = el
+                                }}
+                                className="db-as-row"
+                                role="button"
+                                tabIndex={0}
+                                aria-expanded={open}
+                                onClick={() => (mode === "all" ? null : open && mode === "hover" ? set(null) : set(i))}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault()
+                                        if (mode !== "all") set(open && mode === "hover" ? null : i)
+                                    }
+                                }}
+                                style={{
+                                    display: "flex",
+                                    gap: 12,
+                                    padding: "12px 14px",
+                                    borderRadius: 12,
+                                    background: open ? glass : "transparent",
+                                    border: `1px solid ${open ? palette[k].c : line}`,
+                                    boxShadow: open ? shadow : "none",
+                                    cursor: mode === "all" ? "default" : "pointer",
+                                    transition: reduced ? "none" : "background 180ms ease, border-color 180ms ease",
+                                }}
+                            >
+                                <span
+                                    aria-hidden
+                                    style={{
+                                        flex: "0 0 auto",
+                                        width: 24,
+                                        height: 24,
+                                        borderRadius: 999,
+                                        background: palette[k].c,
+                                        color: palette[k].on,
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    {i + 1}
+                                </span>
+                                <div style={{ minWidth: 0 }}>
+                                    {renderCardBody(n, i, true)}
+                                    {open && n.body ? <div style={{ marginTop: 4, fontSize: 14, lineHeight: 1.45, color: text2 }}>{n.body}</div> : null}
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            ) : null}
+
+                    </div>
+                </div>
+            ) : (
+                <>
+            <div style={{ ...frameStyle, width: "100%", maxWidth: mediaMax > 0 ? mediaMax : undefined, margin: mediaMax > 0 && !sideBySide ? "0 auto" : undefined, boxSizing: "border-box" }}>
+                <div ref={boxRef} style={{ position: "relative", width: "100%", aspectRatio: String(aspect) }}>
+                    {/* Clipped media layer */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            inset: 0,
+                            overflow: "hidden",
+                            borderRadius: r,
+                            background: "var(--db-surface, #111111)",
+                            border: frame === "subtle" ? `1px solid ${line}` : "none",
+                        }}
+                    >
+                        {videoSrc ? (
+                            <video
+                                ref={videoRef}
+                                src={videoSrc}
+                                muted
+                                loop
+                                playsInline
+                                autoPlay={!reduced}
+                                controls={reduced && !isStatic}
+                                aria-label={caption || "Annotated product video"}
+                                onLoadedMetadata={(e) => {
+                                    const v = e.currentTarget
+                                    if (v.videoWidth) startTransition(() => setIntrinsic(v.videoWidth / v.videoHeight))
+                                }}
+                                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: fit === "cover" ? "cover" : "contain", display: "block" }}
+                            />
+                        ) : imgSrc ? (
+                            <img
+                                ref={imgRef}
+                                src={imgSrc}
+                                srcSet={media.srcSet}
+                                alt={altText}
+                                draggable={false}
+                                onLoad={(e) => {
+                                    const im = e.currentTarget
+                                    if (im.naturalWidth) startTransition(() => setIntrinsic(im.naturalWidth / im.naturalHeight))
+                                }}
+                                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: fit === "cover" ? "cover" : "contain", display: "block" }}
+                            />
+                        ) : (
+                            <div
+                                aria-hidden
+                                style={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    background: light
+                                        ? "radial-gradient(120% 90% at 20% 10%, rgba(0,0,0,0.04), transparent 60%), linear-gradient(135deg, #F2F2F4 0%, #E6E6EA 100%)"
+                                        : "radial-gradient(120% 90% at 20% 10%, rgba(255,255,255,0.06), transparent 60%), linear-gradient(135deg, #17171A 0%, #0E0E10 100%)",
+                                    pointerEvents: "none",
+                                }}
+                            >
+                                <span style={{ fontFamily: MONO, fontSize: 12, letterSpacing: "0.06em", color: text2 }}>add a screenshot or video →</span>
+                            </div>
+                        )}
+
+                        {/* Guided dim with a cut-out around the active area */}
+                        {size.w > 0 ? (
+                            <svg
+                                aria-hidden
+                                width={size.w}
+                                height={size.h}
+                                style={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    pointerEvents: "none",
+                                    opacity: dimOn ? 1 : 0,
+                                    transition: reduced ? "none" : "opacity 260ms ease",
+                                }}
+                            >
+                                <defs>
+                                    <mask id={uid + "-m"}>
+                                        <rect width={size.w} height={size.h} fill="white" />
+                                        {dimOn && shownActive !== null
+                                            ? (() => {
+                                                  const g = geom(notes[shownActive], size.w, size.h)
+                                                  if (g.hl === "box")
+                                                      return <rect x={g.cx - g.bw / 2 - 6} y={g.cy - g.bh / 2 - 6} width={g.bw + 12} height={g.bh + 12} rx={10} fill="black" />
+                                                  if (g.hl === "ring") return <circle cx={g.cx} cy={g.cy} r={g.r + 6} fill="black" />
+                                                  return <circle cx={g.cx} cy={g.cy} r={Math.max(44, Math.min(size.w, size.h) * 0.1)} fill="black" />
+                                              })()
+                                            : null}
+                                    </mask>
+                                </defs>
+                                <rect width={size.w} height={size.h} fill="rgba(0,0,0,0.55)" mask={`url(#${uid}-m)`} />
+                            </svg>
+                        ) : null}
+                    </div>
+
+                    {/* Highlights + leader lines (decorative) */}
+                    {on && size.w > 0 ? (
+                        <svg aria-hidden width={size.w} height={size.h} style={{ position: "absolute", inset: 0, overflow: "visible", pointerEvents: "none" }}>
+                            {notes.map((n, i) => {
+                                if (!isOpen(i)) return null
+                                const g = geom(n, size.w, size.h)
+                                const col = palette[kindOf(n)].c
+                                const anim: React.CSSProperties = reduced ? {} : { animation: "dbAsDraw 700ms cubic-bezier(.2,.7,.2,1) both" }
+                                const out: React.ReactNode[] = []
+                                if (g.hl === "box")
+                                    out.push(
+                                        <rect
+                                            key={"h" + i + "-" + shownActive}
+                                            x={g.cx - g.bw / 2}
+                                            y={g.cy - g.bh / 2}
+                                            width={g.bw}
+                                            height={g.bh}
+                                            rx={8}
+                                            fill="none"
+                                            stroke={col}
+                                            strokeWidth={2}
+                                            pathLength={1}
+                                            style={{ ...(reduced ? {} : { strokeDasharray: 1 }), ...anim }}
+                                        />
+                                    )
+                                else if (g.hl === "ring")
+                                    out.push(
+                                        <circle
+                                            key={"h" + i + "-" + shownActive}
+                                            cx={g.cx}
+                                            cy={g.cy}
+                                            r={g.r}
+                                            fill="none"
+                                            stroke={col}
+                                            strokeWidth={2}
+                                            pathLength={1}
+                                            style={{ ...(reduced ? {} : { strokeDasharray: 1 }), ...anim }}
+                                        />
+                                    )
+                                if (!phone) {
+                                    const cw = cardW
+                                    const ch = cardH[i] || 96
+                                    const p = placeCard((n.side || "auto") as Side, g.px, g.py, cw, ch, size.w, size.h)
+                                    out.push(<line key={"l" + i} x1={g.px} y1={g.py} x2={p.ax} y2={p.ay} stroke={col} strokeOpacity={0.75} strokeWidth={1.25} />)
+                                    out.push(<circle key={"d" + i} cx={p.ax} cy={p.ay} r={2.5} fill={col} />)
+                                }
+                                return <g key={i}>{out}</g>
+                            })}
+                        </svg>
+                    ) : null}
+
+                    {/* Cards on the media (wide screens) */}
+                    {on && !phone && size.w > 0
+                        ? notes.map((n, i) => {
+                              const g = geom(n, size.w, size.h)
+                              const ch = cardH[i] || 96
+                              const p = placeCard((n.side || "auto") as Side, g.px, g.py, cardW, ch, size.w, size.h)
+                              const open = isOpen(i)
+                              return (
+                                  <div
+                                      key={"c" + i}
+                                      id={`${uid}-card-${i}`}
+                                      ref={(el) => {
+                                          cardRefs.current[i] = el
+                                      }}
+                                      role="note"
+                                      aria-hidden={!open}
+                                      onMouseEnter={() => enter(i)}
+                                      onMouseLeave={leave}
+                                      style={{
+                                          position: "absolute",
+                                          left: p.left,
+                                          top: p.top,
+                                          width: cardW,
+                                          boxSizing: "border-box",
+                                          padding: "12px 14px",
+                                          borderRadius: 12,
+                                          background: glass,
+                                          border: `1px solid ${line}`,
+                                          boxShadow: shadow,
+                                          backdropFilter: "blur(14px) saturate(140%)",
+                                          WebkitBackdropFilter: "blur(14px) saturate(140%)",
+                                          visibility: open ? "visible" : "hidden",
+                                          opacity: open ? 1 : 0,
+                                          animation: open && !reduced ? "dbAsIn 220ms ease both" : "none",
+                                          pointerEvents: open ? "auto" : "none",
+                                          zIndex: open ? 3 : 1,
+                                      }}
+                                  >
+                                      {renderCardBody(n, i, false)}
+                                      {n.body ? <div style={{ marginTop: 4, fontSize: 14, lineHeight: 1.45, color: text2 }}>{n.body}</div> : null}
+                                  </div>
+                              )
+                          })
+                        : null}
+
+                    {/* Pins */}
+                    {on && size.w > 0 ? (
+                        <div role="group" aria-label="Annotations" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+                            {notes.map((n, i) => {
+                                const g = geom(n, size.w, size.h)
+                                const k = kindOf(n)
+                                const col = palette[k]
+                                const sel = shownActive === i
+                                const label = `${i + 1}: ${n.title || "Annotation"} (${KIND_LABEL[k]})`
+                                return (
+                                    <button
+                                        key={"p" + i}
+                                        ref={(el) => {
+                                            pinRefs.current[i] = el
+                                        }}
+                                        type="button"
+                                        className="db-as-pin"
+                                        aria-label={label}
+                                        aria-expanded={mode === "all" ? undefined : sel}
+                                        aria-controls={phone ? `${uid}-row-${i}` : `${uid}-card-${i}`}
+                                        onClick={() => tapPin(i)}
+                                        onMouseEnter={() => enter(i)}
+                                        onMouseLeave={leave}
+                                        onFocus={() => {
+                                            if (mode === "hover" && !locked) set(i)
+                                        }}
+                                        onKeyDown={(e) => onPinKey(e, i)}
+                                        style={{
+                                            position: "absolute",
+                                            left: g.px,
+                                            top: g.py,
+                                            width: PIN,
+                                            height: PIN,
+                                            marginLeft: -PIN / 2,
+                                            marginTop: -PIN / 2,
+                                            padding: 0,
+                                            border: `2px solid ${light ? "#FFFFFF" : "rgba(10,10,10,0.85)"}`,
+                                            borderRadius: 999,
+                                            background: col.c,
+                                            color: col.on,
+                                            fontFamily: FONT,
+                                            fontSize: 13,
+                                            fontWeight: 700,
+                                            lineHeight: 1,
+                                            cursor: "pointer",
+                                            pointerEvents: "auto",
+                                            boxShadow: sel ? `0 0 0 3px ${col.c}55, 0 4px 14px rgba(0,0,0,0.35)` : "0 4px 14px rgba(0,0,0,0.35)",
+                                            transform: sel && !reduced ? "scale(1.08)" : "none",
+                                            transition: reduced ? "none" : "transform 160ms ease, box-shadow 160ms ease",
+                                            zIndex: sel ? 4 : 2,
+                                        }}
+                                    >
+                                        <span
+                                            aria-hidden
+                                            style={{
+                                                position: "absolute",
+                                                inset: -2,
+                                                borderRadius: 999,
+                                                background: col.c,
+                                                pointerEvents: "none",
+                                                opacity: 0,
+                                                animation: reduced || !inView ? "none" : `dbAsPulse 2.4s ease-out ${i * 0.35}s infinite`,
+                                            }}
+                                        />
+                                        <span style={{ position: "relative" }}>{i + 1}</span>
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    ) : null}
+                    {/* Enlarge */}
+                    {enlarge && (imgSrc || videoSrc) ? (
+                        <button
+                            ref={zoomBtnRef}
+                            type="button"
+                            className="db-as-btn"
+                            aria-label="Enlarge screen"
+                            aria-haspopup="dialog"
+                            onClick={() => startTransition(() => setZoom(true))}
+                            style={{
+                                position: "absolute",
+                                right: 10,
+                                top: 10,
+                                zIndex: 5,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 6,
+                                padding: "6px 10px",
+                                borderRadius: 999,
+                                border: `1px solid ${line}`,
+                                background: glass,
+                                backdropFilter: "blur(10px)",
+                                WebkitBackdropFilter: "blur(10px)",
+                                color: textCol,
+                                fontFamily: FONT,
+                                fontSize: 12,
+                                fontWeight: 500,
+                                cursor: "zoom-in",
+                                boxShadow: shadow,
+                            }}
+                        >
+                            <svg aria-hidden width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                <path d="M7 1h4v4M5 11H1V7M11 1 7 5M1 11l4-4" />
+                            </svg>
+                            Enlarge
+                        </button>
+                    ) : null}
                 </div>
             </div>
 
@@ -872,6 +1364,9 @@ export default function AnnotatedScreen(props: any) {
                 </div>
             ) : null}
 
+                </>
+            )}
+
             {/* Legend + toggle */}
             {(showLegend && notes.length > 0) || toggleLabel ? (
                 <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
@@ -941,6 +1436,78 @@ export default function AnnotatedScreen(props: any) {
             ) : null}
 
             {caption ? <figcaption style={{ fontSize: 13, lineHeight: 1.5, color: text2 }}>{caption}</figcaption> : null}
+            {zoom && typeof document !== "undefined"
+                ? createPortal(
+                      <div
+                          role="dialog"
+                          aria-modal="true"
+                          aria-label={altText}
+                          onClick={() => startTransition(() => setZoom(false))}
+                          style={{
+                              position: "fixed",
+                              inset: 0,
+                              zIndex: 2147483000,
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: 12,
+                              padding: "56px 16px 24px",
+                              background: light ? "rgba(245,245,247,0.92)" : "rgba(5,5,6,0.9)",
+                              backdropFilter: "blur(8px)",
+                              WebkitBackdropFilter: "blur(8px)",
+                              cursor: "zoom-out",
+                              fontFamily: FONT,
+                          }}
+                      >
+                          <button
+                              ref={closeRef}
+                              type="button"
+                              className="db-as-btn"
+                              onClick={(e) => {
+                                  e.stopPropagation()
+                                  startTransition(() => setZoom(false))
+                              }}
+                              style={{
+                                  position: "absolute",
+                                  top: 16,
+                                  right: 16,
+                                  padding: "8px 14px",
+                                  borderRadius: 999,
+                                  border: `1px solid ${light ? "rgba(0,0,0,0.18)" : "rgba(255,255,255,0.22)"}`,
+                                  background: light ? "#FFFFFF" : "#141416",
+                                  color: light ? "#0A0A0A" : "#FAFAFA",
+                                  fontFamily: FONT,
+                                  fontSize: 13,
+                                  cursor: "pointer",
+                              }}
+                          >
+                              Close ✕
+                          </button>
+                          {videoSrc ? (
+                              <video
+                                  src={videoSrc}
+                                  controls
+                                  playsInline
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{ maxWidth: "min(1200px, 100%)", maxHeight: "calc(100vh - 120px)", borderRadius: 12, display: "block" }}
+                              />
+                          ) : (
+                              <img
+                                  src={imgSrc}
+                                  srcSet={media && media.srcSet}
+                                  alt={altText}
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{ maxWidth: "min(1200px, 100%)", maxHeight: "calc(100vh - 120px)", objectFit: "contain", borderRadius: 12, display: "block", cursor: "default", boxShadow: "0 24px 80px rgba(0,0,0,0.45)" }}
+                              />
+                          )}
+                          {caption ? (
+                              <div style={{ maxWidth: 640, fontSize: 13, lineHeight: 1.5, textAlign: "center", color: light ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.75)" }}>{caption}</div>
+                          ) : null}
+                      </div>,
+                      document.body
+                  )
+                : null}
         </figure>
     )
 }
@@ -1057,6 +1624,18 @@ addPropertyControls(AnnotatedScreen, {
         },
         defaultValue: DEFAULT_NOTES,
     },
+    layout: {
+        type: ControlType.Enum,
+        title: "Notes",
+        options: ["overlay", "side"],
+        optionTitles: ["On screen", "Beside"],
+        defaultValue: "overlay",
+        displaySegmentedControl: true,
+        description: "Beside: notes sit next to the screen (good for phone screens); they stack below on narrow widths.",
+    },
+    mediaMax: { type: ControlType.Number, title: "Screen max W", defaultValue: 0, min: 0, max: 1600, step: 10, unit: "px", description: "0 = fill the width." },
+    enlarge: { type: ControlType.Boolean, title: "Enlarge button", defaultValue: true },
+    alt: { type: ControlType.String, title: "Alt text", defaultValue: "", displayTextArea: true },
     showLegend: { type: ControlType.Boolean, title: "Legend", defaultValue: true, enabledTitle: "Show", disabledTitle: "Hide" },
     toggleLabel: { type: ControlType.String, title: "Toggle label", defaultValue: "Show annotations", description: "Leave empty to hide the switch." },
     caption: { type: ControlType.String, title: "Caption", defaultValue: "", displayTextArea: true },
