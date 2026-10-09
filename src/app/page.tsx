@@ -43,7 +43,7 @@ export default function Home() {
 
 
 
-      <section id="contact" className="section contact" aria-labelledby="contact-h">
+      <section id="contact" className="section contact" aria-labelledby="contact-h" style={{scrollMarginTop:110}}>
         <div className="container">
           <p className="eyebrow">connect</p>
           <h2 id="contact-h" className="h2">Hiring for product, UX or experience design? Let&apos;s talk.</h2>

@@ -7,10 +7,10 @@ const photos = [
  {src:"/photobooth/2.svg",caption:"A frame with my family.",alt:"Dhwani with her family"},
  {src:"/photobooth/3.svg",caption:"One more for the strip.",alt:"Dhwani posing by the window"},
 ]
-export function PhotoArchive() {
+export function PhotoArchive({variant="archive"}:{variant?:"archive"|"wall"}) {
  const [picked,setPicked]=useState<number|null>(null)
- return <section className={`container ${styles.archive}`} aria-labelledby="archive-title">
- <div className={styles.heading}><div><p className="eyebrow">the photo archive</p><h2 id="archive-title" className="h2">A little paper trail.</h2></div><button type="button" onClick={()=>setPicked(null)} data-cursor="Tidying the archive">Tidy up ↻</button></div>
+ return <section className={`${variant==="archive"?"container":""} ${styles.archive} ${variant==="wall"?styles.wall:""}`} aria-labelledby="archive-title">
+ <div className={styles.heading}><div><p className="eyebrow">off the clock</p><h2 id="archive-title" className="h2">A few frames of me.</h2></div><button type="button" onClick={()=>setPicked(null)} data-cursor="Tidying the archive">Tidy up ↻</button></div>
  <p className={styles.hint}>Pick up a photo to read its caption.</p>
  <div className={styles.desk}><div className={styles.stack}>{photos.map((photo,i)=><button key={photo.src} type="button" className={`${styles.photo} ${picked===i?styles.picked:""}`} aria-pressed={picked===i} aria-label={`Pick up photo: ${photo.alt}`} onClick={()=>setPicked(picked===i?null:i)} data-cursor="Photo archive"><span className={styles.clip} aria-hidden="true">⌇</span>
  {/* Existing live-site photos, locally embedded in SVG. */}

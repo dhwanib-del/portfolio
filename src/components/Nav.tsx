@@ -11,7 +11,7 @@ const TABS = [
   { label: "home", href: "/" },
   { label: "about me", href: "/about" },
   { label: "work", href: "/#work" },
-  { label: "play", href: "/lab" },
+  { label: "AI Lab", href: "/lab" },
   { label: "connect", href: "/#contact" },
 ]
 
@@ -34,7 +34,7 @@ export function Nav() {
 
   // Scroll-spy for homepage sections
   useEffect(() => {
-    if (path !== "/") return setSection("")
+    if (path !== "/") return
     const ids = ["work", "contact"]
     const check = () => {
       const line = window.innerHeight * 0.4
@@ -47,12 +47,15 @@ export function Nav() {
       }
       setSection(found)
     }
-    check()
+    const frame = requestAnimationFrame(check)
     window.addEventListener("scroll", check, { passive: true })
-    return () => window.removeEventListener("scroll", check)
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", check) }
   }, [path])
 
-  useEffect(() => setOpen(false), [path])
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setOpen(false))
+    return () => cancelAnimationFrame(frame)
+  }, [path])
 
   useEffect(() => {
     if (!open) return
