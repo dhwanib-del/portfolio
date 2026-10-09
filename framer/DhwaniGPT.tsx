@@ -5,6 +5,8 @@
 // With no API URL, or on any network error, it answers from the canned facts below (offline mode).
 // Facts mirror src/content/site.ts + cases.ts on the Next.js site. Prime Video stays under NDA.
 // Opens on window event "db-chat-open"; sets window.__dbChatReady = true while mounted.
+// Oct 5 (click-through audit): the <body> portal layer and the Framer host never catch clicks;
+// only the greeting card, the launcher and the open panel do.
 import { addPropertyControls, ControlType, RenderTarget } from "framer"
 import { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import type { CSSProperties, ReactNode } from "react"
@@ -538,9 +540,23 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
 
     // Render into <body> on the live site so the fixed launcher is never clipped by Framer wrappers.
     const [mounted, setMounted] = useState(false)
+    const hostRef = useRef<HTMLDivElement>(null)
     useEffect(() => { setMounted(true) }, [])
+    useEffect(() => {
+        if (isCanvas || typeof window === "undefined") return
+        let el: HTMLElement | null = hostRef.current
+        for (let i = 0; el && i < 5; i++) {
+            el.style.pointerEvents = "none"
+            if (window.getComputedStyle(el).position === "fixed") break
+            const up: HTMLElement | null = el.parentElement
+            if (!up || up === document.body || up.id === "main") break
+            if (Array.from(up.children).filter((c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName)).length !== 1) break
+            el = up
+        }
+    }, [isCanvas])
+    const live: CSSProperties = { pointerEvents: "auto" }
     const ui = (
-        <div className="dbgpt" style={{ fontFamily: FONT, ...(isCanvas ? { position: "relative", width: "100%", height: "100%", minWidth: 220, minHeight: 160 } : {}) }}>
+        <div className="dbgpt" style={{ fontFamily: FONT, ...(isCanvas ? { position: "relative", width: "100%", height: "100%", minWidth: 220, minHeight: 160 } : { pointerEvents: "none" }) }}>
             <style>{css}</style>
 
             {/* ── First-visit greeting ─────────────────────────────────── */}
@@ -554,7 +570,7 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: dur, ease }}
-                        style={{ position: pos, right: 16, bottom: offset + 56, zIndex: 2147480001, width: "min(320px, calc(100vw - 32px))", display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 8px 14px 14px", borderRadius: 16, background: T.glass, border: "1px solid " + T.glassLine, boxShadow: T.shadow, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxSizing: "border-box" }}
+                        style={{ ...live, position: pos, right: 16, bottom: offset + 56, zIndex: 2147480001, width: "min(320px, calc(100vw - 32px))", display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 8px 14px 14px", borderRadius: 16, background: T.glass, border: "1px solid " + T.glassLine, boxShadow: T.shadow, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", boxSizing: "border-box" }}
                     >
                         <span style={{ paddingTop: 2 }}><Orb size={22} live /></span>
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -577,7 +593,7 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                     aria-haspopup="dialog"
                     aria-expanded={false}
                     aria-controls="dbgpt-panel"
-                    style={{ position: pos, right: 16, bottom: offset, zIndex: 2147480001, height: 44, padding: "0 16px 0 10px", borderRadius: 999, border: "1px solid " + T.glassLine, background: T.glass, color: T.text, fontSize: 14, fontWeight: 500, whiteSpace: "nowrap", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, boxShadow: T.shadow, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
+                    style={{ ...live, position: pos, right: 16, bottom: offset, zIndex: 2147480001, height: 44, padding: "0 16px 0 10px", borderRadius: 999, border: "1px solid " + T.glassLine, background: T.glass, color: T.text, fontSize: 14, fontWeight: 500, whiteSpace: "nowrap", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, boxShadow: T.shadow, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
                 >
                     <Orb size={22} live />
                     Ask DhwaniGPT
@@ -601,7 +617,7 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={reduce ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98, transition: { duration: 0.15 } }}
                         transition={{ duration: dur, ease }}
-                        style={{ position: pos, right: 12, bottom: 12, zIndex: 2147480002, width: "min(400px, calc(100vw - 24px))", height: "min(600px, calc(100dvh - 24px))", display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 20, background: T.glass, border: "1px solid " + T.glassLine, boxShadow: T.shadow, backdropFilter: "blur(28px) saturate(140%)", WebkitBackdropFilter: "blur(28px) saturate(140%)", color: T.text, boxSizing: "border-box", transformOrigin: "bottom right" }}
+                        style={{ ...live, position: pos, right: 12, bottom: 12, zIndex: 2147480002, width: "min(400px, calc(100vw - 24px))", height: "min(600px, calc(100dvh - 24px))", display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 20, background: T.glass, border: "1px solid " + T.glassLine, boxShadow: T.shadow, backdropFilter: "blur(28px) saturate(140%)", WebkitBackdropFilter: "blur(28px) saturate(140%)", color: T.text, boxSizing: "border-box", transformOrigin: "bottom right" }}
                     >
                         {/* Header */}
                         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 6px 10px 16px", flexShrink: 0 }}>
@@ -709,7 +725,7 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
         </div>
     )
     if (isCanvas) return ui
-    return <div style={{ width: 1, height: 1 }}>{mounted && typeof document !== "undefined" ? createPortal(ui, document.body) : null}</div>
+    return <div ref={hostRef} style={{ width: 1, height: 1, pointerEvents: "none" }}>{mounted && typeof document !== "undefined" ? createPortal(ui, document.body) : null}</div>
 }
 
 function Bubble({ role, T, children }: { role: "user" | "assistant"; T: Record<string, string>; children: ReactNode }) {

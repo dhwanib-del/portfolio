@@ -7,8 +7,10 @@
 //  • Status pill (bottom-right): open to work · Ann Arbor live time (ET). Opens a short tour.
 //  • Tour panel no longer pops open on its own; Esc closes; focus returns to the pill.
 //  • Colors come from the site theme tokens (--db-*), so light/dark both work.
+//  • Oct 5: the wrapper layer is click-through; only the status pill and the tour panel catch clicks.
 import * as React from "react"
 import { startTransition } from "react"
+import { RenderTarget } from "framer"
 
 const TOUR = [
     { title: "Hey, I'm Dhwani 👋", text: "Product and UX designer at UMSI, graduating May 2027. Open to product, UX and experience design roles. Want the 60-second tour?", label: "", href: "" },
@@ -55,6 +57,20 @@ export default function TalkingCursor() {
     const [time, setTime] = React.useState("")
 
     const triggerRef = React.useRef<HTMLButtonElement>(null)
+    const rootRef = React.useRef<HTMLDivElement>(null)
+
+    React.useEffect(() => {
+        if (RenderTarget.current() === RenderTarget.canvas) return
+        let el: HTMLElement | null = rootRef.current
+        for (let i = 0; el && i < 4; i++) {
+            el.style.pointerEvents = "none"
+            if (window.getComputedStyle(el).position === "fixed") break
+            const up: HTMLElement | null = el.parentElement
+            if (!up || up === document.body || up.id === "main") break
+            if (Array.from(up.children).filter((c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName)).length !== 1) break
+            el = up
+        }
+    }, [])
     const headingRef = React.useRef<HTMLHeadingElement>(null)
 
     React.useEffect(() => {
@@ -174,7 +190,7 @@ export default function TalkingCursor() {
                 @keyframes dgIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
                 @keyframes dgPulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
             `}</style>
-            <div className="dg">
+            <div ref={rootRef} className="dg" style={{ pointerEvents: "none" }}>
                 {tracking && (
                     <div aria-hidden="true" style={{ position: "fixed", left: 0, top: 0, transform: `translate(${cx}px, ${cy}px)`, transition: "transform 380ms cubic-bezier(.2,.8,.2,1)", pointerEvents: "none", zIndex: 9998, display: "flex", alignItems: "flex-start", gap: 2 }}>
                         <svg width="16" height="16" viewBox="0 0 16 16" style={{ color: "var(--db-accent, #F3500F)" }}>
@@ -200,7 +216,7 @@ export default function TalkingCursor() {
                             startTransition(() => { setStep(0); setOpen(true) })
                             window.setTimeout(() => headingRef.current?.focus(), 0)
                         }}
-                        style={{ position: "fixed", right: 20, bottom: 20, minHeight: 44, padding: "10px 16px", borderRadius: 999, color: "var(--db-text, #fff)", zIndex: 10000, display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13 }}
+                        style={{ position: "fixed", right: 20, bottom: 20, minHeight: 44, padding: "10px 16px", borderRadius: 999, color: "var(--db-text, #fff)", zIndex: 10000, display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, pointerEvents: "auto" }}
                     >
                         <span aria-hidden style={{ width: 8, height: 8, borderRadius: 4, background: "#1BC47D", boxShadow: "0 0 0 3px rgba(27,196,125,.25)", animation: reducedMotion ? "none" : "dgPulse 2.4s ease-in-out infinite" }} />
                         <span aria-hidden>open to work · ann arbor {time} ET</span>
@@ -208,7 +224,7 @@ export default function TalkingCursor() {
                 )}
 
                 {open && (
-                    <div id="dg-panel" role="dialog" aria-modal="false" aria-labelledby="dg-heading" className="dg-card" onKeyDown={(e) => { if (e.key === "Escape") dismiss() }} style={{ position: "fixed", right: 20, bottom: 20, width: "min(340px, calc(100vw - 40px))", maxHeight: "calc(100dvh - 40px)", overflowY: "auto", padding: 20, borderRadius: 20, zIndex: 10000, animation: reducedMotion ? "none" : "dgIn 180ms ease-out" }}>
+                    <div id="dg-panel" role="dialog" aria-modal="false" aria-labelledby="dg-heading" className="dg-card" onKeyDown={(e) => { if (e.key === "Escape") dismiss() }} style={{ position: "fixed", right: 20, bottom: 20, width: "min(340px, calc(100vw - 40px))", maxHeight: "calc(100dvh - 40px)", overflowY: "auto", padding: 20, borderRadius: 20, zIndex: 10000, pointerEvents: "auto", animation: reducedMotion ? "none" : "dgIn 180ms ease-out" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                             <span style={{ color: "var(--db-text-2)", fontSize: 12, letterSpacing: "0.06em" }}>open to work · ann arbor {time} ET</span>
                             <button aria-label="Close tour" onClick={dismiss} className="dg-btn" style={{ width: 44, padding: 0, background: "transparent", color: "var(--db-text)", fontSize: 22 }}>×</button>

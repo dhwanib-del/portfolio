@@ -1,8 +1,10 @@
 // Floating dust particles background with mouse interaction
 // Oct 2: colors follow the site theme tokens (--db-*) for light/dark.
 // Oct 4: brand-orange particles follow the vibe accent (--db-accent).
+// Oct 5: never catches clicks — canvas, container and its Framer wrappers are pointer-events:none
+// (mouse tracking already uses a window listener).
 import { useEffect, useRef, useState, useCallback, useMemo, type CSSProperties } from "react"
-import { addPropertyControls, ControlType, useIsStaticRenderer } from "framer"
+import { addPropertyControls, ControlType, useIsStaticRenderer, RenderTarget } from "framer"
 
 interface Particle {
     x: number
@@ -335,6 +337,20 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
         }
     }, [redistributeParticles])
 
+    // Click-through: the decorative layer and its single-child Framer wrappers never catch the pointer
+    useEffect(() => {
+        if (typeof window === "undefined" || RenderTarget.current() === RenderTarget.canvas) return
+        let el: HTMLElement | null = containerRef.current
+        for (let i = 0; el && i < 5; i++) {
+            el.style.pointerEvents = "none"
+            if (window.getComputedStyle(el).position === "fixed") break
+            const up: HTMLElement | null = el.parentElement
+            if (!up || up === document.body || up.id === "main") break
+            if (Array.from(up.children).filter((c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName)).length !== 1) break
+            el = up
+        }
+    }, [isStatic])
+
     // Effect to reinitialize particles when particle count changes
     useEffect(() => {
         if (isStatic) return
@@ -418,6 +434,7 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
                     backgroundColor: bgColor,
                     position: "relative",
                     overflow: "hidden",
+                    pointerEvents: "none",
                 }}
             >
                 {Array.from({ length: Math.min(particleCount, 20) }).map((_, i) => (
@@ -449,14 +466,17 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
                 backgroundColor: bgColor,
                 position: "relative",
                 overflow: "hidden",
+                pointerEvents: "none",
             }}
         >
             <canvas
                 ref={canvasRef}
+                aria-hidden="true"
                 style={{
                     width: "100%",
                     height: "100%",
                     display: "block",
+                    pointerEvents: "none",
                 }}
             />
         </div>

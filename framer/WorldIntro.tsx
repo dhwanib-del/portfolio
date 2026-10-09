@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, startTransition } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { addPropertyControls, ControlType } from "framer"
+import { addPropertyControls, ControlType, RenderTarget } from "framer"
 
 /**
  * WorldIntro v2 — "Pick your vibe"
@@ -19,6 +19,9 @@ import { addPropertyControls, ControlType } from "framer"
  * Oct 2: colors follow the site theme tokens (--db-*) for light/dark.
  * (Only the corner vibe chip/switcher; the full-screen intro stays its own dark scene.)
  * Oct 3: palette = Orange / Sky Blue / Pink / Yellow + custom two-color gradient (from the Next.js site); light-mode accent ink.
+ * Oct 5 (click-through audit): the Framer wrapper around this component never catches clicks; the
+ * intro stops catching the moment a vibe is picked (during the 1s flood + fade); the corner switcher
+ * only catches on the chip and its open menu.
  *
  * @framerSupportedLayoutWidth any-prefer-fixed
  * @framerSupportedLayoutHeight any-prefer-fixed
@@ -168,6 +171,20 @@ function applyVibe(v: Vibe, persist: boolean) {
     } catch {}
 }
 
+/** Make the component's own Framer wrappers click-through (stops at the first fixed one or a shared parent). */
+function passThrough(start: HTMLElement | null) {
+    let el: HTMLElement | null = start
+    for (let i = 0; el && i < 5; i++) {
+        el.style.pointerEvents = "none"
+        if (window.getComputedStyle(el).position === "fixed") break
+        const up: HTMLElement | null = el.parentElement
+        if (!up || up === document.body || up.id === "main") break
+        const kids = Array.from(up.children).filter((c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName))
+        if (kids.length !== 1) break
+        el = up
+    }
+}
+
 function seenThisSession(): boolean {
     try {
         return !!sessionStorage.getItem(SESSION_KEY)
@@ -313,6 +330,13 @@ export default function WorldIntro(props: Props) {
     const [narrow, setNarrow] = useState(false)
     const starRefs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)]
     const chipRef = useRef<HTMLButtonElement>(null)
+    const hostRef = useRef<HTMLSpanElement>(null)
+
+    useEffect(() => {
+        if (typeof window === "undefined" || RenderTarget.current() === RenderTarget.canvas) return
+        const el = hostRef.current
+        if (el) passThrough(el.parentElement)
+    }, [mounted])
 
     useEffect(() => {
         if (typeof window === "undefined") return
@@ -480,6 +504,7 @@ export default function WorldIntro(props: Props) {
     return (
         <>
             <style>{keyframes}</style>
+            <span ref={hostRef} aria-hidden="true" style={{ display: "none" }} />
 
             <AnimatePresence>
                 {open && (
@@ -503,6 +528,7 @@ export default function WorldIntro(props: Props) {
                             fontFamily: FONT,
                             userSelect: "none",
                             WebkitTapHighlightColor: "transparent",
+                            pointerEvents: stage === 2 ? "none" : "auto",
                         }}
                     >
                         <div aria-hidden="true" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
@@ -812,6 +838,7 @@ export default function WorldIntro(props: Props) {
                         bottom: "clamp(14px,3vh,24px)",
                         [switcherSide]: "clamp(14px,3vw,24px)",
                         zIndex: 9998,
+                        pointerEvents: "none",
                         fontFamily: FONT,
                         display: "flex",
                         flexDirection: "column",
@@ -844,6 +871,7 @@ export default function WorldIntro(props: Props) {
                                     WebkitBackdropFilter: "blur(16px)",
                                     boxShadow: "var(--db-shadow, 0 16px 40px rgba(0,0,0,0.5))",
                                     color: "var(--db-text, rgba(255,255,255,0.9))",
+                                    pointerEvents: "auto",
                                 }}
                             >
                                 <div
@@ -921,6 +949,7 @@ export default function WorldIntro(props: Props) {
                             fontWeight: 500,
                             letterSpacing: "0.04em",
                             cursor: "pointer",
+                            pointerEvents: "auto",
                         }}
                     >
                         <Orb v={current} size={22} reduced={reduced} active={false} />

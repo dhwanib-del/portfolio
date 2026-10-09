@@ -13,6 +13,7 @@ import { useEffect, useRef, useState, CSSProperties } from "react"
  * Respects reduced-motion.
  *
  * Oct 4: stronger breathing (bigger drift, deeper opacity swing) per Dhwani.
+ * Oct 5: wrapper walk ignores injected <style> siblings so the fixed Framer wrapper always ends up click-through.
  * @framerSupportedLayoutWidth any
  * @framerSupportedLayoutHeight any
  */
@@ -51,8 +52,10 @@ export default function AuroraBackground(props: any) {
         for (let i = 0; el && i < 5; i++) {
             el.style.pointerEvents = "none"
             if (window.getComputedStyle(el).position === "fixed") break
-            const parent = el.parentElement
-            if (!parent || parent.childElementCount !== 1) break
+            const parent: HTMLElement | null = el.parentElement
+            if (!parent || parent === document.body || parent.id === "main") break
+            // Framer can inject <style> siblings next to the component; they don't count
+            if (Array.from(parent.children).filter((c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName)).length !== 1) break
             el = parent
         }
     }, [])

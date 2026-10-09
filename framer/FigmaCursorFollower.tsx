@@ -7,10 +7,12 @@
 // color when "Follow vibe" is on. Hidden on touch screens. Never blocks clicks.
 // Section scope keeps the original Figma multiplayer tag inside its parent.
 // Oct 2: colors follow the site theme tokens (--db-*) for light/dark.
+// Oct 5: the Framer wrapper around it is made click-through too (section scope fills its parent,
+// so the wrapper used to sit on top of the section's links).
 import * as React from "react"
 import { startTransition } from "react"
 import { createPortal } from "react-dom"
-import { addPropertyControls, ControlType } from "framer"
+import { addPropertyControls, ControlType, RenderTarget } from "framer"
 
 type Ctx = "" | "reveal" | "hide" | "video" | "link" | "button"
 
@@ -97,6 +99,20 @@ export default function FigmaCursorFollower(props: Props) {
             setIsTouch(window.matchMedia("(hover: none), (pointer: coarse)").matches)
         })
     }, [])
+
+    // Click-through Framer wrappers
+    React.useEffect(() => {
+        if (typeof window === "undefined" || RenderTarget.current() === RenderTarget.canvas) return
+        let el: HTMLElement | null = ref.current
+        for (let i = 0; el && i < 5; i++) {
+            el.style.pointerEvents = "none"
+            if (window.getComputedStyle(el).position === "fixed") break
+            const up: HTMLElement | null = el.parentElement
+            if (!up || up === document.body || up.id === "main") break
+            if (Array.from(up.children).filter((c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName)).length !== 1) break
+            el = up
+        }
+    }, [scope])
 
     // Vibe color
     React.useEffect(() => {
@@ -272,8 +288,8 @@ export default function FigmaCursorFollower(props: Props) {
 FigmaCursorFollower.defaultProps = {
     label: "dhwani",
     color: "rgb(243, 80, 15)",
-    scope: "section",
-    idle: "dot",
+    scope: "section" as const,
+    idle: "dot" as const,
     followVibe: true,
     hoverLabel: "open ↗",
     flipLabel: "reveal ↓",
