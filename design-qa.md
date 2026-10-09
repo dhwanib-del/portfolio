@@ -1,5 +1,17 @@
 # Live portfolio replication QA
 
+## October 9: Curved About gallery implementation
+
+- [x] Implemented approved curved-wall concept with concise introduction and designer/DJ/off-the-clock controls.
+- [x] Imported all 15 original gallery items from the current live Framer About module, retaining source captions, years and source URLs in src/content/gallery.json. These are public existing gallery records, not invented biographical claims.
+- [x] Added horizontal mouse drag/touch scroll, keyboard panning, shuffle without loss, full gallery and photo enlargement using a native dialog with Escape/focus return.
+- [x] Retained original three-photo archive, printer, playlist and project examples in About. DJ link opens the playlist disclosure.
+- [x] Changed-file ESLint and production build passed. Playwright exercised 1440/1024/768/390/320 widths in light and dark, all image sources, role controls, playlist opening, shuffle preservation, dialog and reduced-motion behavior.
+- [x] Desktop dark and mobile light screenshots visually reviewed; no page horizontal overflow. The gallery itself intentionally scrolls horizontally.
+- [ ] Check new deployment availability after publishing.
+
+Reproduce interaction checks: BASE_URL=http://127.0.0.1:3010 node scripts/check-about-world.mjs (with the site running). Screenshots are written to scratch rather than committed.
+
 ## October 9: About side wall and AI Lab
 
 - [x] Shortened About introduction; moved all three existing archive photos into a prominent side wall, stacking below on phones.
