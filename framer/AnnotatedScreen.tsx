@@ -240,10 +240,22 @@ export default function AnnotatedScreen(props: any) {
         mediaMax = 0,
         enlarge = true,
         alt = "",
+        src = "",
+        notesJson = "",
         style,
     } = props
 
-    const notes: Note[] = Array.isArray(notesProp) ? notesProp : DEFAULT_NOTES
+    // notesJson (a JSON array) wins when filled in — lets notes be set from outside the canvas UI.
+    const notes: Note[] = useMemo(() => {
+        if (typeof notesJson === "string" && notesJson.trim()) {
+            try {
+                // A "json:" prefix is allowed (some editors treat a value starting with "[" as data).
+                const parsed = JSON.parse(notesJson.trim().replace(/^json:\s*/i, ""))
+                if (Array.isArray(parsed)) return parsed
+            } catch (e) {}
+        }
+        return Array.isArray(notesProp) ? notesProp : DEFAULT_NOTES
+    }, [notesJson, notesProp])
     const isStatic = useIsStaticRenderer()
     const light = useDbLight()
     const reducedPref = useReducedMotion()
@@ -297,6 +309,7 @@ export default function AnnotatedScreen(props: any) {
         document.head.appendChild(el)
     }, [])
 
+    const sideBySideKey = layout === "side" && rootW >= 640
     // Measure the media box.
     useLayoutEffect(() => {
         const el = boxRef.current
@@ -312,7 +325,8 @@ export default function AnnotatedScreen(props: any) {
         const ro = new ResizeObserver(read)
         ro.observe(el)
         return () => ro.disconnect()
-    }, [])
+        // The media box remounts when the layout switches between side-by-side and stacked.
+    }, [sideBySideKey])
 
     // Measure the whole component (decides side-by-side vs stacked in "side" layout).
     useLayoutEffect(() => {
@@ -355,7 +369,7 @@ export default function AnnotatedScreen(props: any) {
     }, [zoom])
 
     const videoSrc = typeof video === "string" && video ? video : ""
-    const imgSrc = media && media.src ? media.src : ""
+    const imgSrc = media && media.src ? media.src : typeof src === "string" ? src : ""
 
     // Intrinsic size for ratio=auto (also catches images already loaded before hydration).
     useEffect(() => {
@@ -611,7 +625,7 @@ export default function AnnotatedScreen(props: any) {
                             <img
                                 ref={imgRef}
                                 src={imgSrc}
-                                srcSet={media.srcSet}
+                                srcSet={media && media.srcSet ? media.srcSet : undefined}
                                 alt={altText}
                                 draggable={false}
                                 onLoad={(e) => {
@@ -1007,7 +1021,7 @@ export default function AnnotatedScreen(props: any) {
                             <img
                                 ref={imgRef}
                                 src={imgSrc}
-                                srcSet={media.srcSet}
+                                srcSet={media && media.srcSet ? media.srcSet : undefined}
                                 alt={altText}
                                 draggable={false}
                                 onLoad={(e) => {
@@ -1636,6 +1650,14 @@ addPropertyControls(AnnotatedScreen, {
     mediaMax: { type: ControlType.Number, title: "Screen max W", defaultValue: 0, min: 0, max: 1600, step: 10, unit: "px", description: "0 = fill the width." },
     enlarge: { type: ControlType.Boolean, title: "Enlarge button", defaultValue: true },
     alt: { type: ControlType.String, title: "Alt text", defaultValue: "", displayTextArea: true },
+    src: { type: ControlType.String, title: "Image URL", defaultValue: "", description: "Used when Image is empty." },
+    notesJson: {
+        type: ControlType.String,
+        title: "Notes JSON",
+        defaultValue: "",
+        displayTextArea: true,
+        description: "Optional. A JSON list of notes (may start with json:); when filled in it replaces the Notes list. Clear it to edit notes above.",
+    },
     showLegend: { type: ControlType.Boolean, title: "Legend", defaultValue: true, enabledTitle: "Show", disabledTitle: "Hide" },
     toggleLabel: { type: ControlType.String, title: "Toggle label", defaultValue: "Show annotations", description: "Leave empty to hide the switch." },
     caption: { type: ControlType.String, title: "Caption", defaultValue: "", displayTextArea: true },
