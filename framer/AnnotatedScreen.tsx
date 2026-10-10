@@ -179,6 +179,23 @@ function geom(n: Note, w: number, h: number) {
     return { cx, cy, px: clamp(px, 0, w), py: clamp(py, 0, h), hl, bw, bh, r }
 }
 
+// Highlight area in px, padded a little and kept inside the media so outlines never clip.
+function hlRect(g: { cx: number; cy: number; bw: number; bh: number; r: number; hl: string }, w: number, h: number) {
+    const PADH = 4
+    const INSET = 3
+    if (g.hl === "ring") {
+        const d = g.r * 2 + PADH * 2
+        const x = clamp(g.cx - d / 2, INSET, Math.max(INSET, w - d - INSET))
+        const y = clamp(g.cy - d / 2, INSET, Math.max(INSET, h - d - INSET))
+        return { x, y, w: d, h: d, rx: d / 2 }
+    }
+    const bw = Math.min(w - INSET * 2, g.bw + PADH * 2)
+    const bh = Math.min(h - INSET * 2, g.bh + PADH * 2)
+    const x = clamp(g.cx - bw / 2, INSET, Math.max(INSET, w - bw - INSET))
+    const y = clamp(g.cy - bh / 2, INSET, Math.max(INSET, h - bh - INSET))
+    return { x, y, w: bw, h: bh, rx: 10 }
+}
+
 function placeCard(side: Side, px: number, py: number, cw: number, ch: number, w: number, h: number) {
     const fits = {
         right: px + GAP + cw <= w - PAD,
@@ -278,7 +295,7 @@ export default function AnnotatedScreen(props: any) {
     const [intrinsic, setIntrinsic] = useState<number | null>(null)
     const [cardH, setCardH] = useState<number[]>([])
     const [visible, setVisible] = useState(true)
-    const [active, setActive] = useState<number | null>(mode === "guided" ? 0 : null)
+    const [active, setActive] = useState<number | null>(mode === "guided" || props.layout === "side" ? 0 : null)
     const [locked, setLocked] = useState(false)
     const [rootW, setRootW] = useState(0)
     const [zoom, setZoom] = useState(false)
@@ -290,10 +307,10 @@ export default function AnnotatedScreen(props: any) {
     // Reset selection when mode changes (canvas edits).
     useEffect(() => {
         startTransition(() => {
-            setActive(mode === "guided" ? 0 : null)
+            setActive(mode === "guided" || layout === "side" ? 0 : null)
             setLocked(false)
         })
-    }, [mode])
+    }, [mode, layout])
 
     useEffect(() => {
         if (active !== null && active >= notes.length) set(notes.length ? notes.length - 1 : null)
@@ -392,6 +409,9 @@ export default function AnnotatedScreen(props: any) {
     const sideBySide = side && rootW >= 640
     // "phone" = notes render as a list instead of cards on the media.
     const phone = side || (size.w > 0 && size.w < 640)
+    // Clean look for "side" layout: no pins on the screen, a light dim, one outlined area with a
+    // small label tab (Figma-selection style). The notes list beside the screen drives it.
+    const clean = side
     const altText = alt || (media && media.alt) || caption || "Annotated screen"
     const showAll = mode === "all"
     const shownActive = isStatic && mode === "hover" && active === null ? 0 : active
@@ -506,7 +526,7 @@ export default function AnnotatedScreen(props: any) {
 
     // Which notes show a card / highlight on the media.
     const isOpen = (i: number) => on && (showAll || shownActive === i)
-    const dimOn = on && mode === "guided" && shownActive !== null && !!notes[shownActive] && size.w > 0
+    const dimOn = on && (mode === "guided" || (side && mode === "hover")) && shownActive !== null && !!notes[shownActive] && size.w > 0
 
     // ---- styles ----
     const r = Math.max(0, num(radius, 16))
@@ -572,6 +592,500 @@ export default function AnnotatedScreen(props: any) {
         )
     }
 
+    const frameEl = (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: mediaMax > 0 ? mediaMax : undefined, margin: mediaMax > 0 && !sideBySide ? "0 auto" : undefined }}>
+            <div style={{ ...frameStyle, width: "100%", maxWidth: mediaMax > 0 ? mediaMax : undefined, margin: mediaMax > 0 && !sideBySide ? "0 auto" : undefined, boxSizing: "border-box" }}>
+                <div ref={boxRef} style={{ position: "relative", width: "100%", aspectRatio: String(aspect) }}>
+                    {/* Clipped media layer */}
+                    <div
+                        style={{
+                            position: "absolute",
+                            inset: 0,
+                            overflow: "hidden",
+                            borderRadius: r,
+                            background: "var(--db-surface, #111111)",
+                            border: frame === "subtle" ? `1px solid ${line}` : "none",
+                        }}
+                    >
+                        {videoSrc ? (
+                            <video
+                                ref={videoRef}
+                                src={videoSrc}
+                                muted
+                                loop
+                                playsInline
+                                autoPlay={!reduced}
+                                controls={reduced && !isStatic}
+                                aria-label={caption || "Annotated product video"}
+                                onLoadedMetadata={(e) => {
+                                    const v = e.currentTarget
+                                    if (v.videoWidth) startTransition(() => setIntrinsic(v.videoWidth / v.videoHeight))
+                                }}
+                                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: fit === "cover" ? "cover" : "contain", display: "block" }}
+                            />
+                        ) : imgSrc ? (
+                            <img
+                                ref={imgRef}
+                                src={imgSrc}
+                                srcSet={media && media.srcSet ? media.srcSet : undefined}
+                                alt={altText}
+                                draggable={false}
+                                onLoad={(e) => {
+                                    const im = e.currentTarget
+                                    if (im.naturalWidth) startTransition(() => setIntrinsic(im.naturalWidth / im.naturalHeight))
+                                }}
+                                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: fit === "cover" ? "cover" : "contain", display: "block" }}
+                            />
+                        ) : (
+                            <div
+                                aria-hidden
+                                style={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    background: light
+                                        ? "radial-gradient(120% 90% at 20% 10%, rgba(0,0,0,0.04), transparent 60%), linear-gradient(135deg, #F2F2F4 0%, #E6E6EA 100%)"
+                                        : "radial-gradient(120% 90% at 20% 10%, rgba(255,255,255,0.06), transparent 60%), linear-gradient(135deg, #17171A 0%, #0E0E10 100%)",
+                                    pointerEvents: "none",
+                                }}
+                            >
+                                <span style={{ fontFamily: MONO, fontSize: 12, letterSpacing: "0.06em", color: text2 }}>add a screenshot or video →</span>
+                            </div>
+                        )}
+
+                        {/* Guided dim with a cut-out around the active area */}
+                        {size.w > 0 ? (
+                            <svg
+                                aria-hidden
+                                width={size.w}
+                                height={size.h}
+                                style={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    pointerEvents: "none",
+                                    opacity: dimOn ? 1 : 0,
+                                    transition: reduced ? "none" : "opacity 260ms ease",
+                                }}
+                            >
+                                <defs>
+                                    <mask id={uid + "-m"}>
+                                        <rect width={size.w} height={size.h} fill="white" />
+                                        {dimOn && shownActive !== null
+                                            ? (() => {
+                                                  const g = geom(notes[shownActive], size.w, size.h)
+                                                  if (clean && g.hl !== "none") {
+                                                      const b = hlRect(g, size.w, size.h)
+                                                      return <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={b.rx} fill="black" />
+                                                  }
+                                                  if (g.hl === "box")
+                                                      return <rect x={g.cx - g.bw / 2 - 6} y={g.cy - g.bh / 2 - 6} width={g.bw + 12} height={g.bh + 12} rx={10} fill="black" />
+                                                  if (g.hl === "ring") return <circle cx={g.cx} cy={g.cy} r={g.r + 6} fill="black" />
+                                                  return <circle cx={g.cx} cy={g.cy} r={Math.max(44, Math.min(size.w, size.h) * 0.1)} fill="black" />
+                                              })()
+                                            : null}
+                                    </mask>
+                                </defs>
+                                <rect width={size.w} height={size.h} fill={clean ? (light ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.42)") : "rgba(0,0,0,0.55)"} mask={`url(#${uid}-m)`} />
+                            </svg>
+                        ) : null}
+                    </div>
+
+                    {/* Highlights + leader lines (decorative) */}
+                    {on && size.w > 0 ? (
+                        <svg aria-hidden width={size.w} height={size.h} style={{ position: "absolute", inset: 0, overflow: "visible", pointerEvents: "none" }}>
+                            {notes.map((n, i) => {
+                                if (!isOpen(i)) return null
+                                const g = geom(n, size.w, size.h)
+                                const col = palette[kindOf(n)].c
+                                const anim: React.CSSProperties = reduced ? {} : { animation: "dbAsDraw 700ms cubic-bezier(.2,.7,.2,1) both" }
+                                const out: React.ReactNode[] = []
+                                if (clean) {
+                                    if (g.hl === "none") return null
+                                    const b = hlRect(g, size.w, size.h)
+                                    return (
+                                        <g key={i}>
+                                            <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={b.rx} fill="none" stroke={col} strokeOpacity={0.22} strokeWidth={6} />
+                                            <rect x={b.x} y={b.y} width={b.w} height={b.h} rx={b.rx} fill="none" stroke={col} strokeWidth={1.75} />
+                                        </g>
+                                    )
+                                }
+                                if (g.hl === "box")
+                                    out.push(
+                                        <rect
+                                            key={"h" + i + "-" + shownActive}
+                                            x={g.cx - g.bw / 2}
+                                            y={g.cy - g.bh / 2}
+                                            width={g.bw}
+                                            height={g.bh}
+                                            rx={8}
+                                            fill="none"
+                                            stroke={col}
+                                            strokeWidth={2}
+                                            pathLength={1}
+                                            style={{ ...(reduced ? {} : { strokeDasharray: 1 }), ...anim }}
+                                        />
+                                    )
+                                else if (g.hl === "ring")
+                                    out.push(
+                                        <circle
+                                            key={"h" + i + "-" + shownActive}
+                                            cx={g.cx}
+                                            cy={g.cy}
+                                            r={g.r}
+                                            fill="none"
+                                            stroke={col}
+                                            strokeWidth={2}
+                                            pathLength={1}
+                                            style={{ ...(reduced ? {} : { strokeDasharray: 1 }), ...anim }}
+                                        />
+                                    )
+                                if (!phone) {
+                                    const cw = cardW
+                                    const ch = cardH[i] || 96
+                                    const p = placeCard((n.side || "auto") as Side, g.px, g.py, cw, ch, size.w, size.h)
+                                    out.push(<line key={"l" + i} x1={g.px} y1={g.py} x2={p.ax} y2={p.ay} stroke={col} strokeOpacity={0.75} strokeWidth={1.25} />)
+                                    out.push(<circle key={"d" + i} cx={p.ax} cy={p.ay} r={2.5} fill={col} />)
+                                }
+                                return <g key={i}>{out}</g>
+                            })}
+                        </svg>
+                    ) : null}
+
+                    {/* Cards on the media (wide screens) */}
+                    {on && !phone && size.w > 0
+                        ? notes.map((n, i) => {
+                              const g = geom(n, size.w, size.h)
+                              const ch = cardH[i] || 96
+                              const p = placeCard((n.side || "auto") as Side, g.px, g.py, cardW, ch, size.w, size.h)
+                              const open = isOpen(i)
+                              return (
+                                  <div
+                                      key={"c" + i}
+                                      id={`${uid}-card-${i}`}
+                                      ref={(el) => {
+                                          cardRefs.current[i] = el
+                                      }}
+                                      role="note"
+                                      aria-hidden={!open}
+                                      onMouseEnter={() => enter(i)}
+                                      onMouseLeave={leave}
+                                      style={{
+                                          position: "absolute",
+                                          left: p.left,
+                                          top: p.top,
+                                          width: cardW,
+                                          boxSizing: "border-box",
+                                          padding: "12px 14px",
+                                          borderRadius: 12,
+                                          background: glass,
+                                          border: `1px solid ${line}`,
+                                          boxShadow: shadow,
+                                          backdropFilter: "blur(14px) saturate(140%)",
+                                          WebkitBackdropFilter: "blur(14px) saturate(140%)",
+                                          visibility: open ? "visible" : "hidden",
+                                          opacity: open ? 1 : 0,
+                                          animation: open && !reduced ? "dbAsIn 220ms ease both" : "none",
+                                          pointerEvents: open ? "auto" : "none",
+                                          zIndex: open ? 3 : 1,
+                                      }}
+                                  >
+                                      {renderCardBody(n, i, false)}
+                                      {n.body ? <div style={{ marginTop: 4, fontSize: 14, lineHeight: 1.45, color: text2 }}>{n.body}</div> : null}
+                                  </div>
+                              )
+                          })
+                        : null}
+
+                    {/* Label tab on the active area (clean mode) */}
+                    {on && clean && size.w > 0 && shownActive !== null && notes[shownActive]
+                        ? (() => {
+                              const n = notes[shownActive]
+                              const g = geom(n, size.w, size.h)
+                              const k = kindOf(n)
+                              const b = g.hl === "none" ? { x: g.cx - 8, y: g.cy - 8, w: 16, h: 16, rx: 8 } : hlRect(g, size.w, size.h)
+                              const TAB = 22
+                              const above = b.y - TAB - 4 >= 2
+                              return (
+                                  <div
+                                      key={"tab" + shownActive}
+                                      aria-hidden
+                                      style={{
+                                          position: "absolute",
+                                          left: clamp(b.x, 3, Math.max(3, size.w - 40)),
+                                          top: above ? b.y - TAB - 4 : b.y + b.h + 4,
+                                          maxWidth: size.w - clamp(b.x, 3, size.w) - 3,
+                                          height: TAB,
+                                          display: "inline-flex",
+                                          alignItems: "center",
+                                          gap: 6,
+                                          padding: "0 8px",
+                                          borderRadius: 6,
+                                          background: palette[k].c,
+                                          color: palette[k].on,
+                                          fontFamily: FONT,
+                                          fontSize: 11,
+                                          fontWeight: 600,
+                                          letterSpacing: "0.01em",
+                                          whiteSpace: "nowrap",
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                          boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
+                                          pointerEvents: "none",
+                                          zIndex: 4,
+                                          animation: reduced ? "none" : "dbAsIn 200ms ease both",
+                                      }}
+                                  >
+                                      <span style={{ fontFamily: MONO, opacity: 0.8 }}>{String(shownActive + 1).padStart(2, "0")}</span>
+                                      <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{n.title}</span>
+                                  </div>
+                              )
+                          })()
+                        : null}
+
+                    {/* Pins */}
+                    {on && !clean && size.w > 0 ? (
+                        <div role="group" aria-label="Annotations" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+                            {notes.map((n, i) => {
+                                const g = geom(n, size.w, size.h)
+                                const k = kindOf(n)
+                                const col = palette[k]
+                                const sel = shownActive === i
+                                const label = `${i + 1}: ${n.title || "Annotation"} (${KIND_LABEL[k]})`
+                                return (
+                                    <button
+                                        key={"p" + i}
+                                        ref={(el) => {
+                                            pinRefs.current[i] = el
+                                        }}
+                                        type="button"
+                                        className="db-as-pin"
+                                        aria-label={label}
+                                        aria-expanded={mode === "all" ? undefined : sel}
+                                        aria-controls={phone ? `${uid}-row-${i}` : `${uid}-card-${i}`}
+                                        onClick={() => tapPin(i)}
+                                        onMouseEnter={() => enter(i)}
+                                        onMouseLeave={leave}
+                                        onFocus={() => {
+                                            if (mode === "hover" && !locked) set(i)
+                                        }}
+                                        onKeyDown={(e) => onPinKey(e, i)}
+                                        style={{
+                                            position: "absolute",
+                                            left: g.px,
+                                            top: g.py,
+                                            width: PIN,
+                                            height: PIN,
+                                            marginLeft: -PIN / 2,
+                                            marginTop: -PIN / 2,
+                                            padding: 0,
+                                            border: `2px solid ${light ? "#FFFFFF" : "rgba(10,10,10,0.85)"}`,
+                                            borderRadius: 999,
+                                            background: col.c,
+                                            color: col.on,
+                                            fontFamily: FONT,
+                                            fontSize: 13,
+                                            fontWeight: 700,
+                                            lineHeight: 1,
+                                            cursor: "pointer",
+                                            pointerEvents: "auto",
+                                            boxShadow: sel ? `0 0 0 3px ${col.c}55, 0 4px 14px rgba(0,0,0,0.35)` : "0 4px 14px rgba(0,0,0,0.35)",
+                                            transform: sel && !reduced ? "scale(1.08)" : "none",
+                                            transition: reduced ? "none" : "transform 160ms ease, box-shadow 160ms ease",
+                                            zIndex: sel ? 4 : 2,
+                                        }}
+                                    >
+                                        <span
+                                            aria-hidden
+                                            style={{
+                                                position: "absolute",
+                                                inset: -2,
+                                                borderRadius: 999,
+                                                background: col.c,
+                                                pointerEvents: "none",
+                                                opacity: 0,
+                                                animation: reduced || !inView ? "none" : `dbAsPulse 2.4s ease-out ${i * 0.35}s infinite`,
+                                            }}
+                                        />
+                                        <span style={{ position: "relative" }}>{i + 1}</span>
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    ) : null}
+                    {/* Enlarge */}
+                    {enlarge && !clean && (imgSrc || videoSrc) ? (
+                        <button
+                            ref={zoomBtnRef}
+                            type="button"
+                            className="db-as-btn"
+                            aria-label="Enlarge screen"
+                            aria-haspopup="dialog"
+                            onClick={() => startTransition(() => setZoom(true))}
+                            style={{
+                                position: "absolute",
+                                right: 10,
+                                top: 10,
+                                zIndex: 5,
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 6,
+                                padding: "6px 10px",
+                                borderRadius: 999,
+                                border: `1px solid ${line}`,
+                                background: glass,
+                                backdropFilter: "blur(10px)",
+                                WebkitBackdropFilter: "blur(10px)",
+                                color: textCol,
+                                fontFamily: FONT,
+                                fontSize: 12,
+                                fontWeight: 500,
+                                cursor: "zoom-in",
+                                boxShadow: shadow,
+                            }}
+                        >
+                            <svg aria-hidden width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                <path d="M7 1h4v4M5 11H1V7M11 1 7 5M1 11l4-4" />
+                            </svg>
+                            Enlarge
+                        </button>
+                    ) : null}
+                </div>
+            </div>
+
+            {enlarge && clean && (imgSrc || videoSrc) ? (
+                <button
+                    ref={zoomBtnRef}
+                    type="button"
+                    className="db-as-btn"
+                    aria-label="Enlarge screen"
+                    aria-haspopup="dialog"
+                    onClick={() => startTransition(() => setZoom(true))}
+                    style={{
+                        alignSelf: "flex-start",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "6px 2px",
+                        border: "none",
+                        background: "none",
+                        color: text2,
+                        fontFamily: FONT,
+                        fontSize: 13,
+                        fontWeight: 500,
+                        cursor: "zoom-in",
+                    }}
+                >
+                    <svg aria-hidden width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M7 1h4v4M5 11H1V7M11 1 7 5M1 11l4-4" />
+                    </svg>
+                    View full size
+                </button>
+            ) : null}
+        </div>
+    )
+    const panelEl = (
+        <>
+            {/* Guided stepper */}
+            {on && mode === "guided" ? (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                    <button type="button" className="db-as-btn" onClick={() => step(-1)} disabled={!shownActive} style={btn(line, text2, !shownActive)}>
+                        ← Back
+                    </button>
+                    <span aria-live="polite" style={{ fontFamily: MONO, fontSize: 12, color: text2, letterSpacing: "0.06em" }}>
+                        {shownActive === null ? "—" : shownActive + 1} / {notes.length}
+                    </span>
+                    <button
+                        type="button"
+                        className="db-as-btn"
+                        onClick={() => step(1)}
+                        style={{
+                            ...btn(line, textCol, false),
+                            background: "var(--db-accent, #F3500F)",
+                            color: "var(--db-on-accent, #0A0A0A)",
+                            border: "1px solid transparent",
+                            fontWeight: 600,
+                        }}
+                    >
+                        {shownActive !== null && shownActive >= notes.length - 1 ? "Start over ↺" : "Next →"}
+                    </button>
+                </div>
+            ) : null}
+
+            {/* Phone list */}
+            {on && phone ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {notes.map((n, i) => {
+                        const k = kindOf(n)
+                        const open = showAll || shownActive === i
+                        return (
+                            <div
+                                key={"r" + i}
+                                id={`${uid}-row-${i}`}
+                                ref={(el) => {
+                                    rowRefs.current[i] = el
+                                }}
+                                className="db-as-row"
+                                role="button"
+                                tabIndex={0}
+                                aria-expanded={open}
+                                onClick={() => (mode === "all" ? null : open && mode === "hover" && !side ? set(null) : set(i))}
+                                onMouseEnter={() => {
+                                    if (side && mode === "hover") set(i)
+                                }}
+                                onFocus={() => {
+                                    if (side && mode === "hover") set(i)
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault()
+                                        if (mode !== "all") set(open && mode === "hover" ? null : i)
+                                    }
+                                }}
+                                style={{
+                                    display: "flex",
+                                    gap: 12,
+                                    padding: "12px 14px",
+                                    borderRadius: 12,
+                                    background: open ? glass : "transparent",
+                                    border: `1px solid ${open ? palette[k].c : line}`,
+                                    boxShadow: open ? shadow : "none",
+                                    cursor: mode === "all" ? "default" : "pointer",
+                                    transition: reduced ? "none" : "background 180ms ease, border-color 180ms ease",
+                                }}
+                            >
+                                <span
+                                    aria-hidden
+                                    style={{
+                                        flex: "0 0 auto",
+                                        width: 24,
+                                        height: 24,
+                                        borderRadius: 999,
+                                        background: palette[k].c,
+                                        color: palette[k].on,
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    {i + 1}
+                                </span>
+                                <div style={{ minWidth: 0 }}>
+                                    {renderCardBody(n, i, true)}
+                                    {open && n.body ? <div style={{ marginTop: 4, fontSize: 14, lineHeight: 1.45, color: text2 }}>{n.body}</div> : null}
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+            ) : null}
+
+        </>
+    )
+
     return (
         <figure
             ref={rootRef as any}
@@ -590,794 +1104,14 @@ export default function AnnotatedScreen(props: any) {
             }}
         >
             {sideBySide ? (
-                <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-                    <div style={{ flex: `0 1 ${mediaMax > 0 ? mediaMax : 360}px`, minWidth: 0 }}>
-            <div style={{ ...frameStyle, width: "100%", maxWidth: mediaMax > 0 ? mediaMax : undefined, margin: mediaMax > 0 && !sideBySide ? "0 auto" : undefined, boxSizing: "border-box" }}>
-                <div ref={boxRef} style={{ position: "relative", width: "100%", aspectRatio: String(aspect) }}>
-                    {/* Clipped media layer */}
-                    <div
-                        style={{
-                            position: "absolute",
-                            inset: 0,
-                            overflow: "hidden",
-                            borderRadius: r,
-                            background: "var(--db-surface, #111111)",
-                            border: frame === "subtle" ? `1px solid ${line}` : "none",
-                        }}
-                    >
-                        {videoSrc ? (
-                            <video
-                                ref={videoRef}
-                                src={videoSrc}
-                                muted
-                                loop
-                                playsInline
-                                autoPlay={!reduced}
-                                controls={reduced && !isStatic}
-                                aria-label={caption || "Annotated product video"}
-                                onLoadedMetadata={(e) => {
-                                    const v = e.currentTarget
-                                    if (v.videoWidth) startTransition(() => setIntrinsic(v.videoWidth / v.videoHeight))
-                                }}
-                                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: fit === "cover" ? "cover" : "contain", display: "block" }}
-                            />
-                        ) : imgSrc ? (
-                            <img
-                                ref={imgRef}
-                                src={imgSrc}
-                                srcSet={media && media.srcSet ? media.srcSet : undefined}
-                                alt={altText}
-                                draggable={false}
-                                onLoad={(e) => {
-                                    const im = e.currentTarget
-                                    if (im.naturalWidth) startTransition(() => setIntrinsic(im.naturalWidth / im.naturalHeight))
-                                }}
-                                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: fit === "cover" ? "cover" : "contain", display: "block" }}
-                            />
-                        ) : (
-                            <div
-                                aria-hidden
-                                style={{
-                                    position: "absolute",
-                                    inset: 0,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    background: light
-                                        ? "radial-gradient(120% 90% at 20% 10%, rgba(0,0,0,0.04), transparent 60%), linear-gradient(135deg, #F2F2F4 0%, #E6E6EA 100%)"
-                                        : "radial-gradient(120% 90% at 20% 10%, rgba(255,255,255,0.06), transparent 60%), linear-gradient(135deg, #17171A 0%, #0E0E10 100%)",
-                                    pointerEvents: "none",
-                                }}
-                            >
-                                <span style={{ fontFamily: MONO, fontSize: 12, letterSpacing: "0.06em", color: text2 }}>add a screenshot or video →</span>
-                            </div>
-                        )}
-
-                        {/* Guided dim with a cut-out around the active area */}
-                        {size.w > 0 ? (
-                            <svg
-                                aria-hidden
-                                width={size.w}
-                                height={size.h}
-                                style={{
-                                    position: "absolute",
-                                    inset: 0,
-                                    pointerEvents: "none",
-                                    opacity: dimOn ? 1 : 0,
-                                    transition: reduced ? "none" : "opacity 260ms ease",
-                                }}
-                            >
-                                <defs>
-                                    <mask id={uid + "-m"}>
-                                        <rect width={size.w} height={size.h} fill="white" />
-                                        {dimOn && shownActive !== null
-                                            ? (() => {
-                                                  const g = geom(notes[shownActive], size.w, size.h)
-                                                  if (g.hl === "box")
-                                                      return <rect x={g.cx - g.bw / 2 - 6} y={g.cy - g.bh / 2 - 6} width={g.bw + 12} height={g.bh + 12} rx={10} fill="black" />
-                                                  if (g.hl === "ring") return <circle cx={g.cx} cy={g.cy} r={g.r + 6} fill="black" />
-                                                  return <circle cx={g.cx} cy={g.cy} r={Math.max(44, Math.min(size.w, size.h) * 0.1)} fill="black" />
-                                              })()
-                                            : null}
-                                    </mask>
-                                </defs>
-                                <rect width={size.w} height={size.h} fill="rgba(0,0,0,0.55)" mask={`url(#${uid}-m)`} />
-                            </svg>
-                        ) : null}
-                    </div>
-
-                    {/* Highlights + leader lines (decorative) */}
-                    {on && size.w > 0 ? (
-                        <svg aria-hidden width={size.w} height={size.h} style={{ position: "absolute", inset: 0, overflow: "visible", pointerEvents: "none" }}>
-                            {notes.map((n, i) => {
-                                if (!isOpen(i)) return null
-                                const g = geom(n, size.w, size.h)
-                                const col = palette[kindOf(n)].c
-                                const anim: React.CSSProperties = reduced ? {} : { animation: "dbAsDraw 700ms cubic-bezier(.2,.7,.2,1) both" }
-                                const out: React.ReactNode[] = []
-                                if (g.hl === "box")
-                                    out.push(
-                                        <rect
-                                            key={"h" + i + "-" + shownActive}
-                                            x={g.cx - g.bw / 2}
-                                            y={g.cy - g.bh / 2}
-                                            width={g.bw}
-                                            height={g.bh}
-                                            rx={8}
-                                            fill="none"
-                                            stroke={col}
-                                            strokeWidth={2}
-                                            pathLength={1}
-                                            style={{ ...(reduced ? {} : { strokeDasharray: 1 }), ...anim }}
-                                        />
-                                    )
-                                else if (g.hl === "ring")
-                                    out.push(
-                                        <circle
-                                            key={"h" + i + "-" + shownActive}
-                                            cx={g.cx}
-                                            cy={g.cy}
-                                            r={g.r}
-                                            fill="none"
-                                            stroke={col}
-                                            strokeWidth={2}
-                                            pathLength={1}
-                                            style={{ ...(reduced ? {} : { strokeDasharray: 1 }), ...anim }}
-                                        />
-                                    )
-                                if (!phone) {
-                                    const cw = cardW
-                                    const ch = cardH[i] || 96
-                                    const p = placeCard((n.side || "auto") as Side, g.px, g.py, cw, ch, size.w, size.h)
-                                    out.push(<line key={"l" + i} x1={g.px} y1={g.py} x2={p.ax} y2={p.ay} stroke={col} strokeOpacity={0.75} strokeWidth={1.25} />)
-                                    out.push(<circle key={"d" + i} cx={p.ax} cy={p.ay} r={2.5} fill={col} />)
-                                }
-                                return <g key={i}>{out}</g>
-                            })}
-                        </svg>
-                    ) : null}
-
-                    {/* Cards on the media (wide screens) */}
-                    {on && !phone && size.w > 0
-                        ? notes.map((n, i) => {
-                              const g = geom(n, size.w, size.h)
-                              const ch = cardH[i] || 96
-                              const p = placeCard((n.side || "auto") as Side, g.px, g.py, cardW, ch, size.w, size.h)
-                              const open = isOpen(i)
-                              return (
-                                  <div
-                                      key={"c" + i}
-                                      id={`${uid}-card-${i}`}
-                                      ref={(el) => {
-                                          cardRefs.current[i] = el
-                                      }}
-                                      role="note"
-                                      aria-hidden={!open}
-                                      onMouseEnter={() => enter(i)}
-                                      onMouseLeave={leave}
-                                      style={{
-                                          position: "absolute",
-                                          left: p.left,
-                                          top: p.top,
-                                          width: cardW,
-                                          boxSizing: "border-box",
-                                          padding: "12px 14px",
-                                          borderRadius: 12,
-                                          background: glass,
-                                          border: `1px solid ${line}`,
-                                          boxShadow: shadow,
-                                          backdropFilter: "blur(14px) saturate(140%)",
-                                          WebkitBackdropFilter: "blur(14px) saturate(140%)",
-                                          visibility: open ? "visible" : "hidden",
-                                          opacity: open ? 1 : 0,
-                                          animation: open && !reduced ? "dbAsIn 220ms ease both" : "none",
-                                          pointerEvents: open ? "auto" : "none",
-                                          zIndex: open ? 3 : 1,
-                                      }}
-                                  >
-                                      {renderCardBody(n, i, false)}
-                                      {n.body ? <div style={{ marginTop: 4, fontSize: 14, lineHeight: 1.45, color: text2 }}>{n.body}</div> : null}
-                                  </div>
-                              )
-                          })
-                        : null}
-
-                    {/* Pins */}
-                    {on && size.w > 0 ? (
-                        <div role="group" aria-label="Annotations" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-                            {notes.map((n, i) => {
-                                const g = geom(n, size.w, size.h)
-                                const k = kindOf(n)
-                                const col = palette[k]
-                                const sel = shownActive === i
-                                const label = `${i + 1}: ${n.title || "Annotation"} (${KIND_LABEL[k]})`
-                                return (
-                                    <button
-                                        key={"p" + i}
-                                        ref={(el) => {
-                                            pinRefs.current[i] = el
-                                        }}
-                                        type="button"
-                                        className="db-as-pin"
-                                        aria-label={label}
-                                        aria-expanded={mode === "all" ? undefined : sel}
-                                        aria-controls={phone ? `${uid}-row-${i}` : `${uid}-card-${i}`}
-                                        onClick={() => tapPin(i)}
-                                        onMouseEnter={() => enter(i)}
-                                        onMouseLeave={leave}
-                                        onFocus={() => {
-                                            if (mode === "hover" && !locked) set(i)
-                                        }}
-                                        onKeyDown={(e) => onPinKey(e, i)}
-                                        style={{
-                                            position: "absolute",
-                                            left: g.px,
-                                            top: g.py,
-                                            width: PIN,
-                                            height: PIN,
-                                            marginLeft: -PIN / 2,
-                                            marginTop: -PIN / 2,
-                                            padding: 0,
-                                            border: `2px solid ${light ? "#FFFFFF" : "rgba(10,10,10,0.85)"}`,
-                                            borderRadius: 999,
-                                            background: col.c,
-                                            color: col.on,
-                                            fontFamily: FONT,
-                                            fontSize: 13,
-                                            fontWeight: 700,
-                                            lineHeight: 1,
-                                            cursor: "pointer",
-                                            pointerEvents: "auto",
-                                            boxShadow: sel ? `0 0 0 3px ${col.c}55, 0 4px 14px rgba(0,0,0,0.35)` : "0 4px 14px rgba(0,0,0,0.35)",
-                                            transform: sel && !reduced ? "scale(1.08)" : "none",
-                                            transition: reduced ? "none" : "transform 160ms ease, box-shadow 160ms ease",
-                                            zIndex: sel ? 4 : 2,
-                                        }}
-                                    >
-                                        <span
-                                            aria-hidden
-                                            style={{
-                                                position: "absolute",
-                                                inset: -2,
-                                                borderRadius: 999,
-                                                background: col.c,
-                                                pointerEvents: "none",
-                                                opacity: 0,
-                                                animation: reduced || !inView ? "none" : `dbAsPulse 2.4s ease-out ${i * 0.35}s infinite`,
-                                            }}
-                                        />
-                                        <span style={{ position: "relative" }}>{i + 1}</span>
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    ) : null}
-                    {/* Enlarge */}
-                    {enlarge && (imgSrc || videoSrc) ? (
-                        <button
-                            ref={zoomBtnRef}
-                            type="button"
-                            className="db-as-btn"
-                            aria-label="Enlarge screen"
-                            aria-haspopup="dialog"
-                            onClick={() => startTransition(() => setZoom(true))}
-                            style={{
-                                position: "absolute",
-                                right: 10,
-                                top: 10,
-                                zIndex: 5,
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: 6,
-                                padding: "6px 10px",
-                                borderRadius: 999,
-                                border: `1px solid ${line}`,
-                                background: glass,
-                                backdropFilter: "blur(10px)",
-                                WebkitBackdropFilter: "blur(10px)",
-                                color: textCol,
-                                fontFamily: FONT,
-                                fontSize: 12,
-                                fontWeight: 500,
-                                cursor: "zoom-in",
-                                boxShadow: shadow,
-                            }}
-                        >
-                            <svg aria-hidden width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                <path d="M7 1h4v4M5 11H1V7M11 1 7 5M1 11l4-4" />
-                            </svg>
-                            Enlarge
-                        </button>
-                    ) : null}
-                </div>
-            </div>
-
-                    </div>
-                    <div style={{ flex: "1 1 280px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-            {/* Guided stepper */}
-            {on && mode === "guided" ? (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                    <button type="button" className="db-as-btn" onClick={() => step(-1)} disabled={!shownActive} style={btn(line, text2, !shownActive)}>
-                        ← Back
-                    </button>
-                    <span aria-live="polite" style={{ fontFamily: MONO, fontSize: 12, color: text2, letterSpacing: "0.06em" }}>
-                        {shownActive === null ? "—" : shownActive + 1} / {notes.length}
-                    </span>
-                    <button
-                        type="button"
-                        className="db-as-btn"
-                        onClick={() => step(1)}
-                        style={{
-                            ...btn(line, textCol, false),
-                            background: "var(--db-accent, #F3500F)",
-                            color: "var(--db-on-accent, #0A0A0A)",
-                            border: "1px solid transparent",
-                            fontWeight: 600,
-                        }}
-                    >
-                        {shownActive !== null && shownActive >= notes.length - 1 ? "Start over ↺" : "Next →"}
-                    </button>
-                </div>
-            ) : null}
-
-            {/* Phone list */}
-            {on && phone ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {notes.map((n, i) => {
-                        const k = kindOf(n)
-                        const open = showAll || shownActive === i
-                        return (
-                            <div
-                                key={"r" + i}
-                                id={`${uid}-row-${i}`}
-                                ref={(el) => {
-                                    rowRefs.current[i] = el
-                                }}
-                                className="db-as-row"
-                                role="button"
-                                tabIndex={0}
-                                aria-expanded={open}
-                                onClick={() => (mode === "all" ? null : open && mode === "hover" ? set(null) : set(i))}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter" || e.key === " ") {
-                                        e.preventDefault()
-                                        if (mode !== "all") set(open && mode === "hover" ? null : i)
-                                    }
-                                }}
-                                style={{
-                                    display: "flex",
-                                    gap: 12,
-                                    padding: "12px 14px",
-                                    borderRadius: 12,
-                                    background: open ? glass : "transparent",
-                                    border: `1px solid ${open ? palette[k].c : line}`,
-                                    boxShadow: open ? shadow : "none",
-                                    cursor: mode === "all" ? "default" : "pointer",
-                                    transition: reduced ? "none" : "background 180ms ease, border-color 180ms ease",
-                                }}
-                            >
-                                <span
-                                    aria-hidden
-                                    style={{
-                                        flex: "0 0 auto",
-                                        width: 24,
-                                        height: 24,
-                                        borderRadius: 999,
-                                        background: palette[k].c,
-                                        color: palette[k].on,
-                                        fontSize: 12,
-                                        fontWeight: 700,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                    }}
-                                >
-                                    {i + 1}
-                                </span>
-                                <div style={{ minWidth: 0 }}>
-                                    {renderCardBody(n, i, true)}
-                                    {open && n.body ? <div style={{ marginTop: 4, fontSize: 14, lineHeight: 1.45, color: text2 }}>{n.body}</div> : null}
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-            ) : null}
-
-                    </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 40 }}>
+                    <div style={{ flex: `0 1 ${mediaMax > 0 ? mediaMax : 360}px`, minWidth: 0 }}>{frameEl}</div>
+                    <div style={{ flex: "1 1 280px", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>{panelEl}</div>
                 </div>
             ) : (
                 <>
-            <div style={{ ...frameStyle, width: "100%", maxWidth: mediaMax > 0 ? mediaMax : undefined, margin: mediaMax > 0 && !sideBySide ? "0 auto" : undefined, boxSizing: "border-box" }}>
-                <div ref={boxRef} style={{ position: "relative", width: "100%", aspectRatio: String(aspect) }}>
-                    {/* Clipped media layer */}
-                    <div
-                        style={{
-                            position: "absolute",
-                            inset: 0,
-                            overflow: "hidden",
-                            borderRadius: r,
-                            background: "var(--db-surface, #111111)",
-                            border: frame === "subtle" ? `1px solid ${line}` : "none",
-                        }}
-                    >
-                        {videoSrc ? (
-                            <video
-                                ref={videoRef}
-                                src={videoSrc}
-                                muted
-                                loop
-                                playsInline
-                                autoPlay={!reduced}
-                                controls={reduced && !isStatic}
-                                aria-label={caption || "Annotated product video"}
-                                onLoadedMetadata={(e) => {
-                                    const v = e.currentTarget
-                                    if (v.videoWidth) startTransition(() => setIntrinsic(v.videoWidth / v.videoHeight))
-                                }}
-                                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: fit === "cover" ? "cover" : "contain", display: "block" }}
-                            />
-                        ) : imgSrc ? (
-                            <img
-                                ref={imgRef}
-                                src={imgSrc}
-                                srcSet={media && media.srcSet ? media.srcSet : undefined}
-                                alt={altText}
-                                draggable={false}
-                                onLoad={(e) => {
-                                    const im = e.currentTarget
-                                    if (im.naturalWidth) startTransition(() => setIntrinsic(im.naturalWidth / im.naturalHeight))
-                                }}
-                                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: fit === "cover" ? "cover" : "contain", display: "block" }}
-                            />
-                        ) : (
-                            <div
-                                aria-hidden
-                                style={{
-                                    position: "absolute",
-                                    inset: 0,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    background: light
-                                        ? "radial-gradient(120% 90% at 20% 10%, rgba(0,0,0,0.04), transparent 60%), linear-gradient(135deg, #F2F2F4 0%, #E6E6EA 100%)"
-                                        : "radial-gradient(120% 90% at 20% 10%, rgba(255,255,255,0.06), transparent 60%), linear-gradient(135deg, #17171A 0%, #0E0E10 100%)",
-                                    pointerEvents: "none",
-                                }}
-                            >
-                                <span style={{ fontFamily: MONO, fontSize: 12, letterSpacing: "0.06em", color: text2 }}>add a screenshot or video →</span>
-                            </div>
-                        )}
-
-                        {/* Guided dim with a cut-out around the active area */}
-                        {size.w > 0 ? (
-                            <svg
-                                aria-hidden
-                                width={size.w}
-                                height={size.h}
-                                style={{
-                                    position: "absolute",
-                                    inset: 0,
-                                    pointerEvents: "none",
-                                    opacity: dimOn ? 1 : 0,
-                                    transition: reduced ? "none" : "opacity 260ms ease",
-                                }}
-                            >
-                                <defs>
-                                    <mask id={uid + "-m"}>
-                                        <rect width={size.w} height={size.h} fill="white" />
-                                        {dimOn && shownActive !== null
-                                            ? (() => {
-                                                  const g = geom(notes[shownActive], size.w, size.h)
-                                                  if (g.hl === "box")
-                                                      return <rect x={g.cx - g.bw / 2 - 6} y={g.cy - g.bh / 2 - 6} width={g.bw + 12} height={g.bh + 12} rx={10} fill="black" />
-                                                  if (g.hl === "ring") return <circle cx={g.cx} cy={g.cy} r={g.r + 6} fill="black" />
-                                                  return <circle cx={g.cx} cy={g.cy} r={Math.max(44, Math.min(size.w, size.h) * 0.1)} fill="black" />
-                                              })()
-                                            : null}
-                                    </mask>
-                                </defs>
-                                <rect width={size.w} height={size.h} fill="rgba(0,0,0,0.55)" mask={`url(#${uid}-m)`} />
-                            </svg>
-                        ) : null}
-                    </div>
-
-                    {/* Highlights + leader lines (decorative) */}
-                    {on && size.w > 0 ? (
-                        <svg aria-hidden width={size.w} height={size.h} style={{ position: "absolute", inset: 0, overflow: "visible", pointerEvents: "none" }}>
-                            {notes.map((n, i) => {
-                                if (!isOpen(i)) return null
-                                const g = geom(n, size.w, size.h)
-                                const col = palette[kindOf(n)].c
-                                const anim: React.CSSProperties = reduced ? {} : { animation: "dbAsDraw 700ms cubic-bezier(.2,.7,.2,1) both" }
-                                const out: React.ReactNode[] = []
-                                if (g.hl === "box")
-                                    out.push(
-                                        <rect
-                                            key={"h" + i + "-" + shownActive}
-                                            x={g.cx - g.bw / 2}
-                                            y={g.cy - g.bh / 2}
-                                            width={g.bw}
-                                            height={g.bh}
-                                            rx={8}
-                                            fill="none"
-                                            stroke={col}
-                                            strokeWidth={2}
-                                            pathLength={1}
-                                            style={{ ...(reduced ? {} : { strokeDasharray: 1 }), ...anim }}
-                                        />
-                                    )
-                                else if (g.hl === "ring")
-                                    out.push(
-                                        <circle
-                                            key={"h" + i + "-" + shownActive}
-                                            cx={g.cx}
-                                            cy={g.cy}
-                                            r={g.r}
-                                            fill="none"
-                                            stroke={col}
-                                            strokeWidth={2}
-                                            pathLength={1}
-                                            style={{ ...(reduced ? {} : { strokeDasharray: 1 }), ...anim }}
-                                        />
-                                    )
-                                if (!phone) {
-                                    const cw = cardW
-                                    const ch = cardH[i] || 96
-                                    const p = placeCard((n.side || "auto") as Side, g.px, g.py, cw, ch, size.w, size.h)
-                                    out.push(<line key={"l" + i} x1={g.px} y1={g.py} x2={p.ax} y2={p.ay} stroke={col} strokeOpacity={0.75} strokeWidth={1.25} />)
-                                    out.push(<circle key={"d" + i} cx={p.ax} cy={p.ay} r={2.5} fill={col} />)
-                                }
-                                return <g key={i}>{out}</g>
-                            })}
-                        </svg>
-                    ) : null}
-
-                    {/* Cards on the media (wide screens) */}
-                    {on && !phone && size.w > 0
-                        ? notes.map((n, i) => {
-                              const g = geom(n, size.w, size.h)
-                              const ch = cardH[i] || 96
-                              const p = placeCard((n.side || "auto") as Side, g.px, g.py, cardW, ch, size.w, size.h)
-                              const open = isOpen(i)
-                              return (
-                                  <div
-                                      key={"c" + i}
-                                      id={`${uid}-card-${i}`}
-                                      ref={(el) => {
-                                          cardRefs.current[i] = el
-                                      }}
-                                      role="note"
-                                      aria-hidden={!open}
-                                      onMouseEnter={() => enter(i)}
-                                      onMouseLeave={leave}
-                                      style={{
-                                          position: "absolute",
-                                          left: p.left,
-                                          top: p.top,
-                                          width: cardW,
-                                          boxSizing: "border-box",
-                                          padding: "12px 14px",
-                                          borderRadius: 12,
-                                          background: glass,
-                                          border: `1px solid ${line}`,
-                                          boxShadow: shadow,
-                                          backdropFilter: "blur(14px) saturate(140%)",
-                                          WebkitBackdropFilter: "blur(14px) saturate(140%)",
-                                          visibility: open ? "visible" : "hidden",
-                                          opacity: open ? 1 : 0,
-                                          animation: open && !reduced ? "dbAsIn 220ms ease both" : "none",
-                                          pointerEvents: open ? "auto" : "none",
-                                          zIndex: open ? 3 : 1,
-                                      }}
-                                  >
-                                      {renderCardBody(n, i, false)}
-                                      {n.body ? <div style={{ marginTop: 4, fontSize: 14, lineHeight: 1.45, color: text2 }}>{n.body}</div> : null}
-                                  </div>
-                              )
-                          })
-                        : null}
-
-                    {/* Pins */}
-                    {on && size.w > 0 ? (
-                        <div role="group" aria-label="Annotations" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
-                            {notes.map((n, i) => {
-                                const g = geom(n, size.w, size.h)
-                                const k = kindOf(n)
-                                const col = palette[k]
-                                const sel = shownActive === i
-                                const label = `${i + 1}: ${n.title || "Annotation"} (${KIND_LABEL[k]})`
-                                return (
-                                    <button
-                                        key={"p" + i}
-                                        ref={(el) => {
-                                            pinRefs.current[i] = el
-                                        }}
-                                        type="button"
-                                        className="db-as-pin"
-                                        aria-label={label}
-                                        aria-expanded={mode === "all" ? undefined : sel}
-                                        aria-controls={phone ? `${uid}-row-${i}` : `${uid}-card-${i}`}
-                                        onClick={() => tapPin(i)}
-                                        onMouseEnter={() => enter(i)}
-                                        onMouseLeave={leave}
-                                        onFocus={() => {
-                                            if (mode === "hover" && !locked) set(i)
-                                        }}
-                                        onKeyDown={(e) => onPinKey(e, i)}
-                                        style={{
-                                            position: "absolute",
-                                            left: g.px,
-                                            top: g.py,
-                                            width: PIN,
-                                            height: PIN,
-                                            marginLeft: -PIN / 2,
-                                            marginTop: -PIN / 2,
-                                            padding: 0,
-                                            border: `2px solid ${light ? "#FFFFFF" : "rgba(10,10,10,0.85)"}`,
-                                            borderRadius: 999,
-                                            background: col.c,
-                                            color: col.on,
-                                            fontFamily: FONT,
-                                            fontSize: 13,
-                                            fontWeight: 700,
-                                            lineHeight: 1,
-                                            cursor: "pointer",
-                                            pointerEvents: "auto",
-                                            boxShadow: sel ? `0 0 0 3px ${col.c}55, 0 4px 14px rgba(0,0,0,0.35)` : "0 4px 14px rgba(0,0,0,0.35)",
-                                            transform: sel && !reduced ? "scale(1.08)" : "none",
-                                            transition: reduced ? "none" : "transform 160ms ease, box-shadow 160ms ease",
-                                            zIndex: sel ? 4 : 2,
-                                        }}
-                                    >
-                                        <span
-                                            aria-hidden
-                                            style={{
-                                                position: "absolute",
-                                                inset: -2,
-                                                borderRadius: 999,
-                                                background: col.c,
-                                                pointerEvents: "none",
-                                                opacity: 0,
-                                                animation: reduced || !inView ? "none" : `dbAsPulse 2.4s ease-out ${i * 0.35}s infinite`,
-                                            }}
-                                        />
-                                        <span style={{ position: "relative" }}>{i + 1}</span>
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    ) : null}
-                    {/* Enlarge */}
-                    {enlarge && (imgSrc || videoSrc) ? (
-                        <button
-                            ref={zoomBtnRef}
-                            type="button"
-                            className="db-as-btn"
-                            aria-label="Enlarge screen"
-                            aria-haspopup="dialog"
-                            onClick={() => startTransition(() => setZoom(true))}
-                            style={{
-                                position: "absolute",
-                                right: 10,
-                                top: 10,
-                                zIndex: 5,
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: 6,
-                                padding: "6px 10px",
-                                borderRadius: 999,
-                                border: `1px solid ${line}`,
-                                background: glass,
-                                backdropFilter: "blur(10px)",
-                                WebkitBackdropFilter: "blur(10px)",
-                                color: textCol,
-                                fontFamily: FONT,
-                                fontSize: 12,
-                                fontWeight: 500,
-                                cursor: "zoom-in",
-                                boxShadow: shadow,
-                            }}
-                        >
-                            <svg aria-hidden width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                <path d="M7 1h4v4M5 11H1V7M11 1 7 5M1 11l4-4" />
-                            </svg>
-                            Enlarge
-                        </button>
-                    ) : null}
-                </div>
-            </div>
-
-            {/* Guided stepper */}
-            {on && mode === "guided" ? (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                    <button type="button" className="db-as-btn" onClick={() => step(-1)} disabled={!shownActive} style={btn(line, text2, !shownActive)}>
-                        ← Back
-                    </button>
-                    <span aria-live="polite" style={{ fontFamily: MONO, fontSize: 12, color: text2, letterSpacing: "0.06em" }}>
-                        {shownActive === null ? "—" : shownActive + 1} / {notes.length}
-                    </span>
-                    <button
-                        type="button"
-                        className="db-as-btn"
-                        onClick={() => step(1)}
-                        style={{
-                            ...btn(line, textCol, false),
-                            background: "var(--db-accent, #F3500F)",
-                            color: "var(--db-on-accent, #0A0A0A)",
-                            border: "1px solid transparent",
-                            fontWeight: 600,
-                        }}
-                    >
-                        {shownActive !== null && shownActive >= notes.length - 1 ? "Start over ↺" : "Next →"}
-                    </button>
-                </div>
-            ) : null}
-
-            {/* Phone list */}
-            {on && phone ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {notes.map((n, i) => {
-                        const k = kindOf(n)
-                        const open = showAll || shownActive === i
-                        return (
-                            <div
-                                key={"r" + i}
-                                id={`${uid}-row-${i}`}
-                                ref={(el) => {
-                                    rowRefs.current[i] = el
-                                }}
-                                className="db-as-row"
-                                role="button"
-                                tabIndex={0}
-                                aria-expanded={open}
-                                onClick={() => (mode === "all" ? null : open && mode === "hover" ? set(null) : set(i))}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter" || e.key === " ") {
-                                        e.preventDefault()
-                                        if (mode !== "all") set(open && mode === "hover" ? null : i)
-                                    }
-                                }}
-                                style={{
-                                    display: "flex",
-                                    gap: 12,
-                                    padding: "12px 14px",
-                                    borderRadius: 12,
-                                    background: open ? glass : "transparent",
-                                    border: `1px solid ${open ? palette[k].c : line}`,
-                                    boxShadow: open ? shadow : "none",
-                                    cursor: mode === "all" ? "default" : "pointer",
-                                    transition: reduced ? "none" : "background 180ms ease, border-color 180ms ease",
-                                }}
-                            >
-                                <span
-                                    aria-hidden
-                                    style={{
-                                        flex: "0 0 auto",
-                                        width: 24,
-                                        height: 24,
-                                        borderRadius: 999,
-                                        background: palette[k].c,
-                                        color: palette[k].on,
-                                        fontSize: 12,
-                                        fontWeight: 700,
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                    }}
-                                >
-                                    {i + 1}
-                                </span>
-                                <div style={{ minWidth: 0 }}>
-                                    {renderCardBody(n, i, true)}
-                                    {open && n.body ? <div style={{ marginTop: 4, fontSize: 14, lineHeight: 1.45, color: text2 }}>{n.body}</div> : null}
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-            ) : null}
-
+                    {frameEl}
+                    {panelEl}
                 </>
             )}
 

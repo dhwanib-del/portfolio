@@ -30,6 +30,7 @@ interface Props {
     showReadingTime?: boolean
     readingTimePlacement?: Placement
     zIndex?: number
+    surface?: "glass" | "none"
     style?: CSSProperties
 }
 
@@ -77,6 +78,27 @@ const STYLES = `
 .csr-link[aria-current="location"]{color:${TEXT};font-weight:600}
 .csr-link[aria-current="location"]::before{background:${ACCENT}}
 .csr-link:focus-visible,.csr-btn:focus-visible{outline:2px solid ${ACCENT};outline-offset:2px}
+.csr-rail.csr-plain{background:none;border:none;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;padding:0}
+.csr-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:0 8px}
+.csr-title{margin:0;font-size:11px;line-height:1.3;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:${TEXT2}}
+.csr-head .csr-time{padding:0}
+.csr-steps{list-style:none;margin:0;padding:0;min-height:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.csr-step{position:relative}
+.csr-step::before{content:"";position:absolute;left:19px;top:-6px;height:12px;width:2px;border-radius:1px;background:${LINE};pointer-events:none}
+.csr-step:first-child::before{display:none}
+.csr-step-sep + .csr-step::before{display:none}
+.csr-step[data-s="done"]::before,.csr-step[data-s="active"]::before{background:${ACCENT}}
+.csr-step .csr-link{gap:10px;padding:6px 10px 6px 12px;min-height:34px}
+.csr-step .csr-link::before{display:none}
+.csr-dot{flex:0 0 auto;box-sizing:border-box;width:16px;height:16px;border-radius:999px;border:2px solid ${LINE};background:transparent;display:inline-flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s,transform .2s}
+.csr-step[data-s="done"] .csr-dot{background:${ACCENT};border-color:${ACCENT}}
+.csr-step[data-s="done"] .csr-dot::after{content:"";width:6px;height:3px;border-left:1.5px solid var(--db-on-accent,#0A0A0A);border-bottom:1.5px solid var(--db-on-accent,#0A0A0A);transform:translateY(-1px) rotate(-45deg)}
+.csr-step[data-s="active"] .csr-dot{border-color:${ACCENT};box-shadow:0 0 0 4px color-mix(in srgb, ${ACCENT} 22%, transparent)}
+.csr-step[data-s="active"] .csr-dot::after{content:"";width:6px;height:6px;border-radius:999px;background:${ACCENT}}
+.csr-step[data-s="done"] .csr-link{color:${TEXT}}
+.csr-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.csr-step-sep{margin:8px 12px 6px;height:1px;background:${LINE}}
+.csr-foot{display:flex;flex-direction:column;gap:6px;padding:0 8px}
 .csr-hint{margin:0;padding:0 8px;font-size:11px;line-height:1.4;color:${TEXT2}}
 .csr-m{font-family:${FONT};pointer-events:auto}
 .csr-btn{position:relative;display:inline-flex;align-items:center;gap:8px;max-width:100%;min-height:44px;min-width:44px;box-sizing:border-box;padding:0 16px;border-radius:999px;border:1px solid ${GLASS_LINE};background:${GLASS};backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);box-shadow:${SHADOW};color:${TEXT};font-family:${FONT};font-size:14px;font-weight:500;cursor:pointer;overflow:hidden;touch-action:manipulation}
@@ -84,7 +106,7 @@ const STYLES = `
 .csr-btn-bar{position:absolute;left:14px;right:14px;bottom:5px;height:2px;border-radius:2px;background:${LINE};overflow:hidden;pointer-events:none}
 .csr-sheet{margin-top:8px;width:min(360px, calc(100vw - 32px));box-sizing:border-box;display:flex;flex-direction:column;gap:12px;padding:14px 8px 8px;border-radius:20px;background:${GLASS};border:1px solid ${GLASS_LINE};box-shadow:${SHADOW};backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);color:${TEXT};overflow-y:auto;overscroll-behavior:contain}
 .csr-sheet .csr-link{min-height:44px;font-size:15px}
-@media (prefers-reduced-motion: reduce){.csr-fill,.csr-link,.csr-link::before{transition:none}}
+@media (prefers-reduced-motion: reduce){.csr-fill,.csr-link,.csr-link::before,.csr-dot{transition:none}}
 `
 
 // ---- DOM helpers ----
@@ -131,7 +153,7 @@ function findById(id: string): HTMLElement | null {
 }
 function sectionLabel(name: string): string {
     // "§ Cart comparison" → "Cart comparison". "§article" / "§deep…" are structural, not chapters.
-    if (!name.startsWith("§") || /^§(article|deep)/i.test(name)) return ""
+    if (!name.startsWith("§") || /^\u00A7(article|deep)/i.test(name)) return ""
     return name.slice(1).trim()
 }
 function findArticle(els: HTMLElement[]): HTMLElement | null {
@@ -253,6 +275,7 @@ export default function CaseStudySidebar(props: Props) {
         showProgress = true,
         showReadingTime = true,
         readingTimePlacement = "rail",
+        surface = "glass",
         zIndex = 2147478000,
         style,
     } = props
@@ -668,15 +691,25 @@ export default function CaseStudySidebar(props: Props) {
             {done && <div className="csr-end">End of case study</div>}
         </div>
     )
+    const actIndex = list.findIndex((c) => c.id === act)
     const chapterList = (
-        <ol className="csr-list" role="list">
-            {list.map((c) => (
-                <li key={c.id}>
-                    <a className="csr-link" href={`#${c.id}`} aria-current={c.id === act ? "location" : undefined} onClick={onLink(c.id)}>
-                        {c.label}
-                    </a>
-                </li>
-            ))}
+        <ol className="csr-steps" role="list">
+            {list.map((c, i) => {
+                const st = done || (actIndex >= 0 && i < actIndex) ? "done" : i === actIndex ? "active" : "next"
+                const deeper = /^deeper/i.test(c.label) && i > 0
+                return (
+                    <React.Fragment key={c.id}>
+                        {deeper ? <li className="csr-step-sep" aria-hidden="true" /> : null}
+                        <li className="csr-step" data-s={st}>
+                            <a className="csr-link" href={`#${c.id}`} aria-current={c.id === act ? "location" : undefined} onClick={onLink(c.id)}>
+                                <span className="csr-dot" aria-hidden="true" />
+                                <span>{c.label}</span>
+                                {st === "done" ? <span className="csr-sr">(read past)</span> : null}
+                            </a>
+                        </li>
+                    </React.Fragment>
+                )
+            })}
         </ol>
     )
     const host = (children: React.ReactNode) => (
@@ -688,13 +721,18 @@ export default function CaseStudySidebar(props: Props) {
     const rail = (
         <nav
             aria-label="On this page"
-            className="csr-rail"
+            className={surface === "none" ? "csr-rail csr-plain" : "csr-rail"}
             data-db-keep=""
             style={{ top: hdr, width, maxWidth: "100%", maxHeight: `calc(100vh - ${hdr}px - 32px)` }}
         >
-            {showRT && <p className="csr-time">{readingLabel}</p>}
-            {meter}
+            <div className="csr-head">
+                <p className="csr-title">On this page</p>
+            </div>
             {chapterList}
+            <div className="csr-foot">
+                {meter}
+                {showRT && <p className="csr-time">{readingLabel}</p>}
+            </div>
             {onCanvas && mode !== "manual" && <p className="csr-hint">§ layers will appear here</p>}
         </nav>
     )
@@ -794,6 +832,15 @@ addPropertyControls(CaseStudySidebar, {
         defaultValue: "rail",
         displaySegmentedControl: true,
         hidden: (p: Props) => p.showReadingTime === false,
+    },
+    surface: {
+        type: ControlType.Enum,
+        title: "Rail surface",
+        options: ["glass", "none"],
+        optionTitles: ["Glass card", "None"],
+        defaultValue: "glass",
+        displaySegmentedControl: true,
+        description: "None when the rail sits inside another card.",
     },
     zIndex: { type: ControlType.Number, title: "Phone z-index", min: 1, max: 2147479999, step: 1, defaultValue: 2147478000 },
 })
