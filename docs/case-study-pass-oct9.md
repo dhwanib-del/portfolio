@@ -64,7 +64,7 @@ This doc tracks the case-study implementation brief (5 stories; Prime Video stay
 ## BudgetCart — still open
 - **Tablet/Phone:** the new sections inherit from Desktop. CaseStudyStory is a horizontal row with a 280px sidebar. On Tablet/Phone it should stack vertically, and the Quick facts card probably should hide (the rail turns into the "On this page" button below 1100px). Breakpoint overrides can't be set through the MCP.
 - **Alt text** on the original image layers (8 image fills) can't be set through the MCP. Add it in Framer.
-- **Exports are 1x** (339px wide). Replace them with 2x exports in the AnnotatedScreen Image control for sharper screens.
+- **Screens (Oct 10):** the 4 new screens are now 3x PNG exports straight from the Figma slides (28:3973, 28:3978, 28:232, 28:227), uploaded to Framer. The hidden frame "Screen sources · 3x from Figma" (TPffPxK7J) at the bottom of the article holds them. The repo copies in public/case-shots/budgetcart are 1x and no longer used.
 - **Existing deeper-read copy with unverified claims** (kept, needs Dhwani's call):
   - Personas Jade and James: research-backed or proto-personas?
   - ChatSequence lines framed like user thoughts: not participant quotes.
