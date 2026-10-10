@@ -1,11 +1,15 @@
 // DhwaniGPT — floating portfolio assistant for Dhwani's Framer site.
-// Oct 4: real conversation thread (stacked messages, input always live, New chat + Close + Esc),
-// contextual follow-up chips, "search the portfolio" mode + type-ahead suggestions, and an
-// optional LLM backend via the "API URL" prop (POST {messages} -> {reply, followUps?}).
-// With no API URL, or on any network error, it answers from the canned facts below (offline mode).
-// Facts mirror src/content/site.ts + cases.ts on the Next.js site. Prime Video stays under NDA.
-// Opens on window event "db-chat-open"; sets window.__dbChatReady = true while mounted.
-// Oct 5 (click-through audit): the <body> portal layer and the Framer host never catch clicks;
+// Brief (Oct 10): "Make DhwaniGPT much better." Offline answers grounded only in the reviewed
+// case-study copy (src/content/cases.ts, caseStories.ts, about.ts, site.ts + the live /work pages);
+// fuzzy intent matching with project names and aliases; every project answer cites and links its
+// case study; honest "I don't know, ask Dhwani" fallback; hiring quick answers. Prime Video = NDA.
+// No invented metrics. UI: cleaner panel on the --db-* theme tokens (light/dark), recruiter starter
+// questions, typed-out replies, clickable links, follow-up chips tied to the last answer, Enter to
+// send, Esc to close, focus return, reduced motion, full-height sheet on phones.
+// Earlier history: Oct 4 conversation thread + optional LLM backend via "API URL"
+// (POST {messages} -> {reply, followUps?}); with no API URL, or on any network error, it answers
+// from the facts below. Opens on window event "db-chat-open"; sets window.__dbChatReady = true.
+// Oct 5 click-through audit (kept): the <body> portal layer and the Framer host never catch clicks;
 // only the greeting card, the launcher and the open panel do.
 import { addPropertyControls, ControlType, RenderTarget } from "framer"
 import { useState, useRef, useEffect, useCallback, useMemo } from "react"
@@ -16,219 +20,414 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 const FONT = "'Poppins', 'Inter', sans-serif"
 const LINKEDIN = "https://www.linkedin.com/in/dhwanibagrecha/"
 const EMAIL = "dhwanib@umich.edu"
+const CONNECT = "/#contact"
 const GREETING_KEY = "db-gpt-greeted"
 const GREETING_TEXT = "Hi, I’m DhwaniGPT. Ask me anything about Dhwani’s work, or something silly."
 const API_TIMEOUT_MS = 15000
 const MAX_HISTORY = 12
 const MAX_CHARS = 2000
 
-// ── Portfolio facts (keep in sync with the Next.js site's content files) ─────
-type Project = { slug: string; name: string; terms: RegExp; summary: string; status: string; role: string; team: string; when: string; ai?: string }
+// ── Portfolio facts (mirror src/content/*.ts on the Next.js site; reviewed copy only) ──────────
+type Aspect = "overview" | "role" | "decision" | "research" | "outcome" | "ai" | "next"
+type CaseFacts = {
+    slug: string
+    name: string
+    org: string
+    when: string
+    aliases: string[] // lowercase; "=word" means exact match only
+    oneLiner: string
+    overview: string
+    role: string
+    decision: string
+    research: string
+    outcome: string
+    ai?: string
+    next: string
+}
 
-const PROJECTS: Project[] = [
+const CASES: CaseFacts[] = [
     {
         slug: "briefs",
         name: "BRIEFS",
-        terms: /\bbriefs?\b|dispatch|building lookup|apps script/,
-        summary: "BRIEFS (U-M DPSS): in her first contextual inquiry, Dhwani watched dispatchers search across seven screens mid-call to find building details. Starting with no design files, she mapped the workflow and built a prototype and PRD, then explored a Sheets-backed Apps Script. Every building profile got the same five places, with the details that matter mid-call pinned in view.",
-        status: "Status: prototype and PRD handed to DPSS. Not launched, and the 30-second find-a-detail goal hasn’t been tested yet.",
-        role: "UX design intern doing field research, IA, prototype and PRD",
-        team: "with Aaron Tucker at DPSS",
+        org: "U-M DPSS",
         when: "Summer 2026",
-        ai: "the assistant answers only from approved records, links to where each answer came from, and says “that’s not in the records” instead of guessing. When AI helped restructure old documents, a person approved every change.",
+        aliases: ["briefs", "=brief", "dispatch", "dispatcher", "building lookup", "building profile", "building information", "building details", "mcommunity", "floor plans", "pinned strip"],
+        oneLiner: "BRIEFS (U-M DPSS) gives dispatchers one building profile with urgent details pinned in view, instead of a search across seven screens and 10+ tools.",
+        overview: "BRIEFS (U-M DPSS, Summer 2026): dispatchers need building contacts, access details, hazards and floor plans during a call. In her first contextual inquiry, Dhwani watched them move between building PDFs, Dropbox and other tools: seven screens at one workstation, more than ten tools in the lookup. She shaped a building profile that pins urgent details in view and gives everything else a predictable place.",
+        role: "Her role on BRIEFS: UX design intern doing the contextual inquiry, information architecture, the building-profile prototype and the PRD, plus a Sheets-backed Apps Script exploration. She worked with Aaron Tucker at DPSS in Summer 2026. There were no existing design files, so she started by mapping the workflow.",
+        decision: "The key decision on BRIEFS: keep urgent details visible in a pinned strip and give everything else a predictable place. The tradeoff she names is that the strip takes screen space other information could use; she chose it for the mid-call task. What she rejected: giving every detail equal urgency.",
+        research: "What the BRIEFS research showed: finding a record didn’t make it current. Field notes flagged outdated contacts and building information, and contact checks continued in MCommunity to confirm someone was still employed. A faster search could surface the wrong record sooner, so retrieval, verification and maintenance had to be designed together. Who owns the records is still open.",
+        outcome: "BRIEFS status: prototype and PRD handed to DPSS. It isn’t launched, and the 30-second find-a-detail goal hasn’t been tested yet, so there’s no measured impact to quote.",
+        ai: "In BRIEFS, the proposed assistant answers only from approved records, cites them, and flags missing information instead of guessing. Document changes need human approval. That’s part of the proposal, not a shipped feature.",
+        next: "Next for BRIEFS, per the case study: put it in front of dispatchers and see whether they can find a detail, check the answer, and trust the structure on a real shift. Record ownership still needs an answer.",
     },
     {
         slug: "intel",
-        name: "Intelligence Hub",
-        terms: /\bintel\b|intelligence|analysts?\b|case management|handoff/,
-        summary: "Intelligence Hub (U-M DPSS): Dhwani interviewed six analysts and adjusted her questions to bring quieter voices in. The concept brings case history, status, ownership and related information into one workspace, so handoffs stop being where things get lost. The first version ran in Google Apps Script so the team could try it without touching production systems.",
-        status: "Status: in use by the Intelligence Group, and the team has since started building its own server version.",
-        role: "UX design intern doing workflow design and the prototype",
-        team: "with Aaron Tucker at DPSS",
+        name: "Intel workspace",
+        org: "U-M DPSS",
         when: "2026",
-        ai: "public tips come in through a chatbot intake, so reports arrive structured instead of as free-form messages.",
+        aliases: ["intel", "intelligence", "intelligence hub", "intelligence group", "casework", "case management", "analyst", "investigation", "handoffs"],
+        oneLiner: "The Intel workspace (U-M DPSS) connects requests and investigation work in one role-aware workspace, so the next analyst sees status, ownership and history.",
+        overview: "The Intel workspace (U-M DPSS, 2026; “Casework” on the site) is separate from BRIEFS and covers requests and investigation work. The problem: the next analyst inherited scattered context. Dhwani’s design direction is a shared, role-aware workspace where each role can see the request, owner, status and history, and know the next action.",
+        role: "Her part on the Intel workspace: stakeholder interviews, workflow design and a Google Apps Script prototype, with Aaron Tucker at DPSS in 2026.",
+        decision: "The key decision on the Intel workspace: connect related requests and investigation work in a role-aware workspace. A shared picture should clarify status without exposing the same information to every role. Rejected: one undifferentiated view for everyone.",
+        research: "What came out of her stakeholder work on the Intel workspace: each role needs to see current status and the next step, and a useful overview still has to respect role-appropriate access.",
+        outcome: "Intel workspace status: a workflow direction plus a public demo built on fictional records. The case study doesn’t claim launch, adoption or speed improvements, so neither will I.",
+        next: "Next for the Intel workspace, per the case study: confirm the approved delivery status, then test whether each role can identify its next action.",
     },
     {
         slug: "general-motors",
         name: "GM Convoy",
-        terms: /\bgm\b|general motors|convoy|biometric|truck|\bcab\b|automotive|vehicle|\bcars?\b|hvac|road trip/,
-        summary: "Convoy (General Motors): Dhwani challenged the biometric direction. One driver interview showed a road trip is a group coordinating across phones, screens and messages, so the team cut four weeks of biometric work and designed for the whole trip. She prototyped HVAC and in-drive views in Figma on vehicle-size screens, with reusable components in the team’s first shared design system.",
-        status: "Status: concept, with three usability tests in a 3D-printed truck cab. Details stay under NDA, so no real-world claims.",
-        role: "UX researcher and designer doing research and advanced prototyping",
-        team: "with Sara and Julia, GM-sponsored",
+        org: "General Motors",
         when: "Jan – May 2026",
+        aliases: ["=gm", "general motors", "convoy", "trip together", "truck", "=cab", "=hmi", "in car", "in vehicle", "vehicle", "automotive", "=car", "biometric", "=hvac", "road trip", "=sara", "=julia", "=driver"],
+        oneLiner: "GM Convoy (General Motors-sponsored) is where she challenged a biometric brief four weeks in and moved the team to design for a group coordinating a trip.",
+        overview: "Convoy (General Motors-sponsored, Jan – May 2026; “Trip Together” on the site): four weeks into a biometric concept for one driver, an interview showed the real task was a group coordinating a trip across people and vehicles. Dhwani pushed the team to change direction. They cut the biometric work and designed for the convoy: planning on the phone, and a narrower in-car job of position, spacing and group status.",
+        role: "Her part on GM Convoy: research, advanced Figma interactions, and reusable components in the team’s first shared design system. The team explored HVAC and in-drive views at vehicle size. She worked with Sara and Julia, Jan – May 2026. The pushback on the biometric direction was hers.",
+        decision: "The key decision on GM Convoy: cut four weeks of biometric work and design for the whole trip. One interview showed a group coordinating across phones, screens and messages while moving. Rejected: personalizing the drive for a single driver.",
+        research: "GM Convoy research: one driver interview changed the brief, and the concept was evaluated in three usability tests in a 3D-printed truck cab. Adding a host to organize the plan raised a question they still need to test: when does coordination start to feel controlling?",
+        outcome: "GM Convoy status: a concept evaluated in three usability tests in a 3D-printed truck cab. It isn’t road-tested or a safety finding, and details stay under NDA, so there are no real-world claims.",
+        next: "The open question on GM Convoy: does a host make the group feel organized, or controlled?",
     },
     {
         slug: "openlibrary",
         name: "Open Library",
-        terms: /open ?library|internet archive|multilingual|translation|language|affinity|international student/,
-        summary: "Open Library (Internet Archive): Dhwani joined client calls and interviews and built her first affinity map, 330 data points from the team’s eight interviews. Readers kept leaving the book for dictionaries and translation tools and losing their place, so the team recommended making existing language support easier to find inside the reading flow.",
-        status: "Status: research and recommendations, not a tested product. After the team shared its feedback, Open Library improved its feedback system and invested more in the project.",
-        role: "client calls, interviews, the first affinity map and synthesis",
-        team: "a five-person SI 500 team (In4mation)",
+        org: "Internet Archive",
         when: "Aug – Dec 2025",
+        aliases: ["open library", "openlibrary", "internet archive", "multilingual", "translation", "affinity map", "in4mation", "si 500"],
+        oneLiner: "Open Library (Internet Archive) is research: eight interviews, 330 data points, and a recommendation to put language help inside the reading flow.",
+        overview: "Open Library (Internet Archive, Aug – Dec 2025): a five-person SI 500 team studied multilingual readers in the U-M community. Readers already had translation tools, but switching between the book, dictionaries and translators cost them their place. The team recommended making existing language support easier to find inside the reading flow instead of adding another separate tool.",
+        role: "Her part on Open Library: client calls, interviews, her first affinity map and synthesis. She also helped organize the final report, summarize progress and clarify next steps. Team: five people (In4mation) in SI 500, Aug – Dec 2025.",
+        decision: "The key decision on Open Library: make existing language support easier to find in the reading flow, because switching between tools cost readers context. Rejected: adding one more separate translation tool. The recommendations included more visible translation, grouped comprehension tools, and a prompt when the book and system languages differ.",
+        research: "Open Library research: the team ran eight semi-structured interviews with students, academic-support staff and subject-matter experts, then mapped 330 data points. Academic and technical language made some readers cross-check terms or keep personal glossaries, so the problem was continuity and confidence in translation together.",
+        outcome: "Open Library status: research report and recommendations delivered; no live product test or measured reader impact. After the team shared its work, Open Library improved its feedback process and increased investment in the project. That’s a partner response, not a validated reader outcome.",
+        next: "Next for Open Library, per the case study: test whether readers can find help without losing their place, and whether the support earns their trust. The recommendations still need technical and legal review.",
     },
     {
         slug: "budgetcart",
         name: "BudgetCart",
-        terms: /budget ?cart|budget card|\bsnap\b|\bwic\b|grocer|food benefit/,
-        summary: "BudgetCart (UMSI): her first Figma project, with stakeholder interviews, paper prototypes and a self-taught component system. Testing showed that hiding prices to look simple backfired, so the concept kept the lowest price visible, compared stores where the tradeoff happens, and put SNAP/WIC eligibility and dietary checks before checkout.",
-        status: "Status: prototype tasks tested, not a live service. No measured change in spending yet.",
-        role: "product designer on the budget tracking and AI cart-building flows",
-        team: "three designers",
-        when: "a UMSI project (exact dates aren’t listed)",
-        ai: "the AI cart builder drafts a starting cart from a budget and needs. Shoppers edit it instead of starting from an empty prompt.",
+        org: "UMSI",
+        when: "a UMSI course project",
+        aliases: ["budgetcart", "budget cart", "budget card", "=snap", "=wic", "grocery", "grocer", "food benefits", "budget calendar", "cart builder", "ai cart", "=anne", "tunisia", "checkout"],
+        oneLiner: "BudgetCart (UMSI) is a grocery concept for budget, SNAP/WIC and dietary needs, where testing showed that hiding prices made choices harder to trust.",
+        overview: "BudgetCart (UMSI, three designers) explored grocery shopping under budget, SNAP/WIC and dietary constraints. The team hid brands, stores and prices to make screens simpler, and prototype testing showed those were exactly the details people needed to judge their choices. The revision keeps the lowest price visible, compares stores where the tradeoff happens, and shows eligibility and dietary checks before checkout.",
+        role: "On BudgetCart, Dhwani owned the AI interaction (the AI cart builder) and the Budget Calendar. Anne led buying and checkout, and Tunisia led onboarding and account screens. Dhwani also worked on interviews and paper prototypes and taught herself Figma components; it was her first Figma project.",
+        decision: "The key decision on BudgetCart: keep the lowest price visible and compare stores where the tradeoff happens. People trusted their cart less when the numbers were hidden; as the case study puts it, simple can’t mean hidden. Rejected: hiding brands, stores and prices to look simple.",
+        research: "BudgetCart research: stakeholder interviews and paper prototypes, then prototype testing in Figma. People struggled to find items and trusted their choices less when brands, stores and prices were hidden, which pushed the team toward item-first browsing with budget context while shopping.",
+        outcome: "BudgetCart status: prototype tasks tested. It’s a concept, not a live service, and there’s no measured change in spending yet.",
+        ai: "BudgetCart’s AI cart builder (Dhwani’s part) drafts a starting cart from a budget and needs, and shoppers edit it instead of starting from an empty prompt. Testing added upload cues and a starter prompt.",
+        next: "Next for BudgetCart, per the case study: measure whether shoppers put fewer items back at checkout.",
     },
 ]
 
-const EXPERIENCE: { terms: RegExp; line: string }[] = [
-    { terms: /adobe|ambassador/, line: "Adobe Student Ambassador, Jul 2026 – now: workshops, content and campus events for creative students." },
-    { terms: /iska/, line: "UX Researcher & Project Manager at Iska Press for African Perspectives, Jan – May 2026: led a research and project-management consulting engagement." },
-    { terms: /sochi/, line: "Project Manager & UX Researcher at SOCHI, University of Michigan, Sep 2025 – May 2026: product strategy, research and project management." },
-    { terms: /global scholars/, line: "Project Manager & Social Media Coordinator at the U-M Global Scholars Program, Aug 2025 – May 2026: led project teams and global community programming." },
-    { terms: /eye[- ]?tracking|research assistant|\bmsu\b|michigan state/, line: "Research Assistant at the MSU College of Social Science, May 2024 – May 2025: organized and analyzed eye-tracking data for behavioral research." },
-    { terms: /miller johnson|\bhr\b|human resources/, line: "Human Resources Systems Intern at Miller Johnson, Jun – Aug 2024: internal systems and operations at a law firm." },
-    { terms: /\bddb\b|mudra|\bdei\b/, line: "User Experience DEI Intern at DDB Mudra Group, Jun – Aug 2023: research on accessible social media and representation in advertising." },
+const EXPERIENCE: { kws: string[]; line: string }[] = [
+    { kws: ["adobe", "ambassador"], line: "Adobe Student Ambassador, Jul 2026 – now: workshops, content and campus events for creative students." },
+    { kws: ["iska", "iska press"], line: "UX Researcher & Project Manager at Iska Press for African Perspectives, Jan – May 2026: led a research and project-management consulting engagement." },
+    { kws: ["sochi"], line: "Project Manager & UX Researcher at SOCHI, University of Michigan, Sep 2025 – May 2026: product strategy, research and project management." },
+    { kws: ["global scholars"], line: "Project Manager & Social Media Coordinator at the U-M Global Scholars Program, Aug 2025 – May 2026: led project teams and global community programming." },
+    { kws: ["eye tracking", "research assistant", "=msu", "michigan state"], line: "Research Assistant at the MSU College of Social Science, May 2024 – May 2025: organized and analyzed eye-tracking data for behavioral research. Her psychology degree at Michigan State took three years." },
+    { kws: ["miller johnson", "human resources", "=hr"], line: "Human Resources Systems Intern at Miller Johnson, Jun – Aug 2024: internal systems and operations at a law firm." },
+    { kws: ["=ddb", "mudra", "=dei"], line: "User Experience DEI Intern at DDB Mudra Group, Jun – Aug 2023: research on accessible social media and representation in advertising." },
 ]
 
-type Link = { href: string; label: string; external?: boolean }
-type Reply = { text: string; links?: Link[]; topic: string }
-type Message = { id: number; role: "user" | "assistant"; content: string; links?: Link[]; followUps?: string[]; offline?: boolean }
+// ── Matching ────────────────────────────────────────────────────────────────────────────────────
+type Q = { s: string; c: string; toks: string[] }
+function prep(raw: string): Q {
+    const s = raw
+        .toLowerCase()
+        .replace(/[’‘'`]/g, "")
+        .replace(/[^a-z0-9]+/g, " ")
+        .trim()
+    return { s, c: s.replace(/ /g, ""), toks: s ? s.split(" ") : [] }
+}
+function lev(a: string, b: string, max: number): number {
+    if (Math.abs(a.length - b.length) > max) return max + 1
+    let prev = Array.from({ length: b.length + 1 }, (_, i) => i)
+    for (let i = 1; i <= a.length; i++) {
+        const cur = [i]
+        let best = i
+        for (let j = 1; j <= b.length; j++) {
+            cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1))
+            if (cur[j] < best) best = cur[j]
+        }
+        if (best > max) return max + 1
+        prev = cur
+    }
+    return prev[b.length]
+}
+function wordHit(tok: string, kw: string): boolean {
+    if (tok === kw || tok === kw + "s" || tok === kw + "es") return true
+    if (kw.length < 5) return false
+    if (tok.startsWith(kw) && tok.length - kw.length <= 3) return true
+    const max = kw.length >= 8 ? 2 : 1
+    return lev(tok, kw, max) <= max
+}
+/** 0 = no hit, 1 = single word, 2 = phrase (phrases count double). */
+function hit(q: Q, raw: string): number {
+    const exact = raw.startsWith("=")
+    const kw = exact ? raw.slice(1) : raw
+    if (kw.includes(" ")) {
+        if ((" " + q.s + " ").includes(" " + kw + " ") || (" " + q.s + " ").includes(" " + kw + "s ")) return 2
+        const words = kw.split(" ")
+        for (let i = 0; i + words.length <= q.toks.length; i++) if (words.every((w, j) => wordHit(q.toks[i + j], w))) return 2
+        if (kw.length >= 9 && q.c.includes(kw.replace(/ /g, ""))) return 2
+        return 0
+    }
+    if (exact) return q.toks.some((t) => t === kw || t === kw + "s") ? 1 : 0
+    if (kw.length >= 8 && q.c.includes(kw)) return 1
+    return q.toks.some((t) => wordHit(t, kw)) ? 1 : 0
+}
+const score = (q: Q, kws: string[]) => kws.reduce((n, k) => n + hit(q, k), 0)
 
-const LI: Link = { href: LINKEDIN, label: "LinkedIn ↗", external: true }
-const EM: Link = { href: "mailto:" + EMAIL, label: "Email her ↗", external: true }
-
-function norm(raw: string) {
-    return raw.toLowerCase().replace(/[’‘]/g, "'").trim()
+const ASPECTS: [Aspect, string[]][] = [
+    ["ai", ["=ai", "artificial intelligence", "chatbot", "=llm", "assistant", "machine learning", "=gpt"]],
+    ["role", ["=role", "=part", "=own", "=owned", "owner", "contribution", "contribute", "responsible", "teammates", "=team", "who did what", "her job", "work on", "worked on", "=split", "=when", "timeline", "how long"]],
+    ["decision", ["decision", "decide", "=pivot", "choice", "=chose", "tradeoff", "trade off", "pushback", "push back", "challenge", "=why", "changed"]],
+    ["research", ["research", "interview", "finding", "=found", "insight", "learned", "discover", "method", "testing", "usability", "=data", "synthesis", "=users", "problem"]],
+    ["outcome", ["status", "outcome", "result", "impact", "shipped", "=ship", "launch", "=live", "metric", "numbers", "success", "happened", "measure"]],
+    ["next", ["=next", "lesson", "differently", "future", "open question", "improve"]],
+]
+function aspectOf(q: Q): Aspect | null {
+    for (const [a, kws] of ASPECTS) if (score(q, kws) > 0) return a
+    return null
 }
 
-function answer(raw: string, base: string): Reply {
-    const q = norm(raw)
-    const caseLink = (p: Project): Link => ({ href: base + p.slug, label: "Read the " + p.name + " case study ↗" })
-    const byslug = (s: string) => PROJECTS.find((p) => p.slug === s) as Project
-    const asksAI = /\bai\b|artificial intelligence|chatbot|\bllm\b|machine learning/.test(q)
+type IntentId =
+    | "contact" | "resume" | "jobs" | "availability" | "location" | "education" | "experience" | "process"
+    | "strengths" | "tools" | "ai" | "ownership" | "recommend" | "whyHire" | "unknown" | "projects" | "intro" | "personal"
+const INTENTS: { id: IntentId; kws: string[] }[] = [
+    { id: "unknown", kws: ["salary", "compensation", "=pay", "visa", "sponsor", "sponsorship", "work authorization", "authorization", "citizen", "citizenship", "references", "=gpa", "grades", "phone number", "address", "=age", "married"] },
+    { id: "availability", kws: ["available", "availability", "start date", "when can she", "graduate", "graduation", "graduating", "notice period", "open to work"] },
+    { id: "contact", kws: ["contact", "reach", "=email", "e mail", "linkedin", "get in touch", "=connect", "message her", "talk to her", "talk to dhwani", "chat with her", "schedule", "=call"] },
+    { id: "resume", kws: ["resume", "=cv", "curriculum vitae"] },
+    { id: "jobs", kws: ["looking for", "open to", "seeking", "what roles", "which roles", "kind of role", "type of role", "roles", "=job", "position", "hiring", "full time", "opportunity", "career goals", "want to do", "what does she want"] },
+    { id: "location", kws: ["based", "location", "located", "=live", "relocate", "relocation", "=move", "moving", "remote", "on site", "hybrid", "where is she", "ann arbor", "time zone", "timezone"] },
+    { id: "education", kws: ["school", "education", "degree", "=study", "studied", "studying", "=umsi", "masters", "=ms", "psychology", "=psych", "undergrad", "college", "university"] },
+    { id: "experience", kws: ["experience", "background", "career", "work history", "internship", "previous roles", "worked before", "past roles"] },
+    { id: "process", kws: ["process", "approach", "how does she work", "how she works", "methodology", "principles", "philosophy", "how does she design", "how she thinks", "observe connect question"] },
+    { id: "strengths", kws: ["good at", "best at", "strength", "skills", "superpower", "what does she do", "specialty", "specialize", "stand out", "unique"] },
+    { id: "tools", kws: ["=tool", "software", "figma", "=stack", "framer", "apps script", "=code", "coding", "next js", "built with", "this site"] },
+    { id: "ai", kws: ["=ai", "artificial intelligence", "chatbot", "=llm", "machine learning", "=gpt", "ai native"] },
+    { id: "ownership", kws: ["what did she own", "her role", "her part", "=own", "=owned", "contribution", "team projects", "who did what", "individual contribution", "she personally", "on each"] },
+    { id: "recommend", kws: ["start with", "read first", "which case study", "which project", "best project", "strongest", "favorite project", "favourite project", "most proud", "only read", "where should i start", "begin with"] },
+    { id: "whyHire", kws: ["why hire", "why should", "should we hire", "should i hire", "good fit", "fit for", "convince me", "pitch", "elevator pitch"] },
+    { id: "projects", kws: ["projects", "=work", "portfolio", "case study", "case studies", "show me", "what has she built", "what has she done", "examples"] },
+    { id: "intro", kws: ["who is she", "who is dhwani", "tell me about her", "about dhwani", "about her", "summary", "=tldr", "introduce", "quick version", "in short"] },
+    { id: "personal", kws: ["hobby", "hobbies", "for fun", "personal", "outside work", "free time", "weekend", "interests", "personality"] },
+]
+
+// ── Answers ─────────────────────────────────────────────────────────────────────────────────────
+type Link = { href: string; label: string; external?: boolean }
+type Reply = { text: string; links?: Link[]; topic: string; project?: string; aspect?: Aspect }
+type Ctx = { project?: string; asked: Record<string, Aspect[]> }
+
+const LI: Link = { href: LINKEDIN, label: "LinkedIn", external: true }
+const CN: Link = { href: CONNECT, label: "Connect section" }
+const EM: Link = { href: "mailto:" + EMAIL, label: "Email her", external: true }
+const ORDER: Aspect[] = ["overview", "role", "decision", "research", "outcome", "ai", "next"]
+const byslug = (s: string) => CASES.find((p) => p.slug === s) as CaseFacts
+
+function answer(raw: string, base: string, ctx: Ctx): Reply {
+    const q = prep(raw)
+    const cite = (p: CaseFacts): Link => ({ href: base + p.slug, label: p.name + " case study" })
+    const projectReply = (p: CaseFacts, want: Aspect): Reply => {
+        if (want === "ai" && !p.ai) return { topic: "project", project: p.slug, aspect: "overview", text: "The " + p.name + " case study doesn’t describe an AI feature, so I won’t invent one. Here’s what it does cover: " + p.overview, links: [cite(p)] }
+        return { topic: "project", project: p.slug, aspect: want, text: p[want] as string, links: [cite(p)] }
+    }
+    if (!q.s) return { topic: "default", text: "Ask me about a project, what she’s looking for, or how to reach her." }
 
     // NDA first, so nothing below can leak detail.
-    if (/prime|amazon|capstone|streaming/.test(q)) return { topic: "nda", text: "Prime Video is Dhwani’s current capstone, and it’s under NDA, so that’s genuinely all I can say. Happy to talk about anything else on the portfolio.", links: [LI] }
-
-    if (/are you (real|human|a bot|a person|dhwani|her|ai)|who are you|what are you|is this (really )?(dhwani|a bot|real|her|a person)|am i (talking|chatting) (to|with)/.test(q)) {
-        return { topic: "identity", text: "I’m DhwaniGPT, an automated assistant, not Dhwani. I answer only from what’s on her portfolio, and this chat isn’t saved. For the real Dhwani, LinkedIn is the way.", links: [LI] }
+    if (score(q, ["prime video", "=prime", "amazon", "capstone", "streaming"]) > 0) {
+        return { topic: "nda", text: "Prime Video is Dhwani’s current capstone, and it’s under NDA, so that’s genuinely all I can say. Ask her about the process directly; I’m happy to cover anything else on the portfolio.", links: [LI] }
+    }
+    if (/\b(are you (real|human|a bot|a person|dhwani|her|ai)|who are you|what are you|is this (really )?(dhwani|a bot|real|her|a person)|am i (talking|chatting) (to|with))\b/.test(q.s)) {
+        return { topic: "identity", text: "I’m DhwaniGPT, an automated assistant, not Dhwani. I only answer from her case studies and About page, and this chat isn’t saved. For the real Dhwani, LinkedIn is the way.", links: [LI] }
     }
 
-    const project = PROJECTS.find((p) => p.terms.test(q))
-    if (project) {
-        let text: string
-        const asksRole = /team|who .*with|\brole\b|when|timeline|how long/.test(q)
-        if (asksAI && project.ai) text = "In " + project.name + ", " + project.ai
-        else if (asksAI) text = "The " + project.name + " case study doesn’t describe an AI piece, so I won’t invent one. Here’s what it does cover. " + project.summary
-        else text = project.summary + " " + project.status
-        if (asksRole) text += " Her role: " + project.role + ". Team: " + project.team + ". When: " + project.when + "."
-        else if (!asksAI) text += project.ai ? " Want her role and timeline, or the AI angle?" : " Want her role and timeline next?"
-        return { topic: "project:" + project.slug, text, links: [caseLink(project)] }
+    // Named projects (one, or a comparison of several).
+    const hits = CASES.map((p) => ({ p, s: score(q, p.aliases) })).filter((x) => x.s > 0).sort((a, b) => b.s - a.s)
+    if (hits.length >= 2) {
+        return { topic: "compare", text: hits.slice(0, 3).map((x) => x.p.oneLiner).join("\n\n"), links: hits.slice(0, 3).map((x) => cite(x.p)), project: hits[0].p.slug }
+    }
+    if (hits.length === 1) return projectReply(hits[0].p, aspectOf(q) || "overview")
+
+    if (score(q, ["=dpss", "public safety", "aaron tucker", "=aaron"]) > 0) {
+        return { topic: "dpss", text: "Dhwani was a UX Design Intern at U-M DPSS in Summer 2026, working on building-information and case-management workflows. Two case studies came out of it: BRIEFS (building details for dispatchers mid-call) and the Intel workspace (requests and investigation work). The public screens use fictional demo data.", links: [cite(byslug("briefs")), cite(byslug("intel"))] }
     }
 
-    if (/\bdpss\b|public safety/.test(q)) {
-        return { topic: "dpss", text: "Dhwani was a UX Design Intern at U-M DPSS, May – Aug 2026, designing tools for campus dispatch and the Intelligence Group. Two case studies came out of it: BRIEFS (finding building details mid-call) and the Intelligence Hub, which is in use.", links: [caseLink(byslug("briefs")), caseLink(byslug("intel"))] }
+    // "Tell me more" style follow-ups continue the last project.
+    const last = ctx.project ? byslug(ctx.project) : undefined
+    if (last && /^(and )?(tell me )?more\b|\b(go on|elaborate|keep going|what else|more detail|details please|continue)\b/.test(q.s)) {
+        const asked = ctx.asked[last.slug] || []
+        const nextAspect = ORDER.find((a) => !asked.includes(a) && (a !== "ai" || !!last.ai))
+        if (nextAspect) return projectReply(last, nextAspect)
+        return { topic: "project", project: last.slug, aspect: "next", text: "That’s everything the " + last.name + " case study covers. Want another project, or how to reach her?", links: [cite(last)] }
     }
 
-    if (/contact|reach|e-?mail|linkedin|resume|résumé|\bcv\b|hire|hiring|get in touch|connect|talk to (her|dhwani)|message her/.test(q)) {
-        return { topic: "contact", text: "Easiest way: email her or find her on LinkedIn. I’m a bot, so I can’t pass messages along (and I’d paraphrase you badly).", links: [EM, LI] }
+    const expLine = EXPERIENCE.find((r) => score(q, r.kws) > 0)
+    if (expLine) return { topic: "experience", text: expLine.line }
+
+    const ranked = INTENTS.map((it, i) => ({ id: it.id, s: score(q, it.kws), i })).filter((x) => x.s > 0).sort((a, b) => b.s - a.s || a.i - b.i)
+    const best = ranked[0]
+    // Follow-ups like "what was her role?" or "did it ship?" refer to the last project discussed,
+    // unless the question is clearly about all projects or a general topic.
+    const aspect = aspectOf(q)
+    const global = score(q, ["team projects", "on each", "each project", "every project", "all projects", "across projects", "in general", "overall"]) > 0
+    const pronoun = /\b(it|this|that|this project|the project|there)\b/.test(q.s)
+    if (last && aspect && !global) {
+        const weak = !best || best.s <= 1 || best.id === "ownership" || best.id === "projects"
+        if (pronoun || (weak && best?.id !== "ai")) return projectReply(last, aspect)
     }
 
-    if (/looking for|open to work|available|availability|what roles?|kind of (role|job)|\bjobs?\b|full[- ]time|graduat/.test(q)) {
-        return { topic: "jobs", text: "She’s looking for product, UX and experience design roles. She’s finishing an MS at the University of Michigan School of Information, graduating May 2027, based in Ann Arbor and open to moving anywhere.", links: [LI] }
-    }
-
-    if (/relocat|\bmove\b|moving|location|where .*(based|live|located|from)|ann arbor/.test(q)) {
-        return { topic: "jobs", text: "Dhwani is based in Ann Arbor and open to moving anywhere." }
-    }
-
-    if (/school|education|degree|study|studying|umsi|master|\bms\b|psych|undergrad|college|university/.test(q)) {
-        return { topic: "school", text: "She’s an MS student at the University of Michigan School of Information (UMSI), graduating May 2027. Before that: a psychology degree, finished in three years." }
-    }
-
-    if (asksAI) {
-        return { topic: "ai", text: "Thoughtfully, with guardrails. In BRIEFS, the assistant answers only from approved records, cites its source, and admits when information is missing. In Intel, public tips arrive through a chatbot intake. In BudgetCart, an AI cart builder drafts a starting cart that shoppers edit.", links: [caseLink(byslug("briefs"))] }
-    }
-
-    if (/good at|best at|strength|skill|superpower|what does (she|dhwani) do|special/.test(q)) {
-        return { topic: "skills", text: "Her work spans research, interaction design and prototyping for complex workflows. Start with BRIEFS for high-stakes information design, or GM Convoy for advanced in-car prototyping.", links: [caseLink(byslug("briefs")), caseLink(byslug("general-motors"))] }
-    }
-
-    if (/process|approach|how does she (work|design)|method/.test(q)) {
-        return { topic: "process", text: "She starts where the work happens: sitting in the dispatch center for BRIEFS, interviewing six analysts for Intel, joining client calls on Open Library. Then she maps it (workflows, affinity maps), prototypes, and changes direction when the research says so, like cutting four weeks of biometric work on GM Convoy.", links: [caseLink(byslug("briefs"))] }
-    }
-
-    if (/tools?\b|software|figma|stack|prototyp/.test(q)) {
-        return { topic: "tools", text: "Figma shows up most: advanced interactions and a shared design system on GM Convoy, a self-taught component system on BudgetCart. She also built working prototypes in Google Apps Script for BRIEFS and Intel. Anything beyond that isn’t listed on the portfolio, so I won’t guess." }
-    }
-
-    const role = EXPERIENCE.find((r) => r.terms.test(q))
-    if (role) return { topic: "experience", text: role.line }
-
-    if (/experience|background|career|worked|work history|internships?|resume/.test(q)) {
-        return { topic: "experience", text: "Most recent: Adobe Student Ambassador (Jul 2026 – now), UX Design Intern at U-M DPSS (May – Aug 2026), and UX Researcher & Designer on a General Motors-sponsored project (Jan – May 2026). Earlier: Open Library research, SOCHI, the Global Scholars Program, Iska Press, an MSU research assistantship, Miller Johnson and DDB Mudra Group." }
-    }
-
-    if (/projects?|\bwork\b|portfolio|case stud|show me/.test(q)) {
-        return { topic: "projects", text: "Five case studies: the Intelligence Hub and BRIEFS (both U-M DPSS), Convoy for General Motors, Open Library for the Internet Archive, and BudgetCart at UMSI. There’s also a Prime Video capstone, which is under NDA. Pick one and I’ll give you the short version." }
+    if (best) {
+        switch (best.id) {
+            case "unknown":
+                return { topic: "unknown", text: "That isn’t on her portfolio, so I won’t guess. It’s a good one to ask Dhwani directly; LinkedIn is the fastest route.", links: [LI, CN] }
+            case "contact":
+                return { topic: "contact", text: "Best routes: message her on LinkedIn, or use the Connect section at the bottom of the home page, which has a LinkedIn button and an email option. I’m a bot, so I can’t pass messages along (and I’d paraphrase you badly).", links: [LI, CN, EM] }
+            case "resume":
+                return { topic: "resume", text: "There’s no résumé linked on the site right now. LinkedIn is the closest thing, or ask her for one through the Connect section.", links: [LI, CN] }
+            case "jobs":
+                return { topic: "jobs", text: "She’s looking for product, UX and experience design roles, ideally where the problems are messy and operational: fragmented workflows turned into systems people actually adopt. She’s finishing an MS at the University of Michigan School of Information (graduating May 2027), based in Ann Arbor and open to moving anywhere.", links: [LI, CN] }
+            case "availability":
+                return { topic: "availability", text: "The site marks her as open to work. She graduates from UMSI in May 2027 and is based in Ann Arbor (Eastern Time), open to relocating anywhere. A specific start date isn’t on the portfolio, so ask her directly: LinkedIn or the Connect section.", links: [LI, CN] }
+            case "location":
+                return { topic: "location", text: "Ann Arbor, Michigan (Eastern Time), and open to moving anywhere. The portfolio doesn’t state a remote or hybrid preference, so that one’s for Dhwani.", links: [LI] }
+            case "education":
+                return { topic: "education", text: "She’s doing a Master’s in UX Research & Design at the University of Michigan School of Information (UMSI), graduating May 2027. Before that: a psychology degree at Michigan State, finished in three years, with eye-tracking research on high-stakes decision-making along the way." }
+            case "experience":
+                return { topic: "experience", text: "Most recent first: Adobe Student Ambassador (Jul 2026 – now), UX Design Intern at U-M DPSS (Summer 2026), and UX Researcher & Designer on the General Motors-sponsored Convoy project (Jan – May 2026). Before that: Iska Press, SOCHI, the U-M Global Scholars Program, Open Library research, an MSU research assistantship, Miller Johnson and DDB Mudra Group." }
+            case "process":
+                return { topic: "process", text: "Her About page puts it as Observe, Connect, Question. Observe: she watched dispatchers work before shaping the BRIEFS information architecture. Connect: on Open Library she helped turn eight interviews into a 330-point affinity map. Question: on GM Convoy she challenged the biometric direction four weeks in. Her principles: psychology first, workflow before interface, honest tradeoffs, prototype early.", links: [cite(byslug("briefs"))] }
+            case "strengths":
+                return { topic: "strengths", text: "Messy, operational problems: field research, workflow and information architecture, then prototypes people can react to. BRIEFS shows high-stakes information design, GM Convoy shows advanced prototyping and pushing back on a brief, and Open Library shows research synthesis.", links: [cite(byslug("briefs")), cite(byslug("general-motors"))] }
+            case "tools":
+                return { topic: "tools", text: "Figma shows up most: advanced interactions and a shared design system on GM Convoy, a self-taught component system on BudgetCart. She built working prototypes in Google Apps Script for BRIEFS and the Intel workspace. This site was designed in Figma and Framer, prototyped in Next.js, with Claude and ChatGPT as pair-programmers. Anything beyond that isn’t listed, so I won’t guess." }
+            case "ai":
+                return { topic: "ai", text: "Grounded, with a person in the loop. In BRIEFS, the proposed assistant answers only from approved records, cites them and flags missing information; document changes need human approval. In BudgetCart, her AI cart builder drafts a starting cart that shoppers edit. Her AI Lab experiments come out of directed sessions: she specifies the intent, corrects drift and throws away what doesn’t earn its place.", links: [cite(byslug("briefs")), cite(byslug("budgetcart"))] }
+            case "ownership":
+                return { topic: "ownership", text: "What she owned, project by project:\n• BRIEFS: contextual inquiry, IA, prototype and PRD.\n• Intel workspace: stakeholder interviews, workflow design, Apps Script prototype.\n• GM Convoy: research, advanced Figma interactions, reusable components, and the pushback that changed the brief.\n• Open Library: client calls, interviews, her first affinity map, synthesis.\n• BudgetCart: the AI cart builder and Budget Calendar (Anne led checkout, Tunisia onboarding).", links: [cite(byslug("general-motors")), cite(byslug("budgetcart"))] }
+            case "recommend":
+                return { topic: "recommend", text: "Depends on the role. Research-heavy: Open Library. Complex workflows or internal tools: BRIEFS. Prototyping and challenging a brief: GM Convoy. Consumer product and AI interaction: BudgetCart. If you only have two minutes, BRIEFS runs from field research to a PRD in one story.", links: [cite(byslug("briefs")), cite(byslug("openlibrary"))] }
+            case "whyHire":
+                return { topic: "whyHire", text: "I’m biased: I literally live on her website. The fair test is one case study. Each one says what she did, what the team did, and what’s still untested, which is rarer than it should be.", links: [cite(byslug("briefs")), LI] }
+            case "projects":
+                return { topic: "projects", text: "Five case studies: BRIEFS and the Intel workspace (both U-M DPSS), GM Convoy (General Motors), Open Library (Internet Archive) and BudgetCart (UMSI). There’s also a Prime Video capstone that’s under NDA. Pick one and I’ll give you the short version." }
+            case "intro":
+                return { topic: "intro", text: "Dhwani Bagrecha is a product, UX and experience designer finishing an MS at the University of Michigan School of Information (May 2027), with a psychology degree from Michigan State. She likes messy, operational problems: dispatch tools and case workflows at U-M DPSS, a GM-sponsored in-vehicle concept, multilingual reading research for Open Library.", links: [LI] }
+            case "personal":
+                return { topic: "personal", text: "Off the clock: music (she DJs and is in her “Spotify playlists as preparation” era), singing, campus events, celebrating every festival from home, and trips with too many museum stops. She’s vegetarian and will find the good vegetarian option in any city." }
+        }
     }
 
     // Silly corner (Oct 3: "make the bot quirky, answer silly questions too").
-    if (/pineapple/.test(q)) return { topic: "silly", text: "On pizza? I’m legally a bot, so I’m staying out of it. Dhwani is vegetarian, though, so ask her for food recs instead. She takes those seriously." }
-    if (/joke|make me laugh|funny/.test(q)) return { topic: "silly", text: "A UX designer walks into a bar. Then walks back out, because the door said push and had a handle. She filed a bug report." }
-    if (/meaning of life|42\b/.test(q)) return { topic: "silly", text: "Probably good information architecture. Or a really well-sequenced playlist. Dhwani would argue those are the same thing." }
-    if (/sentient|alive|conscious|feelings|do you dream/.test(q)) return { topic: "silly", text: "Not even a little. I’m a pile of if-statements wearing a nice font." }
-    if (/\bdj\b|music|playlist|song|instrument|spotify/.test(q)) return { topic: "silly", text: "She DJs, loves music theory and plays four instruments. Her playlists have a taxonomy. That’s not a joke, it’s a warning." }
-    if (/food|eat|vegetarian|restaurant|hungry|snack/.test(q)) return { topic: "silly", text: "Vegetarian, and very willing to give you recommendations. It’s literally in her contact section." }
-    if (/coffee|chai|\btea\b/.test(q)) return { topic: "silly", text: "That’s above my clearance level. Ask her on LinkedIn and report back.", links: [LI] }
-    if (/\brun|running|gym|workout|work out|fitness/.test(q)) return { topic: "silly", text: "She works out a lot and is currently trying to become the kind of person who likes running. Progress: ongoing." }
-    if (/weather|time is it|stock|bitcoin|crypto/.test(q)) return { topic: "silly", text: "I only know what’s on this portfolio. For that, a window or a search engine will serve you better." }
-    if (/\b(cat|cats|dog|dogs)\b/.test(q)) return { topic: "silly", text: "I don’t have a verified stance on that, and I refuse to start a war on her website." }
-    if (/favou?rite (color|colour)/.test(q)) return { topic: "silly", text: "Judging by this site? Somewhere between ember orange and whatever vibe you picked." }
-    if (/hire|should .*(hire|interview)/.test(q)) return { topic: "contact", text: "I’m biased, I literally live on her website. But the case studies make a decent argument.", links: [EM, LI] }
+    const s = q.s
+    if (/pineapple/.test(s)) return { topic: "silly", text: "On pizza? I’m legally a bot, so I’m staying out of it. Dhwani is vegetarian, though, so ask her for food recs instead. She takes those seriously." }
+    if (/\b(joke|make me laugh|funny)\b/.test(s)) return { topic: "silly", text: "A UX designer walks into a bar. Then walks back out, because the door said push and had a handle. She filed a bug report." }
+    if (/meaning of life|\b42\b/.test(s)) return { topic: "silly", text: "Probably good information architecture. Or a really well-sequenced playlist. Dhwani would argue those are the same thing." }
+    if (/\b(sentient|alive|conscious|feelings|dream)\b/.test(s)) return { topic: "silly", text: "Not even a little. I’m a pile of if-statements wearing a nice font." }
+    if (/\b(dj|music|playlist|song|instruments?|spotify)\b/.test(s)) return { topic: "silly", text: "She DJs, loves music theory and plays four instruments. Her playlists have a taxonomy. That’s not a joke, it’s a warning." }
+    if (/\b(food|eat|vegetarian|restaurant|hungry|snack)\b/.test(s)) return { topic: "silly", text: "Vegetarian, and very willing to give you recommendations. Finding the good vegetarian option is, in her words, a public service." }
+    if (/\b(coffee|chai|tea|matcha)\b/.test(s)) return { topic: "silly", text: "Her About page says chai is a valid research method. I can’t argue with that.", links: [LI] }
+    if (/\b(run|running|gym|workout|work out|fitness)\b/.test(s)) return { topic: "silly", text: "She works out a lot and is currently trying to become the kind of person who likes running. Progress: ongoing." }
+    if (/\b(weather|time is it|stocks?|bitcoin|crypto)\b/.test(s)) return { topic: "silly", text: "I only know what’s on this portfolio. For that, a window or a search engine will serve you better." }
+    if (/\b(cats?|dogs?)\b/.test(s)) return { topic: "silly", text: "I don’t have a verified stance on that, and I refuse to start a war on her website." }
+    if (/favou?rite colou?r/.test(s)) return { topic: "silly", text: "Judging by this site? Somewhere between ember orange and whatever vibe you picked." }
+    if (/\bthank/.test(s)) return { topic: "thanks", text: "Anytime. If you want the real Dhwani, she’s on LinkedIn.", links: [LI] }
+    if (q.toks.length <= 4 && /^(hi|hello|hey|hiya|yo|howdy|sup)\b/.test(s)) return { topic: "identity", text: "Hi! I’m DhwaniGPT, an automated assistant. Ask me about a project, what she’s looking for, or how to reach her." }
 
-    if (/thank/.test(q)) return { topic: "thanks", text: "Anytime. If you want the real Dhwani, she’s on LinkedIn.", links: [LI] }
-    if (/^(hi|hello|hey|hiya|yo|howdy)\b/.test(q)) return { topic: "identity", text: "Hi! I’m DhwaniGPT, an automated assistant. Ask me about a project, her process, or what she’s looking for." }
-
-    return { topic: "default", text: "That isn’t on the portfolio, so I won’t guess or make it up. I can talk about the Intelligence Hub, BRIEFS, GM Convoy, Open Library or BudgetCart, or you can ask Dhwani directly.", links: [EM, LI] }
+    return { topic: "default", text: "I don’t know that one, and I’d rather not guess. It isn’t in her case studies or About page. Ask Dhwani directly on LinkedIn, or ask me about BRIEFS, the Intel workspace, GM Convoy, Open Library or BudgetCart.", links: [LI, CN] }
 }
 
-// Offline follow-ups per topic. Every string here is answerable by answer() above.
+// Follow-ups. Every string here routes back to an answer above.
+const ASPECT_Q: Record<Aspect, (n: string) => string> = {
+    overview: (n) => "Give me the short version of " + n,
+    role: (n) => "What did she own on " + n + "?",
+    decision: (n) => "What was the key decision on " + n + "?",
+    research: (n) => "What did the research show on " + n + "?",
+    outcome: (n) => "What’s the status of " + n + "?",
+    ai: (n) => "How does " + n + " use AI?",
+    next: (n) => "What’s next for " + n + "?",
+}
 const FOLLOW_UPS: Record<string, string[]> = {
-    nda: ["What other projects are there?", "What does she do best?", "How do I reach her?"],
-    identity: ["What does she do best?", "Tell me about BRIEFS", "What roles is she looking for?"],
-    dpss: ["Tell me about BRIEFS", "Tell me about the Intelligence Hub", "How does she use AI?"],
-    contact: ["What roles is she looking for?", "Where is she based?", "What does she do best?"],
-    jobs: ["How do I reach her?", "What does she do best?", "What's her experience?"],
-    school: ["What's her experience?", "How does she work?", "What roles is she looking for?"],
-    ai: ["Tell me about BRIEFS", "Tell me about BudgetCart", "How does she work?"],
-    skills: ["How does she work?", "Which tools does she use?", "Tell me about GM Convoy"],
-    process: ["Tell me about Open Library", "Which tools does she use?", "What does she do best?"],
-    tools: ["How does she work?", "Tell me about GM Convoy", "How does she use AI?"],
-    experience: ["Tell me about DPSS", "What roles is she looking for?", "What other projects are there?"],
-    projects: ["Tell me about the Intelligence Hub", "Tell me about GM Convoy", "Tell me about Open Library"],
-    silly: ["Tell me a joke", "Are you sentient?", "Show me her projects"],
+    nda: ["What other projects are there?", "Which case study should I read first?", "How do I reach her?"],
+    identity: ["Which case study should I read first?", "What roles is she looking for?", "How do I reach her?"],
+    dpss: ["Give me the short version of BRIEFS", "Give me the short version of the Intel workspace", "How does BRIEFS use AI?"],
+    contact: ["What roles is she looking for?", "Is she available, and when?", "Which case study should I read first?"],
+    resume: ["How do I reach her?", "What’s her experience?", "What roles is she looking for?"],
+    jobs: ["Is she available, and when?", "Which case study should I read first?", "How do I reach her?"],
+    availability: ["What roles is she looking for?", "Where is she based?", "What did she own on team projects?"],
+    location: ["Is she available, and when?", "What roles is she looking for?", "How do I reach her?"],
+    education: ["What’s her experience?", "How does she work?", "What roles is she looking for?"],
+    experience: ["Tell me about DPSS", "What did she own on team projects?", "What roles is she looking for?"],
+    process: ["What does she do best?", "What did the research show on Open Library?", "What was the key decision on GM Convoy?"],
+    strengths: ["Which case study should I read first?", "How does she work?", "Which tools does she use?"],
+    tools: ["How does she use AI?", "How does she work?", "What did she own on GM Convoy?"],
+    ai: ["How does BRIEFS use AI?", "How does BudgetCart use AI?", "How does she work?"],
+    ownership: ["What did she own on BudgetCart?", "What was the key decision on GM Convoy?", "What roles is she looking for?"],
+    recommend: ["Give me the short version of BRIEFS", "What roles is she looking for?", "How do I reach her?"],
+    whyHire: ["Which case study should I read first?", "What does she do best?", "How do I reach her?"],
+    unknown: ["How do I reach her?", "What roles is she looking for?", "Is she available, and when?"],
+    projects: ["Give me the short version of BRIEFS", "Give me the short version of GM Convoy", "Which case study should I read first?"],
+    intro: ["What roles is she looking for?", "Which case study should I read first?", "How does she work?"],
+    personal: ["Tell me a joke", "What does she do best?", "How do I reach her?"],
+    compare: ["What did she own on team projects?", "Which case study should I read first?", "How do I reach her?"],
+    silly: ["Tell me a joke", "Are you sentient?", "What other projects are there?"],
     thanks: ["What other projects are there?", "How do I reach her?"],
-    default: ["What other projects are there?", "What does she do best?", "How do I reach her?"],
+    default: ["What other projects are there?", "What roles is she looking for?", "How do I reach her?"],
 }
-function offlineFollowUps(topic: string): string[] {
-    if (topic.startsWith("project:")) {
-        const p = PROJECTS.find((x) => "project:" + x.slug === topic)
-        if (p) {
-            const next = PROJECTS[(PROJECTS.indexOf(p) + 1) % PROJECTS.length]
-            return ["Her role and timeline on " + p.name + "?", p.ai ? "How did " + p.name + " use AI?" : "How does she work?", "Tell me about " + next.name]
-        }
+function followUpsFor(r: Reply, asked: Aspect[]): string[] {
+    if (r.topic === "project" && r.project) {
+        const p = byslug(r.project)
+        const label = p.slug === "intel" ? "the Intel workspace" : p.name
+        const rest = ORDER.filter((a) => a !== r.aspect && !asked.includes(a) && (a !== "ai" || !!p.ai) && a !== "overview")
+        const out = rest.slice(0, 2).map((a) => ASPECT_Q[a](label))
+        const next = CASES[(CASES.indexOf(p) + 1) % CASES.length]
+        out.push(ASPECT_Q.overview(next.slug === "intel" ? "the Intel workspace" : next.name))
+        return out
     }
-    return FOLLOW_UPS[topic] || FOLLOW_UPS.default
+    return FOLLOW_UPS[r.topic] || FOLLOW_UPS.default
 }
 
-// ── Search index (projects, roles, skills, FAQ) ─────────────────────────────
+// ── Rich text: [label](href), bare URLs and /work/<slug> paths become links ─────────────────────
+type Seg = { t: string; href?: string; external?: boolean }
+function safeHref(h: string): string | null {
+    return /^(https?:\/\/|mailto:|\/|#)/i.test(h) ? h : null
+}
+function parseRich(text: string, base: string): Seg[] {
+    const out: Seg[] = []
+    const re = /\[([^\]\n]{1,80})\]\(([^)\s]{1,300})\)|(https?:\/\/[^\s)]+[^\s).,;:!?])|(^|[\s(])(\/(?:work|projects)\/[a-z0-9-]+)\/?/gi
+    let last = 0
+    let m: RegExpExecArray | null
+    while ((m = re.exec(text))) {
+        let start = m.index
+        let label = ""
+        let href: string | null = null
+        if (m[1]) { label = m[1]; href = safeHref(m[2]) }
+        else if (m[3]) { label = m[3].replace(/^https?:\/\/(www\.)?/, ""); href = m[3] }
+        else if (m[5]) {
+            start += m[4].length
+            const slug = m[5].split("/").pop() || ""
+            const c = CASES.find((x) => x.slug === slug)
+            label = c ? c.name + " case study" : m[5]
+            href = base + slug
+        }
+        if (start > last) out.push({ t: text.slice(last, start) })
+        if (href) out.push({ t: label, href, external: /^(https?:|mailto:)/i.test(href) })
+        else out.push({ t: label })
+        last = re.lastIndex
+    }
+    if (last < text.length) out.push({ t: text.slice(last) })
+    return out
+}
+const segLen = (segs: Seg[]) => segs.reduce((n, s) => n + s.t.length, 0)
+
+// ── Search index (projects, roles, skills, FAQ) ─────────────────────────────────────────────────
 type IndexItem = { kind: "Project" | "Role" | "Skill" | "FAQ"; title: string; sub: string; query: string; keys: string }
 const INDEX: IndexItem[] = [
-    ...PROJECTS.map((p): IndexItem => ({ kind: "Project", title: p.name, sub: p.when + " · " + p.team, query: "Tell me about " + p.name, keys: p.summary + " " + p.role })),
-    { kind: "Role", title: "UX Design Intern, U-M DPSS", sub: "May – Aug 2026", query: "Tell me about DPSS", keys: "dpss public safety dispatch intelligence internship" },
-    { kind: "Role", title: "UX Researcher & Designer, General Motors", sub: "Jan – May 2026", query: "Tell me about GM Convoy", keys: "gm convoy automotive vehicle sponsored" },
+    ...CASES.map((p): IndexItem => ({ kind: "Project", title: p.name, sub: p.org + " · " + p.when, query: ASPECT_Q.overview(p.slug === "intel" ? "the Intel workspace" : p.name), keys: p.aliases.join(" ").replace(/=/g, "") + " " + p.oneLiner })),
+    { kind: "Role", title: "UX Design Intern, U-M DPSS", sub: "Summer 2026", query: "Tell me about DPSS", keys: "dpss public safety dispatch intelligence internship" },
+    { kind: "Role", title: "UX Researcher & Designer, General Motors", sub: "Jan – May 2026", query: "Give me the short version of GM Convoy", keys: "gm convoy automotive vehicle sponsored" },
     { kind: "Role", title: "Adobe Student Ambassador", sub: "Jul 2026 – now", query: "Tell me about Adobe", keys: "adobe workshops creative" },
     { kind: "Role", title: "UX Researcher & PM, Iska Press", sub: "Jan – May 2026", query: "Tell me about Iska Press", keys: "iska consulting project manager" },
     { kind: "Role", title: "PM & UX Researcher, SOCHI", sub: "Sep 2025 – May 2026", query: "Tell me about SOCHI", keys: "sochi product strategy project manager" },
@@ -239,16 +438,17 @@ const INDEX: IndexItem[] = [
     { kind: "Skill", title: "Research & field work", sub: "Contextual inquiry, interviews, synthesis", query: "How does she work?", keys: "research process approach method interviews affinity" },
     { kind: "Skill", title: "Prototyping & Figma", sub: "Design systems, Apps Script prototypes", query: "Which tools does she use?", keys: "figma tools prototype software stack design system" },
     { kind: "Skill", title: "AI with guardrails", sub: "Grounded answers, human approval", query: "How does she use AI?", keys: "ai llm chatbot machine learning" },
-    { kind: "Skill", title: "Complex workflows", sub: "What she does best", query: "What does she do best?", keys: "strengths skills best good at information design" },
-    { kind: "FAQ", title: "What roles she’s looking for", sub: "Product, UX, experience design", query: "What roles is she looking for?", keys: "jobs hiring open to work available full-time graduate" },
-    { kind: "FAQ", title: "Where she’s based", sub: "Ann Arbor, open to moving", query: "Where is she based?", keys: "location relocate move ann arbor" },
+    { kind: "Skill", title: "What she owned", sub: "Her part on each team project", query: "What did she own on team projects?", keys: "role contribution ownership team" },
+    { kind: "FAQ", title: "What roles she’s looking for", sub: "Product, UX, experience design", query: "What roles is she looking for?", keys: "jobs hiring open to work full-time" },
+    { kind: "FAQ", title: "Availability", sub: "Open to work · graduating May 2027", query: "Is she available, and when?", keys: "available start date graduate graduation" },
+    { kind: "FAQ", title: "Where she’s based", sub: "Ann Arbor, open to moving", query: "Where is she based?", keys: "location relocate move ann arbor remote" },
     { kind: "FAQ", title: "Education", sub: "MS at UMSI, psych undergrad", query: "Where did she study?", keys: "school education degree umsi masters psychology university" },
-    { kind: "FAQ", title: "How to contact her", sub: "Email or LinkedIn", query: "How do I contact her?", keys: "contact email linkedin reach resume hire" },
+    { kind: "FAQ", title: "How to reach her", sub: "LinkedIn or the Connect section", query: "How do I reach her?", keys: "contact email linkedin reach resume hire" },
     { kind: "FAQ", title: "Prime Video capstone", sub: "Under NDA", query: "What about Prime Video?", keys: "prime video amazon capstone nda" },
     { kind: "FAQ", title: "Is this bot Dhwani?", sub: "No, it’s a bot", query: "Are you real?", keys: "bot real human who are you" },
 ]
 function searchIndex(raw: string, limit: number): IndexItem[] {
-    const words = norm(raw).split(/[^a-z0-9-]+/).filter((w) => w.length >= 2)
+    const words = prep(raw).toks.filter((w) => w.length >= 2)
     if (!words.length) return []
     const scored = INDEX.map((it) => {
         const title = it.title.toLowerCase()
@@ -264,13 +464,15 @@ function searchIndex(raw: string, limit: number): IndexItem[] {
     return scored.slice(0, limit).map((x) => x.it)
 }
 
-const SUGGESTIONS = [
-    { label: "What does she do best?", query: "What does Dhwani do best?", n: "01" },
-    { label: "The BRIEFS story", query: "Tell me about BRIEFS", n: "02" },
-    { label: "Tell me a joke", query: "Tell me a joke", n: "03" },
-    { label: "How do I reach her?", query: "How do I contact her?", n: "04" },
+// Starter questions recruiters actually ask.
+const STARTERS = [
+    "What roles is she looking for?",
+    "Which case study should I read first?",
+    "What did she own on team projects?",
+    "Is she available, and how do I reach her?",
 ]
 
+type Message = { id: number; role: "user" | "assistant"; content: string; segs: Seg[]; links?: Link[]; followUps?: string[]; offline?: boolean }
 type Props = { accentColor: string; greeting: string; casePath: string; showGreeting: boolean; bottomOffset: number; apiUrl: string }
 
 /**
@@ -279,48 +481,45 @@ type Props = { accentColor: string; greeting: string; casePath: string; showGree
  */
 export default function DhwaniGPT({ accentColor, greeting, casePath, showGreeting, bottomOffset, apiUrl }: Props) {
     const isCanvas = RenderTarget.current() === RenderTarget.canvas
-    const reduce = useReducedMotion()
+    const reduce = !!useReducedMotion()
     const [open, setOpen] = useState(false)
     const [messages, setMessages] = useState<Message[]>([])
     const [input, setInput] = useState("")
     const [pending, setPending] = useState(false)
+    const [typing, setTyping] = useState<{ id: number; n: number } | null>(null)
     const [mode, setMode] = useState<"chat" | "search">("chat")
     const [searchQ, setSearchQ] = useState("")
     const [announce, setAnnounce] = useState("")
     const [greetVisible, setGreetVisible] = useState(false)
     const [typed, setTyped] = useState("")
-    const inputRef = useRef<HTMLInputElement>(null)
+    const inputRef = useRef<HTMLTextAreaElement>(null)
     const searchRef = useRef<HTMLInputElement>(null)
     const logRef = useRef<HTMLDivElement>(null)
     const launcherRef = useRef<HTMLButtonElement>(null)
     const openerRef = useRef<HTMLElement | null>(null)
     const messagesRef = useRef<Message[]>([])
+    const ctxRef = useRef<Ctx>({ asked: {} })
+    const stickRef = useRef(true)
     const convRef = useRef(0)
     const idRef = useRef(0)
     const abortRef = useRef<AbortController | null>(null)
 
-    const T = {
-        glass: "var(--db-glass, rgba(14,14,14,0.88))",
-        glassLine: "var(--db-glass-line, rgba(255,255,255,0.10))",
-        surface: "var(--db-surface, #111111)",
-        text: "var(--db-text, #FAFAFA)",
-        text2: "var(--db-text-2, #A0A0A0)",
-        line: "var(--db-line, rgba(255,255,255,0.12))",
-        shadow: "var(--db-shadow, 0 24px 64px -16px rgba(0,0,0,0.6))",
-        accent: "var(--db-accent, " + (accentColor || "#F3500F") + ")",
-        onAccent: "var(--db-on-accent, #0A0A0A)",
-    }
     const base = (() => {
-        let b = (casePath || "/projects/").trim()
+        let b = (casePath || "/work/").trim()
         if (!b.startsWith("/") && !/^https?:/.test(b)) b = "/" + b
         return b.endsWith("/") ? b : b + "/"
     })()
     const api = (apiUrl || "").trim()
     const offset = typeof bottomOffset === "number" ? bottomOffset : 84
-    const welcome = greeting?.trim() || "Hi, I’m DhwaniGPT, a little bot that knows this portfolio. Ask about a project, her process, or something silly. Heads up: I’m a bot, so I might get things wrong."
+    const welcome = greeting?.trim() || "Hi, I’m DhwaniGPT, a little bot that knows this portfolio. Ask about a project, what she’s looking for, or something silly. Heads up: I’m a bot, so I might get things wrong."
     const pos = isCanvas ? "absolute" : "fixed"
+    const accentFallback = accentColor || "#F3500F"
 
-    const focusInput = () => setTimeout(() => inputRef.current?.focus(), 50)
+    const coarse = () => typeof window !== "undefined" && !!window.matchMedia && window.matchMedia("(pointer: coarse)").matches
+    const focusInput = (force?: boolean) => {
+        if (!force && coarse()) return // don't pop the phone keyboard after a chip tap
+        setTimeout(() => inputRef.current?.focus(), 40)
+    }
 
     const openPanel = useCallback(() => {
         if (typeof document !== "undefined") openerRef.current = document.activeElement as HTMLElement
@@ -347,13 +546,15 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
     const reset = () => {
         convRef.current += 1
         abortRef.current?.abort()
+        ctxRef.current = { asked: {} }
         commit([])
+        setTyping(null)
         setPending(false)
         setInput("")
         setSearchQ("")
         setMode("chat")
         setAnnounce("New chat started.")
-        focusInput()
+        focusInput(true)
     }
 
     // Nav hook-up: listen for "db-chat-open" and advertise readiness.
@@ -369,22 +570,60 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
         }
     }, [isCanvas, openPanel])
 
-    // Esc closes from anywhere while open.
+    // "/#contact" links: the home page's Connect band has no #contact id, so scroll to it by hand.
+    const scrollToConnect = useCallback((): boolean => {
+        if (typeof document === "undefined") return false
+        const el = document.getElementById("contact") || document.getElementById("cb-heading")
+        if (!el) return false
+        el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" })
+        return true
+    }, [reduce])
+    useEffect(() => {
+        if (isCanvas || typeof window === "undefined" || window.location.hash !== "#contact") return
+        const t = window.setTimeout(() => { if (!document.getElementById("contact")) scrollToConnect() }, 700)
+        return () => window.clearTimeout(t)
+    }, [isCanvas, scrollToConnect])
+
+    // Esc: leave search first, otherwise close.
     useEffect(() => {
         if (!open) return
-        const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { e.preventDefault(); close() } }
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key !== "Escape") return
+            e.preventDefault()
+            if (mode === "search") { setMode("chat"); focusInput(true) }
+            else close()
+        }
         document.addEventListener("keydown", onKey)
         return () => document.removeEventListener("keydown", onKey)
-    }, [open, close])
+    }, [open, close, mode])
 
     useEffect(() => () => abortRef.current?.abort(), [])
 
-    // Auto-scroll to the newest message.
+    // Typed-out replies (instant with reduced motion).
+    useEffect(() => {
+        if (!typing) return
+        const msg = messagesRef.current.find((m) => m.id === typing.id)
+        const len = msg ? segLen(msg.segs) : 0
+        if (!msg || typing.n >= len) { setTyping(null); return }
+        const step = Math.max(2, Math.ceil(len / 70))
+        const t = window.setTimeout(() => setTyping({ id: typing.id, n: Math.min(len, typing.n + step) }), 16)
+        return () => window.clearTimeout(t)
+    }, [typing])
+
+    // Keep the newest message in view unless the visitor scrolled up to read.
     useEffect(() => {
         const el = logRef.current
-        if (!el || mode !== "chat") return
-        el.scrollTo({ top: el.scrollHeight, behavior: reduce ? "auto" : "smooth" })
-    }, [messages, pending, open, mode, reduce])
+        if (!el || mode !== "chat" || !stickRef.current) return
+        el.scrollTop = el.scrollHeight
+    }, [messages, pending, open, mode, typing])
+
+    // Auto-grow the composer.
+    useEffect(() => {
+        const el = inputRef.current
+        if (!el) return
+        el.style.height = "auto"
+        el.style.height = Math.min(el.scrollHeight, 120) + "px"
+    }, [input, open, messages.length, mode])
 
     // First-visit greeting, once per session.
     useEffect(() => {
@@ -413,16 +652,16 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
         return () => window.clearInterval(timer)
     }, [greetVisible, reduce, isCanvas])
 
-    // Links for an LLM reply: case studies it names, plus contact links it mentions.
+    // Sources for an LLM reply: case studies it names, plus contact links it mentions.
     const linksFor = (text: string): Link[] => {
-        const t = text.toLowerCase()
+        const q = prep(text)
         const out: Link[] = []
-        for (const p of PROJECTS) {
+        for (const p of CASES) {
             if (out.length >= 2) break
-            if (p.terms.test(t) || t.includes(p.name.toLowerCase())) out.push({ href: base + p.slug, label: "Read the " + p.name + " case study ↗" })
+            if (score(q, p.aliases) > 0) out.push({ href: base + p.slug, label: p.name + " case study" })
         }
-        if (/linkedin/.test(t)) out.push(LI)
-        if (/e-?mail/.test(t)) out.push(EM)
+        if (/linkedin/i.test(text)) out.push(LI)
+        if (/connect section/i.test(text)) out.push(CN)
         return out
     }
 
@@ -449,40 +688,53 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
         }
     }
 
-    const send = async (text: string) => {
+    const send = async (text: string, fromChip?: boolean) => {
         const m = text.trim().slice(0, 600)
         if (!m || pending) return
+        if (typing) setTyping(null) // finish the current reply instantly
         const conv = convRef.current
+        stickRef.current = true
         setMode("chat")
         setInput("")
-        const userMsg: Message = { id: ++idRef.current, role: "user", content: m }
+        const userMsg: Message = { id: ++idRef.current, role: "user", content: m, segs: [{ t: m }] }
         const history = [...messagesRef.current, userMsg]
         commit(history)
-        focusInput()
+        focusInput(!fromChip)
 
-        const canned = answer(m, base)
-        const cannedMsg = (offline: boolean): Message => ({ id: ++idRef.current, role: "assistant", content: canned.text, links: canned.links, followUps: offlineFollowUps(canned.topic), offline })
+        // Canned answer (also the fallback for the API), with conversation context.
+        const ctx = ctxRef.current
+        const canned = answer(m, base, ctx)
+        if (canned.project) {
+            ctx.project = canned.project
+            if (canned.aspect) ctx.asked[canned.project] = [...(ctx.asked[canned.project] || []), canned.aspect]
+        }
+        const cannedFollow = followUpsFor(canned, canned.project ? ctx.asked[canned.project] || [] : [])
+        const cannedMsg = (offline: boolean): Message => ({ id: ++idRef.current, role: "assistant", content: canned.text, segs: parseRich(canned.text, base), links: canned.links, followUps: cannedFollow, offline })
 
+        setPending(true)
         let bot: Message
         if (!api) {
+            await new Promise((r) => setTimeout(r, reduce ? 0 : 320))
+            if (conv !== convRef.current) return
             bot = cannedMsg(false)
         } else {
-            setPending(true)
             const r = await askApi(history)
             if (conv !== convRef.current) return // chat was reset mid-flight
-            setPending(false)
             bot = r
-                ? { id: ++idRef.current, role: "assistant", content: r.reply, links: linksFor(r.reply), followUps: r.followUps.length ? r.followUps : offlineFollowUps(canned.topic) }
+                ? { id: ++idRef.current, role: "assistant", content: r.reply, segs: parseRich(r.reply, base), links: linksFor(r.reply), followUps: r.followUps.length ? r.followUps : cannedFollow }
                 : cannedMsg(true)
         }
+        setPending(false)
         commit([...messagesRef.current, bot])
+        if (!reduce) setTyping({ id: bot.id, n: 0 })
         setAnnounce("DhwaniGPT: " + bot.content)
     }
 
     const pick = (it: IndexItem) => { setSearchQ(""); send(it.query) }
-    const openSearch = () => {
-        setMode((m) => (m === "search" ? "chat" : "search"))
-        setTimeout(() => (mode === "search" ? inputRef.current : searchRef.current)?.focus(), 50)
+    const toggleSearch = () => {
+        const next = mode === "search" ? "chat" : "search"
+        setMode(next)
+        setTimeout(() => (next === "chat" ? inputRef.current : searchRef.current)?.focus(), 50)
     }
 
     const typeAhead = useMemo(() => (mode === "chat" && !pending && input.trim().length >= 2 ? searchIndex(input, 3) : []), [input, mode, pending])
@@ -491,23 +743,39 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
     const ease = [0.16, 1, 0.3, 1] as [number, number, number, number]
     const dur = reduce ? 0 : 0.22
 
-    // Oct 3 redesign ("this whole ui is ugly"): quiet, editorial. One accent moment (the orb +
-    // send button), neutral surfaces, no numbered chips, no Hindi badge, no orange outlines.
+    // Theme: --db-* tokens from the site, with light/dark fallbacks if a token is missing.
+    const T = {
+        glass: "var(--g-glass)",
+        glassLine: "var(--g-glass-line)",
+        surface: "var(--g-surface)",
+        text: "var(--g-text)",
+        text2: "var(--g-text-2)",
+        line: "var(--g-line)",
+        shadow: "var(--g-shadow)",
+        accent: "var(--g-accent)",
+        onAccent: "var(--g-on-accent)",
+    }
     const css = `
-.dbgpt, .dbgpt button, .dbgpt input, .dbgpt a { font-family: ${FONT}; -webkit-font-smoothing: antialiased; }
+.dbgpt { --g-glass: var(--db-glass, rgba(14,14,14,0.9)); --g-glass-line: var(--db-glass-line, rgba(255,255,255,0.10)); --g-surface: var(--db-surface, rgba(255,255,255,0.05)); --g-text: var(--db-text, #FAFAFA); --g-text-2: var(--db-text-2, #A3A3A3); --g-line: var(--db-line, rgba(255,255,255,0.12)); --g-shadow: var(--db-shadow, 0 24px 64px -16px rgba(0,0,0,0.6)); --g-accent: var(--db-accent, ${accentFallback}); --g-on-accent: var(--db-on-accent, #0A0A0A); }
+@media (prefers-color-scheme: light) { .dbgpt { --g-glass: var(--db-glass, rgba(255,255,255,0.92)); --g-glass-line: var(--db-glass-line, rgba(0,0,0,0.08)); --g-surface: var(--db-surface, rgba(0,0,0,0.04)); --g-text: var(--db-text, #0A0A0A); --g-text-2: var(--db-text-2, #555555); --g-line: var(--db-line, rgba(0,0,0,0.12)); --g-shadow: var(--db-shadow, 0 24px 64px -20px rgba(0,0,0,0.25)); --g-on-accent: var(--db-on-accent, #FFFFFF); } }
+.dbgpt, .dbgpt button, .dbgpt input, .dbgpt textarea, .dbgpt a { font-family: ${FONT}; -webkit-font-smoothing: antialiased; }
+.dbgpt *, .dbgpt *::before, .dbgpt *::after { box-sizing: border-box; }
 .dbgpt button:focus-visible, .dbgpt a:focus-visible { outline: 2px solid ${T.accent}; outline-offset: 2px; }
+.dbgpt-field { transition: border-color .18s ease, box-shadow .18s ease; }
 .dbgpt-field:focus-within { border-color: color-mix(in srgb, ${T.accent} 55%, ${T.line}); box-shadow: 0 0 0 3px color-mix(in srgb, ${T.accent} 16%, transparent); }
-.dbgpt-field input:focus { outline: none; }
-.dbgpt-field input::placeholder { color: ${T.text2}; opacity: 1; }
-.dbgpt-chip { transition: background .18s ease, border-color .18s ease, color .18s ease; }
-.dbgpt-chip:hover { background: ${T.line}; color: ${T.text}; }
-.dbgpt-ghost { transition: background .18s ease, color .18s ease; }
-.dbgpt-ghost:hover, .dbgpt-ghost[aria-pressed="true"] { background: ${T.line}; color: ${T.text}; }
-.dbgpt-result { transition: background .18s ease; }
-.dbgpt-result:hover { background: ${T.line}; }
+.dbgpt-field input:focus, .dbgpt-field textarea:focus { outline: none; }
+.dbgpt-field input::placeholder, .dbgpt-field textarea::placeholder { color: ${T.text2}; opacity: 1; }
+.dbgpt-chip, .dbgpt-starter, .dbgpt-ghost, .dbgpt-result, .dbgpt-src { transition: background .18s ease, border-color .18s ease, color .18s ease; }
+.dbgpt-chip:hover, .dbgpt-starter:hover { background: ${T.surface}; border-color: color-mix(in srgb, ${T.accent} 40%, ${T.line}); color: ${T.text}; }
+.dbgpt-starter:hover .dbgpt-arrow { transform: translateX(2px); color: ${T.accent}; }
+.dbgpt-arrow { transition: transform .18s ease, color .18s ease; }
+.dbgpt-ghost:hover, .dbgpt-ghost[aria-pressed="true"] { background: ${T.surface}; color: ${T.text}; }
+.dbgpt-result:hover { background: ${T.surface}; }
+.dbgpt-src:hover { border-color: color-mix(in srgb, ${T.accent} 50%, ${T.line}); color: ${T.text}; }
 .dbgpt-launch { transition: transform .2s ease, border-color .2s ease; }
 .dbgpt-launch:hover { transform: translateY(-1px); border-color: color-mix(in srgb, ${T.accent} 45%, ${T.glassLine}); }
-.dbgpt-link:hover { text-decoration: underline !important; text-underline-offset: 3px; }
+.dbgpt-msg a { color: ${T.text}; text-decoration: underline; text-decoration-color: color-mix(in srgb, ${T.accent} 70%, transparent); text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+.dbgpt-msg a:hover { text-decoration-color: ${T.accent}; }
 .dbgpt-orb { background: radial-gradient(circle at 30% 30%, var(--vibe-c, #FFD27A), var(--vibe-b, ${T.accent}) 55%, var(--vibe-a, #8A2A04)); }
 @keyframes dbgpt-pulse { 0%,100% { transform: scale(1); opacity: .9 } 50% { transform: scale(1.08); opacity: 1 } }
 .dbgpt-orb-live { animation: dbgpt-pulse 3.2s ease-in-out infinite; }
@@ -516,27 +784,56 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
 @keyframes dbgpt-dot { 0%, 80%, 100% { opacity: .25 } 40% { opacity: 1 } }
 .dbgpt-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: ${T.text2}; animation: dbgpt-dot 1.2s ease-in-out infinite; }
 .dbgpt-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-.dbgpt-log { scrollbar-width: none; }
-.dbgpt-log::-webkit-scrollbar { width: 0; }
+.dbgpt-log { scrollbar-width: thin; scrollbar-color: ${T.line} transparent; overscroll-behavior: contain; }
+.dbgpt-chip { min-height: 36px; }
+@media (pointer: coarse) { .dbgpt-chip { min-height: 44px; } }
 @media (max-width: 520px) {
-  .dbgpt-panel { left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100% !important; height: min(88dvh, 100dvh) !important; border-radius: 20px 20px 0 0 !important; padding-bottom: env(safe-area-inset-bottom); }
+  .dbgpt-panel { inset: 0 !important; width: 100% !important; height: 100% !important; max-height: none !important; border-radius: 0 !important; border: 0 !important; }
+  .dbgpt-head { padding-top: max(10px, env(safe-area-inset-top)) !important; }
+  .dbgpt-compose { padding-bottom: max(10px, env(safe-area-inset-bottom)) !important; }
+  .dbgpt-compose textarea { font-size: 16px !important; }
 }
-@media (prefers-reduced-motion: reduce) { .dbgpt-chip, .dbgpt-launch, .dbgpt-ghost, .dbgpt-result { transition: none; } .dbgpt-launch:hover { transform: none; } .dbgpt-caret, .dbgpt-orb-live, .dbgpt-dot { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .dbgpt-chip, .dbgpt-starter, .dbgpt-launch, .dbgpt-ghost, .dbgpt-result, .dbgpt-src, .dbgpt-arrow, .dbgpt-field { transition: none; } .dbgpt-launch:hover { transform: none; } .dbgpt-caret, .dbgpt-orb-live, .dbgpt-dot { animation: none; } }
 `
 
     const Orb = ({ size, live }: { size: number; live?: boolean }) => (
         <span aria-hidden="true" className={"dbgpt-orb" + (live && !reduce ? " dbgpt-orb-live" : "")} style={{ display: "inline-block", flexShrink: 0, width: size, height: size, borderRadius: "50%", boxShadow: "0 0 0 1px " + T.line + ", 0 4px 14px color-mix(in srgb, " + T.accent + " 30%, transparent)" }} />
     )
-    const Icon = ({ d }: { d: string }) => (
-        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
+    const Icon = ({ d, size = 16 }: { d: string; size?: number }) => (
+        <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
     )
     const CLOSE = "M6 6l12 12M18 6L6 18"
     const NEW = "M12 5v14M5 12h14"
     const SEARCH = "M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14zM20 20l-4-4"
-    const ghost: CSSProperties = { width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: 0, background: "transparent", color: T.text2, cursor: "pointer", display: "grid", placeItems: "center" }
-    const chip: CSSProperties = { minHeight: 44, padding: "0 14px", border: "1px solid " + T.line, borderRadius: 999, background: "transparent", color: T.text2, fontSize: 13, fontWeight: 500, cursor: "pointer", textAlign: "left" }
+    const ghost: CSSProperties = { width: 40, height: 40, flexShrink: 0, borderRadius: 10, border: 0, background: "transparent", color: T.text2, cursor: "pointer", display: "grid", placeItems: "center" }
+    const chip: CSSProperties = { padding: "6px 12px", border: "1px solid " + T.line, borderRadius: 999, background: "transparent", color: T.text2, fontSize: 13, lineHeight: 1.35, fontWeight: 500, cursor: "pointer", textAlign: "left" }
     const canSend = !!input.trim() && !pending
-    const last = messages[messages.length - 1]
+    const lastMsg = messages[messages.length - 1]
+
+    const onLinkClick = (href: string) => (e: { preventDefault: () => void }) => {
+        if (href === CONNECT && scrollToConnect()) {
+            e.preventDefault()
+            if (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(max-width: 520px)").matches) close()
+        }
+    }
+    const renderSegs = (segs: Seg[], limit?: number): ReactNode[] => {
+        const out: ReactNode[] = []
+        let left = limit === undefined ? Infinity : limit
+        segs.forEach((s, i) => {
+            if (left <= 0) return
+            const t = s.t.length > left ? s.t.slice(0, left) : s.t
+            left -= t.length
+            if (s.href) {
+                out.push(
+                    <a key={i} href={s.href} onClick={onLinkClick(s.href)} {...(s.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                        {t}
+                        {s.external && <span className="dbgpt-sr"> (opens in a new tab)</span>}
+                    </a>
+                )
+            } else out.push(<span key={i}>{t}</span>)
+        })
+        return out
+    }
 
     // Render into <body> on the live site so the fixed launcher is never clipped by Framer wrappers.
     const [mounted, setMounted] = useState(false)
@@ -555,6 +852,7 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
         }
     }, [isCanvas])
     const live: CSSProperties = { pointerEvents: "auto" }
+
     const ui = (
         <div className="dbgpt" style={{ fontFamily: FONT, ...(isCanvas ? { position: "relative", width: "100%", height: "100%", minWidth: 220, minHeight: 160 } : { pointerEvents: "none" }) }}>
             <style>{css}</style>
@@ -576,9 +874,9 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <span className="dbgpt-sr">{GREETING_TEXT}</span>
                             <p aria-hidden="true" style={{ margin: 0, minHeight: 42, color: T.text, fontSize: 14, lineHeight: 1.5 }}>{typed}<i className="dbgpt-caret" /></p>
-                            <button type="button" onClick={openPanel} className="dbgpt-chip" style={{ ...chip, marginTop: 10, color: T.text }}>Start the tour</button>
+                            <button type="button" onClick={openPanel} className="dbgpt-chip" style={{ ...chip, marginTop: 10, color: T.text, minHeight: 40 }}>Start the tour</button>
                         </div>
-                        <button type="button" aria-label="Dismiss greeting" onClick={() => setGreetVisible(false)} className="dbgpt-ghost" style={ghost}><Icon d={CLOSE} /></button>
+                        <button type="button" aria-label="Dismiss greeting" onClick={() => setGreetVisible(false)} className="dbgpt-ghost" style={{ ...ghost, width: 44, height: 44 }}><Icon d={CLOSE} /></button>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -600,7 +898,7 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                 </button>
             )}
 
-            {/* Screen-reader announcements for new bot messages. */}
+            {/* Screen-reader announcements for new bot messages (full text, not the typing effect). */}
             <div className="dbgpt-sr" role="status" aria-live="polite" aria-atomic="true">{open ? announce : ""}</div>
 
             {/* ── Panel ────────────────────────────────────────────────── */}
@@ -617,20 +915,19 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={reduce ? { opacity: 0 } : { opacity: 0, y: 10, scale: 0.98, transition: { duration: 0.15 } }}
                         transition={{ duration: dur, ease }}
-                        style={{ ...live, position: pos, right: 12, bottom: 12, zIndex: 2147480002, width: "min(400px, calc(100vw - 24px))", height: "min(600px, calc(100dvh - 24px))", display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 20, background: T.glass, border: "1px solid " + T.glassLine, boxShadow: T.shadow, backdropFilter: "blur(28px) saturate(140%)", WebkitBackdropFilter: "blur(28px) saturate(140%)", color: T.text, boxSizing: "border-box", transformOrigin: "bottom right" }}
+                        style={{ ...live, position: pos, right: 12, bottom: 12, zIndex: 2147480002, width: "min(420px, calc(100vw - 24px))", height: "min(660px, calc(100dvh - 24px))", display: "flex", flexDirection: "column", overflow: "hidden", borderRadius: 20, background: T.glass, border: "1px solid " + T.glassLine, boxShadow: T.shadow, backdropFilter: "blur(28px) saturate(140%)", WebkitBackdropFilter: "blur(28px) saturate(140%)", color: T.text, boxSizing: "border-box", transformOrigin: "bottom right" }}
                     >
                         {/* Header */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 6px 10px 16px", flexShrink: 0 }}>
-                            <Orb size={30} live />
-                            <div style={{ flex: 1, minWidth: 0, marginLeft: 4 }}>
-                                <h2 id="dbgpt-title" style={{ margin: 0, fontSize: 15, fontWeight: 600, letterSpacing: "-0.01em", color: T.text }}>DhwaniGPT</h2>
-                                <p style={{ margin: "1px 0 0", fontSize: 12, color: T.text2 }}>{mode === "search" ? "Search the portfolio" : "Answers from her portfolio"}</p>
+                        <div className="dbgpt-head" style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 8px 10px 16px", flexShrink: 0, borderBottom: "1px solid " + T.line }}>
+                            <Orb size={28} live />
+                            <div style={{ flex: 1, minWidth: 0, marginLeft: 6 }}>
+                                <h2 id="dbgpt-title" style={{ margin: 0, fontSize: 15, fontWeight: 600, letterSpacing: "-0.01em", color: T.text, lineHeight: 1.3 }}>DhwaniGPT</h2>
+                                <p style={{ margin: 0, fontSize: 12, color: T.text2, lineHeight: 1.4 }}>{mode === "search" ? "Search the portfolio" : "Answers from her case studies"}</p>
                             </div>
-                            <button type="button" aria-label="Search the portfolio" aria-pressed={mode === "search"} title="Search the portfolio" onClick={openSearch} className="dbgpt-ghost" style={ghost}><Icon d={SEARCH} /></button>
+                            <button type="button" aria-label="Search the portfolio" aria-pressed={mode === "search"} title="Search the portfolio" onClick={toggleSearch} className="dbgpt-ghost" style={ghost}><Icon d={SEARCH} /></button>
                             <button type="button" aria-label="New chat" title="New chat" onClick={reset} className="dbgpt-ghost" style={ghost}><Icon d={NEW} /></button>
                             <button type="button" aria-label="Close chat" title="Close (Esc)" onClick={close} className="dbgpt-ghost" style={ghost}><Icon d={CLOSE} /></button>
                         </div>
-                        <div aria-hidden="true" style={{ height: 1, background: T.line, flexShrink: 0 }} />
 
                         {mode === "search" ? (
                             /* Search mode */
@@ -664,33 +961,71 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                             </div>
                         ) : (
                             /* Conversation */
-                            <div ref={logRef} className="dbgpt-log" role="region" aria-label="Conversation" style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "20px 16px 8px", display: "flex", flexDirection: "column", gap: 18 }}>
-                                <Bubble role="assistant" T={T}>{welcome}</Bubble>
-                                {messages.length === 0 && (
-                                    <div role="group" aria-label="Suggested questions" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                                        {SUGGESTIONS.map((s) => (
-                                            <button key={s.n} type="button" className="dbgpt-chip" onClick={() => send(s.query)} style={chip}>{s.label}</button>
-                                        ))}
-                                        <button type="button" className="dbgpt-chip" onClick={openSearch} style={chip}>Search the portfolio</button>
+                            <div
+                                ref={logRef}
+                                className="dbgpt-log"
+                                role="region"
+                                aria-label="Conversation"
+                                onScroll={(e) => { const el = e.currentTarget; stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 48 }}
+                                style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "18px 16px 8px", display: "flex", flexDirection: "column", gap: 18 }}
+                            >
+                                {messages.length === 0 ? (
+                                    /* Empty state */
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 18, paddingTop: 4 }}>
+                                        <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                                            <span style={{ paddingTop: 2 }}><Orb size={22} /></span>
+                                            <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.6, color: T.text, maxWidth: "36em" }}>{welcome}</p>
+                                        </div>
+                                        <div role="group" aria-labelledby="dbgpt-starters" style={{ display: "grid", gap: 8 }}>
+                                            <p id="dbgpt-starters" style={{ margin: "0 0 2px", fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: T.text2 }}>Common questions</p>
+                                            {STARTERS.map((s) => (
+                                                <button key={s} type="button" className="dbgpt-starter" onClick={() => send(s, true)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, width: "100%", minHeight: 48, padding: "10px 14px", border: "1px solid " + T.line, borderRadius: 12, background: "transparent", color: T.text, fontSize: 14, fontWeight: 500, lineHeight: 1.4, cursor: "pointer", textAlign: "left" }}>
+                                                    <span>{s}</span>
+                                                    <span aria-hidden="true" className="dbgpt-arrow" style={{ color: T.text2, flexShrink: 0 }}>→</span>
+                                                </button>
+                                            ))}
+                                            <button type="button" onClick={toggleSearch} className="dbgpt-chip" style={{ ...chip, justifySelf: "start", border: 0, padding: "6px 2px", textDecoration: "underline", textUnderlineOffset: 3 }}>Or search the portfolio</button>
+                                        </div>
                                     </div>
+                                ) : (
+                                    messages.map((m) => {
+                                        const isTyping = typing?.id === m.id
+                                        const done = !isTyping
+                                        return (
+                                            <motion.div key={m.id} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduce ? 0 : 0.2 }} style={{ display: "grid", gap: 8, alignSelf: m.role === "user" ? "flex-end" : "stretch", justifyItems: m.role === "user" ? "end" : "start", maxWidth: m.role === "user" ? "82%" : "100%" }}>
+                                                <span className="dbgpt-sr">{m.role === "user" ? "You said:" : "DhwaniGPT said:"}</span>
+                                                {m.role === "user" ? (
+                                                    <p style={{ margin: 0, padding: "9px 14px", borderRadius: "16px 16px 4px 16px", background: T.surface, border: "1px solid " + T.line, color: T.text, fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{m.content}</p>
+                                                ) : (
+                                                    <p className="dbgpt-msg" aria-hidden={isTyping ? true : undefined} style={{ margin: 0, color: T.text, fontSize: 14.5, lineHeight: 1.65, whiteSpace: "pre-wrap", wordBreak: "break-word", maxWidth: "36em" }}>
+                                                        {renderSegs(m.segs, isTyping ? typing?.n : undefined)}
+                                                        {isTyping && <i className="dbgpt-caret" />}
+                                                    </p>
+                                                )}
+                                                {done && !!m.links?.length && (
+                                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                                                        {m.links.map((l) => (
+                                                            <a key={l.href} className="dbgpt-src" href={l.href} onClick={onLinkClick(l.href)} {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})} style={{ display: "inline-flex", alignItems: "center", gap: 6, minHeight: 32, padding: "4px 10px", borderRadius: 8, border: "1px solid " + T.line, color: T.text2, fontSize: 12.5, fontWeight: 500, textDecoration: "none" }}>
+                                                                {/case study$/.test(l.label) && <span style={{ color: T.text2 }}>Source ·</span>}
+                                                                <span style={{ color: T.text }}>{l.label}</span>
+                                                                <span aria-hidden="true">{l.external ? "↗" : "→"}</span>
+                                                                {l.external && <span className="dbgpt-sr"> (opens in a new tab)</span>}
+                                                            </a>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                {done && m.offline && <span style={{ fontSize: 11, color: T.text2 }}>Offline mode · canned answer</span>}
+                                                {done && m === lastMsg && m.role === "assistant" && !pending && !!m.followUps?.length && (
+                                                    <div role="group" aria-label="Suggested follow-up questions" style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 2 }}>
+                                                        {m.followUps.map((f) => (
+                                                            <button key={f} type="button" className="dbgpt-chip" onClick={() => send(f, true)} style={chip}>{f}</button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </motion.div>
+                                        )
+                                    })
                                 )}
-                                {messages.map((m) => (
-                                    <motion.div key={m.id} initial={reduce ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduce ? 0 : 0.2 }} style={{ display: "grid", gap: 4, alignSelf: m.role === "user" ? "flex-end" : "stretch", justifyItems: m.role === "user" ? "end" : "start", maxWidth: m.role === "user" ? "85%" : "100%" }}>
-                                        <span className="dbgpt-sr">{m.role === "user" ? "You said:" : "DhwaniGPT said:"}</span>
-                                        <Bubble role={m.role} T={T}>{m.content}</Bubble>
-                                        {m.links?.map((l) => (
-                                            <a key={l.href} className="dbgpt-link" href={l.href} {...(l.external ? { target: "_blank", rel: "noopener noreferrer" } : {})} style={{ display: "inline-flex", alignItems: "center", minHeight: 44, color: T.text, fontSize: 13, fontWeight: 500, textDecoration: "underline", textDecorationColor: "color-mix(in srgb, " + T.accent + " 60%, transparent)", textUnderlineOffset: 3 }}>{l.label}</a>
-                                        ))}
-                                        {m.offline && <span style={{ fontSize: 11, color: T.text2 }}>Offline mode · canned answer</span>}
-                                        {m === last && m.role === "assistant" && !pending && !!m.followUps?.length && (
-                                            <div role="group" aria-label="Follow-up questions" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}>
-                                                {m.followUps.map((f) => (
-                                                    <button key={f} type="button" className="dbgpt-chip" onClick={() => send(f)} style={chip}>{f}</button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </motion.div>
-                                ))}
                                 {pending && (
                                     <div aria-hidden="true" style={{ display: "flex", gap: 5, padding: "6px 0" }}>
                                         <i className="dbgpt-dot" /><i className="dbgpt-dot" style={{ animationDelay: ".15s" }} /><i className="dbgpt-dot" style={{ animationDelay: ".3s" }} />
@@ -699,8 +1034,8 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                             </div>
                         )}
 
-                        {/* Input: always available */}
-                        <form onSubmit={(e) => { e.preventDefault(); send(input) }} style={{ padding: "8px 12px 10px", flexShrink: 0 }}>
+                        {/* Composer: always available */}
+                        <form className="dbgpt-compose" onSubmit={(e) => { e.preventDefault(); send(input) }} style={{ padding: "8px 12px 10px", flexShrink: 0, borderTop: "1px solid " + T.line }}>
                             {typeAhead.length > 0 && (
                                 <div role="group" aria-label="Matching topics" style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
                                     {typeAhead.map((it) => (
@@ -710,14 +1045,29 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
                                     ))}
                                 </div>
                             )}
-                            <label htmlFor="dbgpt-in" className="dbgpt-sr">Ask about Dhwani</label>
-                            <div className="dbgpt-field" style={{ display: "flex", alignItems: "center", gap: 6, padding: "2px 2px 2px 14px", borderRadius: 14, border: "1px solid " + T.line, background: T.surface, transition: "border-color .18s ease, box-shadow .18s ease" }}>
-                                <input id="dbgpt-in" ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} onFocus={() => mode === "search" && setMode("chat")} placeholder={messages.length ? "Ask a follow-up…" : "Ask about a project…"} maxLength={600} autoComplete="off" enterKeyHint="send" style={{ flex: 1, minWidth: 0, height: 44, border: 0, background: "transparent", color: T.text, fontSize: 15, caretColor: T.accent }} />
-                                <button type="submit" disabled={!canSend} aria-label="Send" style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: 0, display: "grid", placeItems: "center", background: canSend ? T.accent : T.line, color: canSend ? T.onAccent : T.text2, cursor: canSend ? "pointer" : "default", transition: "background .18s ease, color .18s ease" }}>
+                            <label htmlFor="dbgpt-in" className="dbgpt-sr">Ask about Dhwani. Enter sends, Shift+Enter adds a new line.</label>
+                            <div className="dbgpt-field" style={{ display: "flex", alignItems: "flex-end", gap: 6, padding: "4px 4px 4px 14px", borderRadius: 14, border: "1px solid " + T.line, background: T.surface }}>
+                                <textarea
+                                    id="dbgpt-in"
+                                    ref={inputRef}
+                                    rows={1}
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onFocus={() => mode === "search" && setMode("chat")}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(input) }
+                                    }}
+                                    placeholder={messages.length ? "Ask a follow-up…" : "Ask about her work…"}
+                                    maxLength={600}
+                                    autoComplete="off"
+                                    enterKeyHint="send"
+                                    style={{ flex: 1, minWidth: 0, minHeight: 40, maxHeight: 120, padding: "10px 0", border: 0, background: "transparent", color: T.text, fontSize: 15, lineHeight: 1.35, caretColor: T.accent, resize: "none", overflowY: "auto" }}
+                                />
+                                <button type="submit" disabled={!canSend} aria-label="Send" style={{ width: 40, height: 40, flexShrink: 0, borderRadius: 10, border: 0, display: "grid", placeItems: "center", background: canSend ? T.accent : T.line, color: canSend ? T.onAccent : T.text2, cursor: canSend ? "pointer" : "default", transition: reduce ? "none" : "background .18s ease, color .18s ease" }}>
                                     <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
                                 </button>
                             </div>
-                            <p style={{ margin: "8px 0 0", color: T.text2, fontSize: 11, textAlign: "center" }}>Automated, not Dhwani. I’m a bot and I can get things wrong (lol). Nothing is saved.</p>
+                            <p style={{ margin: "8px 0 0", color: T.text2, fontSize: 11, lineHeight: 1.4, textAlign: "center" }}>Automated, not Dhwani. Answers come from her portfolio and can still be wrong. Nothing is saved.</p>
                         </form>
                     </motion.section>
                 )}
@@ -728,18 +1078,9 @@ export default function DhwaniGPT({ accentColor, greeting, casePath, showGreetin
     return <div ref={hostRef} style={{ width: 1, height: 1, pointerEvents: "none" }}>{mounted && typeof document !== "undefined" ? createPortal(ui, document.body) : null}</div>
 }
 
-function Bubble({ role, T, children }: { role: "user" | "assistant"; T: Record<string, string>; children: ReactNode }) {
-    const user = role === "user"
-    return user ? (
-        <p style={{ margin: 0, padding: "9px 14px", borderRadius: "16px 16px 4px 16px", background: T.line, color: T.text, fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{children}</p>
-    ) : (
-        <p style={{ margin: 0, color: T.text, fontSize: 14.5, lineHeight: 1.6, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{children}</p>
-    )
-}
-
 addPropertyControls(DhwaniGPT, {
-    apiUrl: { type: ControlType.String, title: "API URL", defaultValue: "", placeholder: "https://<your-app>.vercel.app/api/dhwanigpt", description: "Leave empty for offline canned answers. Set to the deployed /api/dhwanigpt route to use Claude." },
-    casePath: { type: ControlType.String, title: "Case pages live at", defaultValue: "/projects/" },
+    apiUrl: { type: ControlType.String, title: "API URL", defaultValue: "", placeholder: "https://<your-app>.vercel.app/api/dhwanigpt", description: "Leave empty for offline answers from her case studies. Set to the deployed /api/dhwanigpt route to use Claude." },
+    casePath: { type: ControlType.String, title: "Case pages live at", defaultValue: "/work/" },
     showGreeting: { type: ControlType.Boolean, title: "Show greeting", defaultValue: true },
     greeting: { type: ControlType.String, title: "Welcome Message", defaultValue: "", placeholder: "Hey! I’m DhwaniGPT, an automated assistant…", displayTextArea: true },
     accentColor: { type: ControlType.Color, title: "Accent fallback", defaultValue: "#F3500F", description: "Used only if --db-accent isn’t set." },
