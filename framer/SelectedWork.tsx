@@ -1,4 +1,4 @@
-// SelectedWork v4 — "work reel". Dhwani (Oct 2): "look at the cards and scroll on this"
+// SelectedWork v5 — "work reel" (v5: impact line leads every card, see IMPACT below). Dhwani (Oct 2): "look at the cards and scroll on this"
 // (brandonux.design): a pinned section where scrolling down moves the project cards sideways,
 // with a 01/06 counter and ← → arrows. Each card: media, title, one result line, tags, 2–3 blunt
 // lines, "Read the study". Plus: Prime Video is NDA, no fake numbers, super accessible, light mode.
@@ -41,6 +41,8 @@ type Card = {
     video?: string
     image?: { src: string; alt?: string }
     nda?: boolean
+    impact?: string
+    impactLabel?: string
     mediaFit?: "section" | Fit
     mediaAspect?: string
 }
@@ -82,6 +84,27 @@ const DEFAULT_CARDS: Card[] = [
     { title: "Open Library · Internet Archive", result: "Open Library changed the product", tags: "Research, Multilingual, Accessibility", body: "Readers couldn't tell what a non-English scan offered. I ran the research and pushed three recommendations. Open Library added clearer feedback and context for international books.", link: "/work/openlibrary", cta: "Read the study" },
     { title: "BudgetCart · UMSI", result: "Concept", tags: "Grocery, AI, Budgeting", body: "Shoppers find out they're over budget at the register. BudgetCart shows what fits before checkout, with an AI-built cart.", link: "/work/budgetcart", cta: "Read the study" },
 ]
+
+// v5 (Oct 10: "the IMPACT front and center on the case study cards only"): each card leads with its
+// impact line, big, above the media. Set "Impact" on a card to write your own; left empty, the card uses
+// the verified line below (from src/content/cases.ts + Dhwani's confirmed notes), else its Result.
+// Only real outcomes or an honest status. No invented numbers. Prime Video stays NDA wording only.
+const IMPACT: Array<{ match: RegExp; label: string; text: string }> = [
+    { match: /briefs/i, label: "Status", text: "Prototype + PRD handed off to DPSS" },
+    { match: /intel/i, label: "Impact", text: "In use by the Intelligence Group" },
+    { match: /convoy|general motors/i, label: "Tested", text: "3 usability tests in a 3D-printed truck cab" },
+    { match: /prime video/i, label: "Status", text: "Under NDA. Walkthrough on request" },
+    { match: /open library/i, label: "Impact", text: "After our research, Open Library improved feedback and context for international books" },
+    { match: /budgetcart/i, label: "Status", text: "Prototype tested on core tasks. Not a live service" },
+]
+function impactFor(c: Card): { label: string; text: string } {
+    const own = (c.impact || "").trim()
+    if (own) return { label: (c.impactLabel || "").trim() || "Impact", text: own }
+    if (c.nda) return { label: "Status", text: "Under NDA. Walkthrough on request" }
+    const hit = IMPACT.find((m) => m.match.test(c.title || ""))
+    if (hit) return { label: hit.label, text: hit.text }
+    return { label: (c.impactLabel || "").trim() || "Status", text: (c.result || "").trim() || "Case study" }
+}
 
 function pad(n: number) {
     return n < 10 ? "0" + n : String(n)
@@ -379,6 +402,12 @@ export default function SelectedWork(props: Props) {
         .sw-link:hover .sw-num, .sw-link:focus-visible .sw-num { -webkit-text-stroke-color: color-mix(in srgb, var(--db-accent, #F3500F) 55%, transparent); transform: translateY(-4px); }
         .sw-title { font-size: 15px; font-weight: 500; color: var(--db-text-2, rgba(255,255,255,.6)); margin: 0; padding-right: 2.6em; }
         .sw-result { font-size: clamp(24px, 2.4vw, 30px); line-height: 1.15; letter-spacing: -.02em; font-weight: 700; margin: 0; }
+        .sw-impact { position: relative; z-index: 1; padding: 10px 10px 2px; display: flex; flex-direction: column; gap: 8px; }
+        .sw-impact-label { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: 12.5px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--db-accent, #F3500F); }
+        .sw-impact-dot { width: 7px; height: 7px; border-radius: 4px; background: var(--db-accent, #F3500F); flex-shrink: 0; }
+        .sw-impact-text { margin: 0; font-size: clamp(26px, 2.7vw, 36px); line-height: 1.1; letter-spacing: -.025em; font-weight: 700; color: var(--db-text, #fff); text-wrap: balance; max-width: 22ch; }
+        .sw-stack .sw-impact-text { font-size: clamp(24px, 7vw, 32px); }
+        .sw-status { margin: -4px 0 0; font-size: 14px; font-weight: 500; color: var(--db-text-2, rgba(255,255,255,.6)); }
         .sw-tags { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
         .sw-tag { font-size: 12.5px; font-weight: 500; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--db-line, rgba(255,255,255,.15)); background: color-mix(in srgb, var(--db-text, #fff) 4%, transparent); color: var(--db-text-2, rgba(255,255,255,.6));
             transition: opacity .45s ease, transform .5s cubic-bezier(.2,.8,.2,1), border-color .25s ease, color .25s ease; transition-delay: calc(var(--i, 0) * 70ms + 80ms); }
@@ -402,13 +431,20 @@ export default function SelectedWork(props: Props) {
 
     const cardEls = list.map((c, i) => {
         const fit: Fit = c.mediaFit === "cover" || c.mediaFit === "contain" ? c.mediaFit : mediaFit === "contain" ? "contain" : "cover"
+        const imp = impactFor(c)
+        const status = (c.result || "").trim()
+        const showStatus = !!status && status.toLowerCase() !== imp.text.toLowerCase()
         const inner = (
             <>
+                <div className="sw-impact">
+                    <p className="sw-impact-label"><span className="sw-impact-dot" aria-hidden="true" />{imp.label}</p>
+                    <h3 className="sw-impact-text">{imp.text}</h3>
+                </div>
                 <CardMedia card={c} fit={fit} aspect={c.mediaAspect || "16 / 10"} autoPlay={autoPlay} />
                 <div className="sw-body">
                     <span className="sw-num" aria-hidden="true">{pad(i + 1)}</span>
                     <p className="sw-title">{c.title}</p>
-                    <h3 className="sw-result">{c.result}</h3>
+                    {showStatus && <p className="sw-status">{status}</p>}
                     <ul className="sw-tags" aria-label="Topics">
                         {(c.tags || "")
                             .split(",")
@@ -423,7 +459,7 @@ export default function SelectedWork(props: Props) {
                 </div>
             </>
         )
-        const label = `${c.title}. ${c.result}. ${c.cta}`
+        const label = `${c.title}. ${imp.label}: ${imp.text}. ${c.cta}`
         const href = c.link ? fixLink(c.link) : c.nda ? ndaLink : ""
         return (
             <li key={c.title + i} data-i={i} className={`sw-card${c.nda ? " sw-nda" : ""}${seen[i] ? " is-in" : ""}`}>
@@ -514,6 +550,8 @@ addPropertyControls(SelectedWork, {
             type: ControlType.Object,
             controls: {
                 title: { type: ControlType.String, title: "Project · Org", defaultValue: "Project · Org" },
+                impact: { type: ControlType.String, title: "Impact (big, first)", defaultValue: "", description: "Leave empty to use the verified line for this project. Real outcomes or honest status only." },
+                impactLabel: { type: ControlType.String, title: "Impact label", defaultValue: "", placeholder: "Impact / Status / Tested" },
                 result: { type: ControlType.String, title: "Result", defaultValue: "Result" },
                 tags: { type: ControlType.String, title: "Tags (commas)", defaultValue: "" },
                 body: { type: ControlType.String, title: "2–3 lines", displayTextArea: true, defaultValue: "" },

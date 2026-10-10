@@ -11,6 +11,7 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from "react"
  *    Light mode lowers their opacity.
  *  • A Figma-style "dhwani" cursor tag floats gently near the headline (accent coloured).
  * Reduced motion: no breathing, no floating. The decorative layers never catch clicks.
+ * Oct 10: the section carries id="hiring" (Anchor ID) so the nav's "connect" (/#hiring) lands here.
  *
  * @framerIntrinsicWidth 1200
  * @framerSupportedLayoutWidth any-prefer-fixed
@@ -27,6 +28,7 @@ type Props = {
     showCursor: boolean
     cursorLabel: string
     glow: number
+    anchorId: string
     style?: CSSProperties
 }
 
@@ -76,6 +78,7 @@ export default function ConnectBand(props: Props) {
         showCursor = true,
         cursorLabel = "dhwani",
         glow = 1,
+        anchorId = "hiring",
         style,
     } = props
 
@@ -138,6 +141,7 @@ export default function ConnectBand(props: Props) {
     return (
         <section
             className="cb-root"
+            id={anchorId ? anchorId : undefined}
             aria-labelledby="cb-heading"
             style={{
                 position: "relative",
@@ -322,6 +326,7 @@ ConnectBand.defaultProps = {
     showCursor: true,
     cursorLabel: "dhwani",
     glow: 1,
+    anchorId: "hiring",
 }
 
 addPropertyControls(ConnectBand, {
@@ -340,4 +345,5 @@ addPropertyControls(ConnectBand, {
     showCursor: { type: ControlType.Boolean, title: "Cursor tag", defaultValue: true },
     cursorLabel: { type: ControlType.String, title: "Cursor label", defaultValue: "dhwani", hidden: (p: any) => !p.showCursor },
     glow: { type: ControlType.Number, title: "Glow", min: 0, max: 1.5, step: 0.05, defaultValue: 1 },
+    anchorId: { type: ControlType.String, title: "Anchor ID", defaultValue: "hiring", description: "Nav links to /#hiring land here." },
 })

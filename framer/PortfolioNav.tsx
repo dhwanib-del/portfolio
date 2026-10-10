@@ -1,4 +1,4 @@
-// PortfolioNav v12: Dhwani's site nav + site-wide theme layer. Placed directly on each page (no
+// PortfolioNav v13 (Oct 10: AI Lab tab, connect → Home hiring band with header offset). v12: Dhwani's site nav + site-wide theme layer. Placed directly on each page (no
 // NavBar wrapper) — Oct 2: "make the navbar component completely separate… don't overlap it".
 // Light mode (Oct 2–3: "make all components RESPOND to light and dark mode, every single element
 // must"): follows the visitor's OS; the sun/moon button overrides it and remembers the choice
@@ -48,11 +48,25 @@ const DEFAULT_TABS: Tab[] = [
     { label: "home", href: "/" },
     { label: "about me", href: "/about-me" },
     { label: "work", href: "/#work" },
-    { label: "play", href: "/lab" },
-    { label: "connect", href: "/#contact" },
+    { label: "AI Lab", href: "/lab" },
+    { label: "connect", href: "/#hiring" },
 ]
+// Oct 10 ("move my game to ai lab and make the play section ai lab — connect needs to take people to
+// hiring for product section"): "play" is now "AI Lab" (/lab) and "connect" lands on Home's hiring band
+// (ConnectBand, wrapped in a layer named "hiring"). Instances that still carry the old links in their
+// Links list are upgraded here too, so every page's nav agrees without re-editing each instance.
+function upgradeTab(t: Tab): Tab {
+    const label = String((t && t.label) || "").trim()
+    const href = String((t && t.href) || "").trim()
+    if (/^play$/i.test(label)) return { label: "AI Lab", href: "/lab" }
+    if (/^connect$/i.test(label) && (href === "" || /^\/?#contact$/.test(href))) return { label, href: "/#hiring" }
+    return t
+}
+// Scroll targets sit under the fixed nav pill: leave room for it.
+const HEADER_OFFSET = { wide: 96, narrow: 80 }
 const SECTION_TEXT: Record<string, string[]> = {
     contact: ["send a signal.", "send a signal"],
+    hiring: ["hiring for product, ux or experience design"],
     work: ["selected work"],
 }
 
@@ -487,7 +501,7 @@ function findSection(id: string): HTMLElement | null {
         const nodes = document.querySelectorAll<HTMLElement>("h1, h2, h3, p")
         for (let i = 0; i < nodes.length; i++) {
             const t = (nodes[i].textContent || "").trim().toLowerCase()
-            if (texts.indexOf(t) !== -1 && isVisible(nodes[i])) {
+            if (texts.some((x) => t === x || t.startsWith(x)) && isVisible(nodes[i])) {
                 let el: HTMLElement | null = nodes[i]
                 while (el && el.parentElement && el.getBoundingClientRect().width < window.innerWidth * 0.5) el = el.parentElement
                 return el || nodes[i]
@@ -527,7 +541,7 @@ function ThemeIcon({ theme }: { theme: Theme }) {
  */
 export default function PortfolioNav(props: Props) {
     const { tabs = DEFAULT_TABS, breakpoint = 810, showLights = true, showAsk = true, showTheme = true, brand = "dhwani", vibeGlow = true, fontSize = 15, tabHeight = 40, tabPadding = 16 } = props
-    const list = tabs && tabs.length ? tabs : DEFAULT_TABS
+    const list = React.useMemo(() => (tabs && tabs.length ? tabs : DEFAULT_TABS).map(upgradeTab), [tabs])
     const onCanvas = RenderTarget.current() === RenderTarget.canvas
     const me = useRef(Symbol("nav")).current
     const [mounted, setMounted] = useState(false)
@@ -691,6 +705,11 @@ export default function PortfolioNav(props: Props) {
         }
     }, [open]) // eslint-disable-line
 
+    const scrollToSection = (el: HTMLElement, smooth: boolean) => {
+        const off = narrow ? HEADER_OFFSET.narrow : HEADER_OFFSET.wide
+        const top = el.getBoundingClientRect().top + window.scrollY - off
+        window.scrollTo({ top: Math.max(0, top), behavior: smooth ? "smooth" : "auto" })
+    }
     const close = (refocus = false) => {
         startTransition(() => setOpen(false))
         if (refocus) setTimeout(() => btnRef.current?.focus(), 0)
@@ -710,7 +729,7 @@ export default function PortfolioNav(props: Props) {
         if (!target) return
         e.preventDefault()
         close()
-        target.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" })
+        scrollToSection(target, !reduced)
         try {
             window.history.replaceState(null, "", "#" + hash)
         } catch {}
@@ -722,7 +741,7 @@ export default function PortfolioNav(props: Props) {
         if (!hash) return
         const t = window.setTimeout(() => {
             const target = findSection(hash)
-            if (target) target.scrollIntoView({ block: "start", behavior: "auto" })
+            if (target) scrollToSection(target, false)
         }, 300)
         return () => window.clearTimeout(t)
     }, [mounted, active])
