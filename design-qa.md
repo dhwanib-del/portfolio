@@ -1,5 +1,14 @@
 # Live portfolio replication QA
 
+## October 10: Restore About gallery movement
+
+- [x] Added slow automatic horizontal drift with gentle direction reversal at the ends; all 15 originals remain interactive without duplicate tiles.
+- [x] Pause on hover, keyboard focus, touch/mouse interaction, open photo dialog, hidden tab or offscreen gallery. Manual pause/resume provided; reduced motion disables drift.
+- [x] Animation updates the scroll position through requestAnimationFrame without per-frame React state. Resize/visibility observers and animation frames are cleaned up.
+- [x] Changed-file ESLint, production build, check-gallery-drift.mjs and the existing check-about-world.mjs passed, including both themes at five widths and photo/dialog/playlist/shuffle behavior.
+
+Motion reproduction: BASE_URL=http://127.0.0.1:3020 node scripts/check-gallery-drift.mjs with the site running.
+
 ## October 9: Curved About gallery implementation
 
 - [x] Implemented approved curved-wall concept with concise introduction and designer/DJ/off-the-clock controls.

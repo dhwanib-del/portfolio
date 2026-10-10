@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import photos from "@/content/gallery.json"
 import styles from "./AboutWorld.module.css"
 
@@ -20,12 +20,24 @@ const notes = {
   dj: {title:"Still learning this one.",body:"I’m learning to DJ. My playlist is another place I like to experiment.",href:"#playlist",link:"Open my playlist ↓"},
   off: {title:"A few frames from my world.",body:"Travel, music, food and the little things outside the canvas.",href:"/lab",link:"Take a detour through AI Lab ↗"},
 }
+function subscribeMotion(callback:()=>void) {
+  const media=window.matchMedia("(prefers-reduced-motion: reduce)")
+  media.addEventListener("change",callback)
+  return ()=>media.removeEventListener("change",callback)
+}
+const getMotionPreference=()=>window.matchMedia("(prefers-reduced-motion: reduce)").matches
+const getServerMotionPreference=()=>true
 
 export function AboutWorld() {
   const [side,setSide] = useState<Side>("off")
   const [order,setOrder] = useState(photos)
   const [opened,setOpened] = useState<Photo | "world" | null>(null)
   const [announcement,setAnnouncement] = useState("")
+  const [paused,setPaused] = useState(false)
+  const reducedMotion=useSyncExternalStore(subscribeMotion,getMotionPreference,getServerMotionPreference)
+  const hovering=useRef(false)
+  const focusing=useRef(false)
+  const interactionUntil=useRef(0)
   const rail = useRef<HTMLDivElement>(null)
   const dialog = useRef<HTMLDialogElement>(null)
   const drag = useRef<{x:number;left:number;moved:boolean} | null>(null)
@@ -35,7 +47,33 @@ export function AboutWorld() {
     if(opened && !dialog.current?.open) dialog.current?.showModal()
   },[opened])
 
+  useEffect(()=>{
+    const el=rail.current
+    if(!el || paused || reducedMotion || opened) return
+    let frame=0,last=performance.now(),position=el.scrollLeft,direction=1,visible=false
+    let max=Math.max(0,el.scrollWidth-el.clientWidth)
+    const resize=new ResizeObserver(()=>{max=Math.max(0,el.scrollWidth-el.clientWidth)})
+    resize.observe(el)
+    if(el.firstElementChild)resize.observe(el.firstElementChild)
+    const visibility=new IntersectionObserver(([entry])=>{visible=entry.isIntersecting})
+    visibility.observe(el)
+    const tick=(now:number)=>{
+      const dt=Math.min((now-last)/1000,.05)
+      last=now
+      if(visible && !document.hidden && !hovering.current && !focusing.current && now>interactionUntil.current && max>0){
+        position+=direction*22*dt
+        if(position>=max){position=max;direction=-1}
+        if(position<=0){position=0;direction=1}
+        el.scrollLeft=position
+      }else position=el.scrollLeft
+      frame=requestAnimationFrame(tick)
+    }
+    frame=requestAnimationFrame(tick)
+    return ()=>{cancelAnimationFrame(frame);resize.disconnect();visibility.disconnect()}
+  },[paused,reducedMotion,opened])
+
   function shuffle() {
+    interactionUntil.current=performance.now()+1500
     setOrder(current=>{
       const next=[...current]
       for(let i=next.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[next[i],next[j]]=[next[j],next[i]]}
@@ -65,6 +103,7 @@ export function AboutWorld() {
       <p className={styles.pick}>Pick a side of me</p>
       <div className={styles.sides} role="group" aria-label="Explore a side of Dhwani">{sides.map(s=><button type="button" key={s.id} aria-pressed={side===s.id} onClick={()=>{
         setSide(s.id)
+        interactionUntil.current=performance.now()+1800
         const title=s.id==="dj"?"DJ":s.id==="designer"?"Graduated from Michigan State University":null
         const target=title?rail.current?.querySelector<HTMLButtonElement>(`button[aria-label="Enlarge photo: ${title}"]`):null
         if(target && rail.current) rail.current.scrollTo({left:Math.max(0,target.offsetLeft-rail.current.clientWidth/2+target.clientWidth/2),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'})
@@ -74,14 +113,19 @@ export function AboutWorld() {
     </div>
     <div className={styles.wall}>
       <div ref={rail} className={styles.rail} tabIndex={0} aria-label="Photo wall. Swipe, drag with a mouse, or use arrow keys to explore. Select a photo to enlarge."
+        onPointerEnter={()=>{hovering.current=true}}
+        onPointerLeave={()=>{hovering.current=false;if(drag.current && !drag.current.moved){drag.current=null;interactionUntil.current=performance.now()+1500}}}
+        onFocusCapture={()=>{focusing.current=true}}
+        onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node | null))focusing.current=false}}
+        onWheel={()=>{interactionUntil.current=performance.now()+1500}}
         onKeyDown={e=>{if(e.target!==e.currentTarget)return;if(e.key==="ArrowRight" || e.key==="ArrowLeft"){e.preventDefault();e.currentTarget.scrollLeft+=e.key==="ArrowRight"?220:-220}}}
-        onPointerDown={e=>{if(e.pointerType!=="mouse"||e.button!==0)return;drag.current={x:e.clientX,left:e.currentTarget.scrollLeft,moved:false}}}
+        onPointerDown={e=>{interactionUntil.current=Infinity;if(e.pointerType!=="mouse"||e.button!==0)return;drag.current={x:e.clientX,left:e.currentTarget.scrollLeft,moved:false}}}
         onPointerMove={e=>{const d=drag.current;if(!d)return;const dx=e.clientX-d.x;if(Math.abs(dx)>8){d.moved=true;e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.scrollLeft=d.left-dx}}}
-        onPointerUp={()=>{if(drag.current && !drag.current.moved)drag.current=null}}
-        onPointerCancel={()=>{drag.current=null}}
+        onPointerUp={()=>{interactionUntil.current=performance.now()+1500;if(drag.current && !drag.current.moved)drag.current=null}}
+        onPointerCancel={()=>{interactionUntil.current=performance.now()+1500;drag.current=null}}
         onClickCapture={e=>{if(drag.current?.moved){e.preventDefault();e.stopPropagation()}drag.current=null}}
         ><div className={styles.grid}>{order.map(tile)}</div></div>
-      <div className={styles.controls}><span>Drag to wander · tap to look closer</span><div><button type="button" onClick={shuffle}>Shuffle the wall ↻</button><button type="button" onClick={()=>setOpened("world")}>Open my world ↗</button></div></div>
+      <div className={styles.controls}><span>{reducedMotion?"Motion off · drag to explore":"Slow drift · hover to pause"}</span><div>{!reducedMotion && <button type="button" aria-pressed={paused} onClick={()=>setPaused(value=>!value)}>{paused?"Resume drift ▷":"Pause drift Ⅱ"}</button>}<button type="button" onClick={shuffle}>Shuffle the wall ↻</button><button type="button" onClick={()=>setOpened("world")}>Open my world ↗</button></div></div>
       <span className="sr-only" role="status">{announcement}</span>
     </div>
     <dialog ref={dialog} className={styles.dialog} onClose={()=>setOpened(null)} onClick={e=>{if(e.target===e.currentTarget)dialog.current?.close()}} aria-labelledby="world-dialog-title">
