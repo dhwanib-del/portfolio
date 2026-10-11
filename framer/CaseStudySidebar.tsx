@@ -210,7 +210,10 @@ function countWords(article: HTMLElement, self: HTMLElement | null): Reading {
         if (el.parentElement && el.parentElement.closest(PROSE)) return // counted by its outer block
         const host = el.closest<HTMLElement>("details, [data-framer-name^='§deep' i]")
         const isDeep = !!host && article.contains(host)
-        if (isDeep ? !visible(host) : !visible(el)) return
+        // Count only text that is actually rendered (skips hidden layers and other breakpoints'
+        // copies). Text inside a closed <details> still counts toward the deeper read.
+        const inClosedDetails = !!el.closest("details:not([open])")
+        if (!visible(el) && !(inClosedDetails && host && visible(host))) return
         const words = (el.textContent || "").trim().split(/\s+/).filter(Boolean).length
         if (isDeep) deep += words
         else main += words
@@ -667,7 +670,7 @@ export default function CaseStudySidebar(props: Props) {
         : words === 0
           ? ""
           : reading.deep > 0
-            ? `~${mainMin} min main story · ~${allMin} min deeper read`
+            ? `~${mainMin} min read · +${Math.max(1, Math.round(reading.deep / WPM))} min deeper read`
             : `~${allMin} min read`
     const showRT = showReadingTime && readingTimePlacement !== "none" && !!readingLabel
 

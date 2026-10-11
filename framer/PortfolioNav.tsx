@@ -22,7 +22,13 @@
 // Oct 4: light mode also darkens very light, low-saturation logo images (layer or alt named
 // "logo", e.g. the white GM mark) so they don't vanish on the light background.
 import * as React from "react"
-import { startTransition, useEffect, useRef, useState, type CSSProperties } from "react"
+import {
+    startTransition,
+    useEffect,
+    useRef,
+    useState,
+    type CSSProperties,
+} from "react"
 import { createPortal } from "react-dom"
 import { addPropertyControls, ControlType, RenderTarget } from "framer"
 
@@ -48,7 +54,7 @@ const DEFAULT_TABS: Tab[] = [
     { label: "home", href: "/" },
     { label: "about me", href: "/about-me" },
     { label: "work", href: "/#work" },
-    { label: "AI Lab", href: "/lab" },
+    { label: "ai lab", href: "/lab" },
     { label: "connect", href: "/#hiring" },
 ]
 // Oct 10 ("move my game to ai lab and make the play section ai lab — connect needs to take people to
@@ -58,8 +64,9 @@ const DEFAULT_TABS: Tab[] = [
 function upgradeTab(t: Tab): Tab {
     const label = String((t && t.label) || "").trim()
     const href = String((t && t.href) || "").trim()
-    if (/^play$/i.test(label)) return { label: "AI Lab", href: "/lab" }
-    if (/^connect$/i.test(label) && (href === "" || /^\/?#contact$/.test(href))) return { label, href: "/#hiring" }
+    if (/^(play|ai lab)$/i.test(label)) return { label: "ai lab", href: "/lab" }
+    if (/^connect$/i.test(label) && (href === "" || /^\/?#contact$/.test(href)))
+        return { label, href: "/#hiring" }
     return t
 }
 // Scroll targets sit under the fixed nav pill: leave room for it.
@@ -74,8 +81,16 @@ const LIGHT = `--db-bg:#FFFFFF;--db-surface:#EEEEEE;--db-surface-2:#E0E0E0;--db-
 const DARK = `--db-bg:#000000;--db-surface:#111111;--db-surface-2:#1F1F1F;--db-text:#FFFFFF;--db-text-2:rgba(255,255,255,0.6);--db-line:rgba(255,255,255,0.1);--db-glass:rgba(18,18,18,0.82);--db-glass-line:rgba(255,255,255,0.10);--db-shadow:0 18px 40px -18px rgba(0,0,0,0.9);--db-accent:var(--vibe-accent,#F3500F);--db-on-accent:#0A0A0A;--db-glow-blend:screen;--db-glow-opacity:0.55;--db-aurora-opacity:1;color-scheme:dark;`
 const LIGHT_VIBES = `[data-vibe="goblue"]{--db-accent:#0369A1}[data-vibe="nightshift"]{--db-accent:#5B3FD6}[data-vibe="afterhours"]{--db-accent:#C2185B}[data-vibe="greenroom"]{--db-accent:#854D0E}`
 const L = `:root[data-db-theme="light"]`
-const whiteSel = ["rgb(255, 255, 255)", "rgb(250, 250, 250)", "rgb(245, 245, 245)", "rgb(245, 245, 243)"]
-    .flatMap((c) => [`${L} [style*="--framer-text-color:${c}"]`, `${L} [style*="--framer-text-color: ${c}"]`])
+const whiteSel = [
+    "rgb(255, 255, 255)",
+    "rgb(250, 250, 250)",
+    "rgb(245, 245, 245)",
+    "rgb(245, 245, 243)",
+]
+    .flatMap((c) => [
+        `${L} [style*="--framer-text-color:${c}"]`,
+        `${L} [style*="--framer-text-color: ${c}"]`,
+    ])
     .join(",")
 const FIXES = `
 ${whiteSel}{--framer-text-color:var(--db-text) !important}
@@ -88,14 +103,16 @@ const THEME_CSS = `
 :root{${DARK}}
 ${L}, ${L} body, ${L} #main{background:var(--db-bg) !important}
 :root[data-db-theme="light"]{${LIGHT}}
-:root[data-db-theme="light"]${LIGHT_VIBES.replace(/\}\[/g, "}:root[data-db-theme=\"light\"][")}
+:root[data-db-theme="light"]${LIGHT_VIBES.replace(/\}\[/g, '}:root[data-db-theme="light"][')}
 ${FIXES}
 `
 const ACCENT = "var(--db-accent, #F3500F)"
 
 function systemTheme(): Theme {
     if (typeof window === "undefined") return "dark"
-    return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"
+    return window.matchMedia("(prefers-color-scheme: light)").matches
+        ? "light"
+        : "dark"
 }
 function savedTheme(): Theme | null {
     try {
@@ -107,7 +124,11 @@ function savedTheme(): Theme | null {
 }
 
 // ---- Framer color styles: read both value sets from the page CSS, pin the chosen one ----
-type TokenSet = { sel: Set<string>; light: Record<string, string>; dark: Record<string, string> }
+type TokenSet = {
+    sel: Set<string>
+    light: Record<string, string>
+    dark: Record<string, string>
+}
 const OWN = ["db-theme-pin", "db-auto-theme"]
 function eachRule(fn: (rule: CSSStyleRule, mode: Theme | null) => void) {
     if (typeof document === "undefined") return
@@ -116,8 +137,14 @@ function eachRule(fn: (rule: CSSStyleRule, mode: Theme | null) => void) {
             const r = rules[i] as any
             if (r.type === 1) fn(r as CSSStyleRule, mode)
             else if (r.type === 4) {
-                const c = String(r.conditionText || (r.media && r.media.mediaText) || "")
-                const m: Theme | null = /prefers-color-scheme:\s*dark/.test(c) ? "dark" : /prefers-color-scheme:\s*light/.test(c) ? "light" : mode
+                const c = String(
+                    r.conditionText || (r.media && r.media.mediaText) || ""
+                )
+                const m: Theme | null = /prefers-color-scheme:\s*dark/.test(c)
+                    ? "dark"
+                    : /prefers-color-scheme:\s*light/.test(c)
+                      ? "light"
+                      : mode
                 walk(r.cssRules, m)
             } else if (r.cssRules) walk(r.cssRules, mode)
         }
@@ -148,8 +175,14 @@ function readTokens(): TokenSet {
             else if (!(p in out.light) || mode === "light") out.light[p] = v
         }
         if (has) {
-            const base = (rule.selectorText || "body").replace(/:not\([^)]*\)/g, "").replace(/\[data-framer-theme[^\]]*\]/g, "").trim()
-            base.split(",").forEach((s) => { const t = s.trim(); if (t) out.sel.add(t) })
+            const base = (rule.selectorText || "body")
+                .replace(/:not\([^)]*\)/g, "")
+                .replace(/\[data-framer-theme[^\]]*\]/g, "")
+                .trim()
+            base.split(",").forEach((s) => {
+                const t = s.trim()
+                if (t) out.sel.add(t)
+            })
         }
     })
     return out
@@ -178,14 +211,27 @@ function pinTokens(theme: Theme) {
 // ---- Auto-theme: remap hand-picked dark-mode colors on Framer layers for light mode ----
 type RGBA = { r: number; g: number; b: number; a: number }
 function parseColor(v: string): RGBA | null {
-    const m = v.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)/)
+    const m = v.match(
+        /rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)/
+    )
     if (m) {
-        const a = m[4] === undefined ? 1 : m[4].endsWith("%") ? parseFloat(m[4]) / 100 : parseFloat(m[4])
+        const a =
+            m[4] === undefined
+                ? 1
+                : m[4].endsWith("%")
+                  ? parseFloat(m[4]) / 100
+                  : parseFloat(m[4])
         return { r: +m[1], g: +m[2], b: +m[3], a }
     }
     const h = v.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)
     if (h) {
-        const s = h[1].length === 3 ? h[1].split("").map((c) => c + c).join("") : h[1]
+        const s =
+            h[1].length === 3
+                ? h[1]
+                      .split("")
+                      .map((c) => c + c)
+                      .join("")
+                : h[1]
         const n = parseInt(s, 16)
         return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255, a: 1 }
     }
@@ -193,35 +239,56 @@ function parseColor(v: string): RGBA | null {
     if (/^\s*(black)\s*$/i.test(v)) return { r: 0, g: 0, b: 0, a: 1 }
     return null
 }
-const isWhiteish = (c: RGBA) => Math.min(c.r, c.g, c.b) >= 225 && Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b) < 20
-const isBlackish = (c: RGBA, lim: number) => Math.max(c.r, c.g, c.b) <= lim && Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b) < 16
+const isWhiteish = (c: RGBA) =>
+    Math.min(c.r, c.g, c.b) >= 225 &&
+    Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b) < 20
+const isBlackish = (c: RGBA, lim: number) =>
+    Math.max(c.r, c.g, c.b) <= lim &&
+    Math.max(c.r, c.g, c.b) - Math.min(c.r, c.g, c.b) < 16
 function mapBg(c: RGBA): string | null {
     if (c.a >= 0.5 && isBlackish(c, 14)) return "var(--db-bg)"
     if (c.a >= 0.5 && isBlackish(c, 30)) return "var(--db-surface)"
     if (c.a >= 0.5 && isBlackish(c, 56)) return "var(--db-surface-2)"
-    if (c.a > 0 && c.a < 0.35 && isWhiteish(c)) return `rgba(0,0,0,${Math.min(0.12, c.a * 1.2).toFixed(3)})`
-    if (c.a > 0 && c.a < 0.5 && isBlackish(c, 30)) return `rgba(255,255,255,${c.a.toFixed(3)})`
+    if (c.a > 0 && c.a < 0.35 && isWhiteish(c))
+        return `rgba(0,0,0,${Math.min(0.12, c.a * 1.2).toFixed(3)})`
+    if (c.a > 0 && c.a < 0.5 && isBlackish(c, 30))
+        return `rgba(255,255,255,${c.a.toFixed(3)})`
     return null
 }
 function mapText(c: RGBA): string | null {
     if (!isWhiteish(c)) return null
-    return c.a >= 0.85 ? "var(--db-text)" : `rgba(10,10,10,${Math.max(0.62, c.a).toFixed(3)})`
+    return c.a >= 0.85
+        ? "var(--db-text)"
+        : `rgba(10,10,10,${Math.max(0.62, c.a).toFixed(3)})`
 }
 function mapLine(c: RGBA): string | null {
-    if (isWhiteish(c) && c.a < 0.6) return `rgba(0,0,0,${Math.max(0.1, c.a).toFixed(3)})`
+    if (isWhiteish(c) && c.a < 0.6)
+        return `rgba(0,0,0,${Math.max(0.1, c.a).toFixed(3)})`
     if (isWhiteish(c)) return "var(--db-text)"
     return null
 }
 const BG_PROPS = ["background-color"]
 const TEXT_PROPS = ["color", "--framer-text-color", "fill", "stroke"]
-const LINE_PROPS = ["border-color", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "--border-color", "outline-color"]
+const LINE_PROPS = [
+    "border-color",
+    "border-top-color",
+    "border-right-color",
+    "border-bottom-color",
+    "border-left-color",
+    "--border-color",
+    "outline-color",
+]
 let autoCache = ""
 function autoTheme() {
     if (typeof document === "undefined") return
     const out: string[] = []
     eachRule((rule) => {
         const sel = rule.selectorText || ""
-        if (sel.indexOf("framer-") === -1 || /data-db|dbnav|data-csnav/.test(sel)) return
+        if (
+            sel.indexOf("framer-") === -1 ||
+            /data-db|dbnav|data-csnav/.test(sel)
+        )
+            return
         const st = rule.style
         const decls: string[] = []
         const handle = (props: string[], map: (c: RGBA) => string | null) => {
@@ -238,7 +305,10 @@ function autoTheme() {
         handle(TEXT_PROPS, mapText)
         handle(LINE_PROPS, mapLine)
         if (!decls.length) return
-        const scoped = sel.split(",").map((s) => `${L} ${s.trim()}`).join(",")
+        const scoped = sel
+            .split(",")
+            .map((s) => `${L} ${s.trim()}`)
+            .join(",")
         out.push(`${scoped}{${decls.join(";")}}`)
     })
     const css = out.join("\n")
@@ -248,37 +318,67 @@ function autoTheme() {
 }
 
 // ---- v12 DOM pass: flip what is actually painted, independent of stylesheet access ----
-const SKIP = "img,video,canvas,svg,picture,iframe,[data-dbnav],[data-dbnav] *,[data-db-keep],[data-db-keep] *"
+const SKIP =
+    "img,video,canvas,svg,picture,iframe,[data-dbnav],[data-dbnav] *,[data-db-keep],[data-db-keep] *"
 function rgbaOf(v: string): RGBA | null {
     if (!v || v === "transparent") return null
     return parseColor(v)
+}
+const flipOriginals = new WeakMap<
+    HTMLElement,
+    Record<string, [string, string]>
+>()
+function rememberFlip(el: HTMLElement, props: string[]) {
+    const original = flipOriginals.get(el) || {}
+    for (const p of props) {
+        if (!(p in original))
+            original[p] = [
+                el.style.getPropertyValue(p),
+                el.style.getPropertyPriority(p),
+            ]
+    }
+    flipOriginals.set(el, original)
 }
 function unflip() {
     if (typeof document === "undefined") return
     document.querySelectorAll<HTMLElement>("[data-db-flip]").forEach((el) => {
         const k = el.getAttribute("data-db-flip") || ""
-        if (k.indexOf("b") !== -1) el.style.removeProperty("background-color")
-        if (k.indexOf("t") !== -1) {
-            el.style.removeProperty("color")
-            el.style.removeProperty("--framer-text-color")
+        const original = flipOriginals.get(el)
+        const props = [
+            ...(k.includes("b") ? ["background-color"] : []),
+            ...(k.includes("t") ? ["color", "--framer-text-color"] : []),
+        ]
+        for (const p of props) {
+            const saved = original?.[p]
+            if (saved?.[0]) el.style.setProperty(p, saved[0], saved[1])
+            else el.style.removeProperty(p)
         }
+        flipOriginals.delete(el)
         el.removeAttribute("data-db-flip")
     })
 }
 function domFlip() {
     if (typeof document === "undefined") return
-    if (document.documentElement.getAttribute("data-db-theme") !== "light") return
+    if (document.documentElement.getAttribute("data-db-theme") !== "light")
+        return
     const root = document.getElementById("main") || document.body
-    const all = root.querySelectorAll<HTMLElement>("*")
+    // Only remap legacy Framer layers; code components own their theme colors.
+    const all = root.querySelectorAll<HTMLElement>(
+        '[class*="framer-"], [style*="--framer-text-color"]'
+    )
     for (let i = 0; i < all.length; i++) {
         const el = all[i]
         if (el.hasAttribute("data-db-flip") || el.matches(SKIP)) continue
+        // Components already using theme variables must keep their reactive styles.
+        if (/var\(--(?:db|g|vibe)-/.test(el.getAttribute("style") || ""))
+            continue
         const cs = getComputedStyle(el)
         let k = ""
         const bg = rgbaOf(cs.backgroundColor)
         if (bg) {
             const m = mapBg(bg)
             if (m) {
+                rememberFlip(el, ["background-color"])
                 el.style.setProperty("background-color", m, "important")
                 k += "b"
             }
@@ -286,10 +386,19 @@ function domFlip() {
         const tc = rgbaOf(cs.color)
         if (tc && isWhiteish(tc) && el.childNodes.length) {
             let hasText = false
-            for (let j = 0; j < el.childNodes.length; j++) if (el.childNodes[j].nodeType === 3 && (el.childNodes[j].textContent || "").trim()) hasText = true
-            if (hasText || /^(H[1-6]|P|SPAN|A|LI|BUTTON|LABEL)$/.test(el.tagName)) {
+            for (let j = 0; j < el.childNodes.length; j++)
+                if (
+                    el.childNodes[j].nodeType === 3 &&
+                    (el.childNodes[j].textContent || "").trim()
+                )
+                    hasText = true
+            if (
+                hasText ||
+                /^(H[1-6]|P|SPAN|A|LI|BUTTON|LABEL)$/.test(el.tagName)
+            ) {
                 const m = mapText(tc)
                 if (m) {
+                    rememberFlip(el, ["color", "--framer-text-color"])
                     el.style.setProperty("color", m, "important")
                     el.style.setProperty("--framer-text-color", m, "important")
                     k += "t"
@@ -304,6 +413,8 @@ let flipTimer = 0
 function watchFlip(on: boolean) {
     if (typeof window === "undefined") return
     if (!on) {
+        if (flipTimer) window.clearTimeout(flipTimer)
+        flipTimer = 0
         if (flipObs) flipObs.disconnect()
         flipObs = null
         return
@@ -313,11 +424,19 @@ function watchFlip(on: boolean) {
         if (flipTimer) return
         flipTimer = window.setTimeout(() => {
             flipTimer = 0
+            if (
+                document.documentElement.getAttribute("data-db-theme") !==
+                "light"
+            )
+                return
             domFlip()
             logoFix()
         }, 400)
     })
-    flipObs.observe(document.getElementById("main") || document.body, { childList: true, subtree: true })
+    flipObs.observe(document.getElementById("main") || document.body, {
+        childList: true,
+        subtree: true,
+    })
 }
 
 // ---- Oct 4: light-mode logo fix ----
@@ -374,7 +493,8 @@ function sampleLogo(src: string, done: (light: boolean) => void) {
                         n++
                     }
                     // needs some transparency, so an opaque white photo/box is never blacked out
-                    if (n > 0 && clear / (n + clear) > 0.03) light = lum / n > 0.82 && sat / n < 0.18
+                    if (n > 0 && clear / (n + clear) > 0.03)
+                        light = lum / n > 0.82 && sat / n < 0.18
                 }
             } catch {}
             done(light)
@@ -409,13 +529,16 @@ function logoOff(el: HTMLElement) {
 function logoUnfix() {
     if (typeof document === "undefined") return
     try {
-        document.querySelectorAll<HTMLElement>(`[${LOGO_ATTR}]`).forEach(logoOff)
+        document
+            .querySelectorAll<HTMLElement>(`[${LOGO_ATTR}]`)
+            .forEach(logoOff)
     } catch {}
 }
 function logoFix() {
     if (typeof document === "undefined") return
     try {
-        if (document.documentElement.getAttribute("data-db-theme") !== "light") return
+        if (document.documentElement.getAttribute("data-db-theme") !== "light")
+            return
         const root = document.getElementById("main") || document.body
         const found: Array<[HTMLElement, string]> = []
         root.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
@@ -423,18 +546,32 @@ function logoFix() {
             const src = img.currentSrc || img.src
             if (src) found.push([img, src])
         })
-        root.querySelectorAll<HTMLElement>("[data-framer-name]").forEach((named) => {
-            if (!/logo/i.test(named.getAttribute("data-framer-name") || "")) return
-            const els = [named, ...Array.from(named.querySelectorAll<HTMLElement>("div, span, a, figure")).slice(0, 24)]
-            els.forEach((el) => {
-                const src = bgUrlOf(el)
-                if (src) found.push([el, src])
-            })
-        })
+        root.querySelectorAll<HTMLElement>("[data-framer-name]").forEach(
+            (named) => {
+                if (!/logo/i.test(named.getAttribute("data-framer-name") || ""))
+                    return
+                const els = [
+                    named,
+                    ...Array.from(
+                        named.querySelectorAll<HTMLElement>(
+                            "div, span, a, figure"
+                        )
+                    ).slice(0, 24),
+                ]
+                els.forEach((el) => {
+                    const src = bgUrlOf(el)
+                    if (src) found.push([el, src])
+                })
+            }
+        )
         found.forEach(([el, src]) => {
             const hit = logoCache[src]
             if (hit === true) return logoOn(el, src)
-            if (el.hasAttribute(LOGO_ATTR) && el.getAttribute(LOGO_ATTR) !== src) logoOff(el)
+            if (
+                el.hasAttribute(LOGO_ATTR) &&
+                el.getAttribute(LOGO_ATTR) !== src
+            )
+                logoOff(el)
             if (hit === false || hit === "pending") return
             logoCache[src] = "pending"
             sampleLogo(src, (light) => {
@@ -466,19 +603,28 @@ function applyTheme(t: Theme | null) {
         logoUnfix()
     }
     try {
-        window.dispatchEvent(new CustomEvent("db-theme", { detail: { theme: resolved } }))
+        window.dispatchEvent(
+            new CustomEvent("db-theme", { detail: { theme: resolved } })
+        )
     } catch {}
 }
 
 function splitHref(href: string) {
     const i = href.indexOf("#")
     if (i === -1) return { page: href.replace(/\/$/, "") || "/", hash: "" }
-    return { page: href.slice(0, i).replace(/\/$/, "") || "/", hash: href.slice(i + 1) }
+    return {
+        page: href.slice(0, i).replace(/\/$/, "") || "/",
+        hash: href.slice(i + 1),
+    }
 }
 function isCurrent(href: string, path: string, activeHash: string) {
     const { page, hash } = splitHref(href)
     if (hash) {
-        if (hash === "work" && (path.startsWith("/work") || path.startsWith("/projects"))) return true
+        if (
+            hash === "work" &&
+            (path.startsWith("/work") || path.startsWith("/projects"))
+        )
+            return true
         return page === path && activeHash === hash
     }
     if (page === "/") return path === "/" && !activeHash
@@ -494,16 +640,29 @@ function findSection(id: string): HTMLElement | null {
     const want = id.toLowerCase()
     const named = document.querySelectorAll<HTMLElement>("[data-framer-name]")
     for (let i = 0; i < named.length; i++) {
-        if ((named[i].getAttribute("data-framer-name") || "").toLowerCase() === want && isVisible(named[i])) return named[i]
+        if (
+            (named[i].getAttribute("data-framer-name") || "").toLowerCase() ===
+                want &&
+            isVisible(named[i])
+        )
+            return named[i]
     }
     const texts = SECTION_TEXT[want]
     if (texts) {
         const nodes = document.querySelectorAll<HTMLElement>("h1, h2, h3, p")
         for (let i = 0; i < nodes.length; i++) {
             const t = (nodes[i].textContent || "").trim().toLowerCase()
-            if (texts.some((x) => t === x || t.startsWith(x)) && isVisible(nodes[i])) {
+            if (
+                texts.some((x) => t === x || t.startsWith(x)) &&
+                isVisible(nodes[i])
+            ) {
                 let el: HTMLElement | null = nodes[i]
-                while (el && el.parentElement && el.getBoundingClientRect().width < window.innerWidth * 0.5) el = el.parentElement
+                while (
+                    el &&
+                    el.parentElement &&
+                    el.getBoundingClientRect().width < window.innerWidth * 0.5
+                )
+                    el = el.parentElement
                 return el || nodes[i]
             }
         }
@@ -515,20 +674,50 @@ let OWNER: symbol | null = null
 
 function Lights() {
     return (
-        <span aria-hidden style={{ display: "inline-flex", gap: 6, padding: "0 4px" }}>
+        <span
+            aria-hidden
+            style={{ display: "inline-flex", gap: 6, padding: "0 4px" }}
+        >
             {["#FF5F57", "#FFBD2E", "#28CA41"].map((c) => (
-                <span key={c} style={{ width: 10, height: 10, borderRadius: 5, background: c }} />
+                <span
+                    key={c}
+                    style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        background: c,
+                    }}
+                />
             ))}
         </span>
     )
 }
 function ThemeIcon({ theme }: { theme: Theme }) {
     return theme === "light" ? (
-        <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+            aria-hidden
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
             <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
         </svg>
     ) : (
-        <svg aria-hidden width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <svg
+            aria-hidden
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+        >
             <circle cx="12" cy="12" r="4" />
             <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
         </svg>
@@ -540,8 +729,24 @@ function ThemeIcon({ theme }: { theme: Theme }) {
  * @framerSupportedLayoutHeight any
  */
 export default function PortfolioNav(props: Props) {
-    const { tabs = DEFAULT_TABS, breakpoint = 810, showLights = true, showAsk = true, showTheme = true, brand = "dhwani", vibeGlow = true, fontSize = 15, tabHeight = 40, tabPadding = 16 } = props
-    const list = React.useMemo(() => (tabs && tabs.length ? tabs : DEFAULT_TABS).map(upgradeTab), [tabs])
+    const {
+        tabs = DEFAULT_TABS,
+        breakpoint = 810,
+        showLights: _showLights = false,
+        showAsk = true,
+        showTheme = true,
+        brand = "dhwani",
+        vibeGlow: _vibeGlow = false,
+        fontSize = 15,
+        tabHeight = 40,
+        tabPadding = 16,
+    } = props
+    const showLights = false
+    const vibeGlow = false
+    const list = React.useMemo(
+        () => (tabs && tabs.length ? tabs : DEFAULT_TABS).map(upgradeTab),
+        [tabs]
+    )
     const onCanvas = RenderTarget.current() === RenderTarget.canvas
     const me = useRef(Symbol("nav")).current
     const [mounted, setMounted] = useState(false)
@@ -589,20 +794,26 @@ export default function PortfolioNav(props: Props) {
         mq.addEventListener("change", on)
         const saved = savedTheme()
         const timers: number[] = []
-        if (!onCanvas) {
+        if (!onCanvas && active) {
             applyTheme(saved)
             // Framer adds stylesheets as the page loads; pin again once they're in.
-            ;[250, 1200, 3000].forEach((ms) => timers.push(window.setTimeout(() => applyTheme(savedTheme()), ms)))
+            ;[250, 1200, 3000].forEach((ms) =>
+                timers.push(
+                    window.setTimeout(() => applyTheme(savedTheme()), ms)
+                )
+            )
         }
         const onReady = () => {
-            if (!onCanvas) applyTheme(savedTheme())
-            startTransition(() => setChatReady((window as any).__dbChatReady === true))
+            if (!onCanvas && active) applyTheme(savedTheme())
+            startTransition(() =>
+                setChatReady((window as any).__dbChatReady === true)
+            )
         }
         window.addEventListener("db-chat-ready", onReady)
         const sys = window.matchMedia("(prefers-color-scheme: light)")
         const onSys = () => {
             if (savedTheme()) return
-            if (!onCanvas) applyTheme(null)
+            if (!onCanvas && active) applyTheme(null)
             startTransition(() => setTheme(systemTheme()))
         }
         sys.addEventListener("change", onSys)
@@ -610,7 +821,9 @@ export default function PortfolioNav(props: Props) {
             setMounted(true)
             setTheme(saved || systemTheme())
             setPath(window.location.pathname.replace(/\/$/, "") || "/")
-            setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+            setReduced(
+                window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            )
             setChatReady((window as any).__dbChatReady === true)
         })
         try {
@@ -624,7 +837,7 @@ export default function PortfolioNav(props: Props) {
                 r.setAttribute("data-vibe", v.id || "")
             }
         } catch {}
-        if (!onCanvas) {
+        if (!onCanvas && active) {
             let el: HTMLElement | null = hostRef.current
             for (let i = 0; el && i < 4; i++) {
                 el.style.pointerEvents = "none"
@@ -639,11 +852,14 @@ export default function PortfolioNav(props: Props) {
             sys.removeEventListener("change", onSys)
             window.removeEventListener("db-chat-ready", onReady)
         }
-    }, [breakpoint, onCanvas])
+    }, [breakpoint, onCanvas, active])
 
     useEffect(() => {
         if (!mounted || !active || typeof window === "undefined") return
-        const hashes = list.map((t) => splitHref(t.href)).filter((h) => h.hash && h.page === path).map((h) => h.hash)
+        const hashes = list
+            .map((t) => splitHref(t.href))
+            .filter((h) => h.hash && h.page === path)
+            .map((h) => h.hash)
         if (!hashes.length) return
         let raf = 0
         const check = () => {
@@ -656,7 +872,11 @@ export default function PortfolioNav(props: Props) {
                 const r = s.getBoundingClientRect()
                 if (r.top <= line && r.bottom > line) found = h
             }
-            if (!found && window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4) {
+            if (
+                !found &&
+                window.innerHeight + window.scrollY >=
+                    document.documentElement.scrollHeight - 4
+            ) {
                 for (const h of hashes) if (findSection(h)) found = h
             }
             startTransition(() => setActiveHash(found))
@@ -687,7 +907,18 @@ export default function PortfolioNav(props: Props) {
         const onKey = (e: KeyboardEvent) => {
             if (e.key === "Escape") return close(true)
             if (e.key !== "Tab") return
-            const nodes = [...Array.from(barRef.current?.querySelectorAll<HTMLElement>("a, button") || []), ...Array.from(sheetRef.current?.querySelectorAll<HTMLElement>("a, button") || [])]
+            const nodes = [
+                ...Array.from(
+                    barRef.current?.querySelectorAll<HTMLElement>(
+                        "a, button"
+                    ) || []
+                ),
+                ...Array.from(
+                    sheetRef.current?.querySelectorAll<HTMLElement>(
+                        "a, button"
+                    ) || []
+                ),
+            ]
             if (!nodes.length) return
             const i = nodes.indexOf(document.activeElement as HTMLElement)
             if (e.shiftKey && i <= 0) {
@@ -708,14 +939,28 @@ export default function PortfolioNav(props: Props) {
     const scrollToSection = (el: HTMLElement, smooth: boolean) => {
         const off = narrow ? HEADER_OFFSET.narrow : HEADER_OFFSET.wide
         const top = el.getBoundingClientRect().top + window.scrollY - off
-        window.scrollTo({ top: Math.max(0, top), behavior: smooth ? "smooth" : "auto" })
+        window.scrollTo({
+            top: Math.max(0, top),
+            behavior: smooth ? "smooth" : "auto",
+        })
     }
     const close = (refocus = false) => {
         startTransition(() => setOpen(false))
         if (refocus) setTimeout(() => btnRef.current?.focus(), 0)
     }
+    useEffect(() => {
+        const sync = (event: Event) => {
+            const next = (event as CustomEvent).detail?.theme
+            if (next === "light" || next === "dark") setTheme(next)
+        }
+        window.addEventListener("db-theme", sync)
+        return () => window.removeEventListener("db-theme", sync)
+    }, [])
+
     const toggleTheme = () => {
-        const next: Theme = theme === "light" ? "dark" : "light"
+        const current =
+            document.documentElement.getAttribute("data-db-theme") || theme
+        const next: Theme = current === "light" ? "dark" : "light"
         try {
             localStorage.setItem("db_theme", next)
         } catch {}
@@ -751,18 +996,30 @@ export default function PortfolioNav(props: Props) {
         if (!target) return
         target.setAttribute("tabindex", "-1")
         target.focus()
-        target.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" })
+        target.scrollIntoView({
+            block: "start",
+            behavior: reduced ? "auto" : "smooth",
+        })
     }
     const askChat = () => {
         close()
         try {
-            window.dispatchEvent(new CustomEvent("db-chat-open", { detail: {} }))
+            window.dispatchEvent(
+                new CustomEvent("db-chat-open", { detail: {} })
+            )
         } catch {}
     }
 
-    const glass: CSSProperties = { background: "var(--db-glass)", backdropFilter: "blur(18px) saturate(140%)", WebkitBackdropFilter: "blur(18px) saturate(140%)", border: "1px solid var(--db-glass-line)", boxShadow: "var(--db-shadow)" }
+    const glass: CSSProperties = {
+        background: "var(--db-glass)",
+        backdropFilter: "none",
+        WebkitBackdropFilter: "none",
+        border: "1px solid var(--db-glass-line)",
+        boxShadow: "var(--db-shadow)",
+    }
     const ease = reduced ? "none" : "background .2s, color .2s"
-    const themeLabel = theme === "light" ? "Switch to dark mode" : "Switch to light mode"
+    const themeLabel =
+        theme === "light" ? "Switch to dark mode" : "Switch to light mode"
 
     const css = (
         <style>{`
@@ -778,29 +1035,127 @@ export default function PortfolioNav(props: Props) {
 
     const themeBtn = (size: number) =>
         showTheme && (
-            <button type="button" className="dbnav-icon" onClick={toggleTheme} aria-label={themeLabel} title={themeLabel} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: size, height: size, borderRadius: 999, border: "none", background: "transparent", color: "var(--db-text-2)", cursor: "pointer", transition: ease, flexShrink: 0 }}>
+            <button
+                type="button"
+                className="dbnav-icon"
+                onClick={toggleTheme}
+                aria-label={themeLabel}
+                title={themeLabel}
+                style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: size,
+                    height: size,
+                    borderRadius: 999,
+                    border: "none",
+                    background: "transparent",
+                    color: "var(--db-text-2)",
+                    cursor: "pointer",
+                    transition: ease,
+                    flexShrink: 0,
+                }}
+            >
                 <ThemeIcon theme={theme} />
             </button>
         )
 
     const pill = (
-        <nav aria-label="Main" style={{ ...glass, display: "flex", alignItems: "center", gap: 6, padding: "6px 8px 6px 14px", borderRadius: 999, fontFamily: FONT }}>
+        <nav
+            aria-label="Main"
+            style={{
+                ...glass,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "6px 8px 6px 14px",
+                borderRadius: 999,
+                fontFamily: FONT,
+            }}
+        >
             {showLights && <Lights />}
-            {showLights && <span aria-hidden style={{ width: 1, height: 18, background: "var(--db-line)", margin: "0 6px" }} />}
-            <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", gap: 2 }}>
+            {showLights && (
+                <span
+                    aria-hidden
+                    style={{
+                        width: 1,
+                        height: 18,
+                        background: "var(--db-line)",
+                        margin: "0 6px",
+                    }}
+                />
+            )}
+            <ul
+                style={{
+                    listStyle: "none",
+                    margin: 0,
+                    padding: 0,
+                    display: "flex",
+                    gap: 2,
+                }}
+            >
                 {list.map((t) => {
                     const cur = isCurrent(t.href, path, activeHash)
                     return (
                         <li key={t.href + t.label}>
-                            <a className="dbnav-tab" href={t.href} onClick={onTabClick(t.href)} aria-current={cur ? "page" : undefined} style={{ position: "relative", display: "inline-flex", alignItems: "center", minHeight: tabHeight, padding: `0 ${tabPadding}px`, borderRadius: 999, color: cur ? "var(--db-text)" : "var(--db-text-2)", background: cur ? "var(--db-line)" : "transparent", textDecoration: "none", fontSize, fontWeight: cur ? 500 : 400, letterSpacing: "0.01em", transition: ease, whiteSpace: "nowrap" }}>
+                            <a
+                                className="dbnav-tab"
+                                href={t.href}
+                                onClick={onTabClick(t.href)}
+                                aria-current={cur ? "page" : undefined}
+                                style={{
+                                    position: "relative",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    minHeight: tabHeight,
+                                    padding: `0 ${tabPadding}px`,
+                                    borderRadius: 999,
+                                    color: cur
+                                        ? "var(--db-text)"
+                                        : "var(--db-text-2)",
+                                    background: cur
+                                        ? "var(--db-line)"
+                                        : "transparent",
+                                    textDecoration: "none",
+                                    fontSize,
+                                    fontWeight: cur ? 500 : 400,
+                                    letterSpacing: "0.01em",
+                                    transition: ease,
+                                    whiteSpace: "nowrap",
+                                }}
+                            >
                                 {t.label}
-                                {cur && <span aria-hidden style={{ position: "absolute", left: "50%", bottom: 5, width: 4, height: 4, marginLeft: -2, borderRadius: 2, background: ACCENT }} />}
+                                {cur && (
+                                    <span
+                                        aria-hidden
+                                        style={{
+                                            position: "absolute",
+                                            left: "50%",
+                                            bottom: 5,
+                                            width: 4,
+                                            height: 4,
+                                            marginLeft: -2,
+                                            borderRadius: 2,
+                                            background: ACCENT,
+                                        }}
+                                    />
+                                )}
                             </a>
                         </li>
                     )
                 })}
             </ul>
-            {showTheme && <span aria-hidden style={{ width: 1, height: 18, background: "var(--db-line)", margin: "0 2px" }} />}
+            {showTheme && (
+                <span
+                    aria-hidden
+                    style={{
+                        width: 1,
+                        height: 18,
+                        background: "var(--db-line)",
+                        margin: "0 2px",
+                    }}
+                />
+            )}
             {themeBtn(tabHeight)}
         </nav>
     )
@@ -815,43 +1170,225 @@ export default function PortfolioNav(props: Props) {
     }
 
     const desktop = (
-        <div data-dbnav="" style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 2147480000 }}>
+        <div
+            data-dbnav=""
+            style={{
+                position: "fixed",
+                top: 20,
+                left: "50%",
+                transform: "translateX(-50%)",
+                zIndex: 2147480000,
+            }}
+        >
             {pill}
         </div>
     )
 
     const phone = (
-        <div data-dbnav="" style={{ position: "fixed", top: 12, left: 12, right: 12, zIndex: 2147480000, fontFamily: FONT }}>
-            {open && <div aria-hidden onClick={() => close()} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: -1 }} />}
-            <div ref={barRef} style={{ ...glass, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, minHeight: 52, padding: "4px 4px 4px 16px", borderRadius: 999 }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+        <div
+            data-dbnav=""
+            style={{
+                position: "fixed",
+                top: 12,
+                left: 12,
+                right: 12,
+                zIndex: 2147480000,
+                fontFamily: FONT,
+            }}
+        >
+            {open && (
+                <div
+                    aria-hidden
+                    onClick={() => close()}
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.45)",
+                        zIndex: -1,
+                    }}
+                />
+            )}
+            <div
+                ref={barRef}
+                style={{
+                    ...glass,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 8,
+                    minHeight: 52,
+                    padding: "4px 4px 4px 16px",
+                    borderRadius: 999,
+                }}
+            >
+                <span
+                    style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 10,
+                        minWidth: 0,
+                    }}
+                >
                     {showLights && <Lights />}
-                    <a href="/" style={{ color: "var(--db-text)", textDecoration: "none", fontSize: 15, fontWeight: 500, whiteSpace: "nowrap", padding: "10px 4px" }}>
+                    <a
+                        href="/"
+                        style={{
+                            color: "var(--db-text)",
+                            textDecoration: "none",
+                            fontSize: 15,
+                            fontWeight: 500,
+                            whiteSpace: "nowrap",
+                            padding: "10px 4px",
+                        }}
+                    >
                         {brand}
                     </a>
                 </span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <span
+                    style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                    }}
+                >
                     {themeBtn(44)}
-                    <button ref={btnRef} type="button" aria-expanded={open} aria-controls="dbnav-sheet" onClick={() => (open ? close(true) : startTransition(() => setOpen(true)))} style={{ display: "inline-flex", alignItems: "center", gap: 8, minHeight: 44, minWidth: 44, padding: "0 16px", borderRadius: 999, border: "1px solid var(--db-glass-line)", background: open ? "var(--db-line)" : "transparent", color: "var(--db-text)", fontFamily: FONT, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
-                        <span aria-hidden style={{ display: "inline-flex", flexDirection: "column", gap: 3 }}>
-                            <span style={{ width: 14, height: 1.5, background: "currentColor", transform: open ? "translateY(2.25px) rotate(45deg)" : "none", transition: reduced ? "none" : "transform .2s" }} />
-                            <span style={{ width: 14, height: 1.5, background: "currentColor", transform: open ? "translateY(-2.25px) rotate(-45deg)" : "none", transition: reduced ? "none" : "transform .2s" }} />
+                    <button
+                        ref={btnRef}
+                        type="button"
+                        aria-expanded={open}
+                        aria-controls="dbnav-sheet"
+                        onClick={() =>
+                            open
+                                ? close(true)
+                                : startTransition(() => setOpen(true))
+                        }
+                        style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 8,
+                            minHeight: 44,
+                            minWidth: 44,
+                            padding: "0 16px",
+                            borderRadius: 999,
+                            border: "1px solid var(--db-glass-line)",
+                            background: open ? "var(--db-line)" : "transparent",
+                            color: "var(--db-text)",
+                            fontFamily: FONT,
+                            fontSize: 14,
+                            fontWeight: 500,
+                            cursor: "pointer",
+                        }}
+                    >
+                        <span
+                            aria-hidden
+                            style={{
+                                display: "inline-flex",
+                                flexDirection: "column",
+                                gap: 3,
+                            }}
+                        >
+                            <span
+                                style={{
+                                    width: 14,
+                                    height: 1.5,
+                                    background: "currentColor",
+                                    transform: open
+                                        ? "translateY(2.25px) rotate(45deg)"
+                                        : "none",
+                                    transition: reduced
+                                        ? "none"
+                                        : "transform .2s",
+                                }}
+                            />
+                            <span
+                                style={{
+                                    width: 14,
+                                    height: 1.5,
+                                    background: "currentColor",
+                                    transform: open
+                                        ? "translateY(-2.25px) rotate(-45deg)"
+                                        : "none",
+                                    transition: reduced
+                                        ? "none"
+                                        : "transform .2s",
+                                }}
+                            />
                         </span>
                         {open ? "close" : "menu"}
                     </button>
                 </span>
             </div>
             {open && (
-                <div id="dbnav-sheet" ref={sheetRef} style={{ ...glass, marginTop: 8, borderRadius: 24, padding: 8, maxHeight: "calc(100vh - 92px)", overflowY: "auto", animation: reduced ? "none" : "dbnav-in .22s ease both" }}>
+                <div
+                    id="dbnav-sheet"
+                    ref={sheetRef}
+                    style={{
+                        ...glass,
+                        marginTop: 8,
+                        borderRadius: 24,
+                        padding: 8,
+                        maxHeight: "calc(100vh - 92px)",
+                        overflowY: "auto",
+                        animation: reduced ? "none" : "dbnav-in .22s ease both",
+                    }}
+                >
                     <nav aria-label="Main">
-                        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                        <ul
+                            style={{ listStyle: "none", margin: 0, padding: 0 }}
+                        >
                             {list.map((t) => {
                                 const cur = isCurrent(t.href, path, activeHash)
                                 return (
                                     <li key={t.href + t.label}>
-                                        <a href={t.href} onClick={(e) => { onTabClick(t.href)(e); close() }} aria-current={cur ? "page" : undefined} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", minHeight: 56, padding: "0 16px", borderRadius: 16, color: cur ? "var(--db-text)" : "var(--db-text-2)", background: cur ? "var(--db-line)" : "transparent", textDecoration: "none", fontSize: 22, fontWeight: cur ? 500 : 400 }}>
+                                        <a
+                                            href={t.href}
+                                            onClick={(e) => {
+                                                onTabClick(t.href)(e)
+                                                close()
+                                            }}
+                                            aria-current={
+                                                cur ? "page" : undefined
+                                            }
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "space-between",
+                                                minHeight: 56,
+                                                padding: "0 16px",
+                                                borderRadius: 16,
+                                                color: cur
+                                                    ? "var(--db-text)"
+                                                    : "var(--db-text-2)",
+                                                background: cur
+                                                    ? "var(--db-line)"
+                                                    : "transparent",
+                                                textDecoration: "none",
+                                                fontSize: 22,
+                                                fontWeight: cur ? 500 : 400,
+                                            }}
+                                        >
                                             {t.label}
-                                            {cur ? <span aria-hidden style={{ width: 8, height: 8, borderRadius: 4, background: ACCENT }} /> : <span aria-hidden style={{ color: "var(--db-text-2)", fontSize: 18 }}>→</span>}
+                                            {cur ? (
+                                                <span
+                                                    aria-hidden
+                                                    style={{
+                                                        width: 8,
+                                                        height: 8,
+                                                        borderRadius: 4,
+                                                        background: ACCENT,
+                                                    }}
+                                                />
+                                            ) : (
+                                                <span
+                                                    aria-hidden
+                                                    style={{
+                                                        color: "var(--db-text-2)",
+                                                        fontSize: 18,
+                                                    }}
+                                                >
+                                                    →
+                                                </span>
+                                            )}
                                         </a>
                                     </li>
                                 )
@@ -859,8 +1396,37 @@ export default function PortfolioNav(props: Props) {
                         </ul>
                     </nav>
                     {showAsk && chatReady && (
-                        <button type="button" onClick={askChat} style={{ marginTop: 6, width: "100%", display: "flex", alignItems: "center", gap: 10, minHeight: 56, padding: "0 16px", borderRadius: 16, border: `1px solid ${ACCENT}`, background: "transparent", color: "var(--db-text)", fontFamily: FONT, fontSize: 16, fontWeight: 500, cursor: "pointer", textAlign: "left" }}>
-                            <span aria-hidden style={{ width: 10, height: 10, borderRadius: 5, background: ACCENT }} />
+                        <button
+                            type="button"
+                            onClick={askChat}
+                            style={{
+                                marginTop: 6,
+                                width: "100%",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 10,
+                                minHeight: 56,
+                                padding: "0 16px",
+                                borderRadius: 16,
+                                border: `1px solid ${ACCENT}`,
+                                background: "transparent",
+                                color: "var(--db-text)",
+                                fontFamily: FONT,
+                                fontSize: 16,
+                                fontWeight: 500,
+                                cursor: "pointer",
+                                textAlign: "left",
+                            }}
+                        >
+                            <span
+                                aria-hidden
+                                style={{
+                                    width: 10,
+                                    height: 10,
+                                    borderRadius: 5,
+                                    background: ACCENT,
+                                }}
+                            />
                             ask about Dhwani
                         </button>
                     )}
@@ -872,9 +1438,51 @@ export default function PortfolioNav(props: Props) {
     const tree = (
         <>
             {vibeGlow && (
-                <div aria-hidden style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 2147479000, mixBlendMode: "var(--db-glow-blend)" as any, opacity: "var(--db-glow-opacity)" as any }}>
-                    <div style={{ position: "absolute", left: "-15vw", top: "-25vh", width: "60vw", height: "60vh", borderRadius: "50%", background: "radial-gradient(closest-side, var(--vibe-b, rgba(243,80,15,.5)), transparent)", filter: "blur(60px)", opacity: 0.45, animation: reduced ? "none" : "dbnav-breathe 9s ease-in-out infinite" }} />
-                    <div style={{ position: "absolute", right: "-20vw", bottom: "-30vh", width: "65vw", height: "65vh", borderRadius: "50%", background: "radial-gradient(closest-side, var(--vibe-a, rgba(255,140,60,.38)), transparent)", filter: "blur(70px)", opacity: 0.35, animation: reduced ? "none" : "dbnav-breathe 11s ease-in-out -4s infinite" }} />
+                <div
+                    aria-hidden
+                    style={{
+                        position: "fixed",
+                        inset: 0,
+                        pointerEvents: "none",
+                        zIndex: 2147479000,
+                        mixBlendMode: "var(--db-glow-blend)" as any,
+                        opacity: "var(--db-glow-opacity)" as any,
+                    }}
+                >
+                    <div
+                        style={{
+                            position: "absolute",
+                            left: "-15vw",
+                            top: "-25vh",
+                            width: "60vw",
+                            height: "60vh",
+                            borderRadius: "50%",
+                            background:
+                                "radial-gradient(closest-side, var(--vibe-b, rgba(243,80,15,.5)), transparent)",
+                            filter: "blur(60px)",
+                            opacity: 0.45,
+                            animation: reduced
+                                ? "none"
+                                : "dbnav-breathe 9s ease-in-out infinite",
+                        }}
+                    />
+                    <div
+                        style={{
+                            position: "absolute",
+                            right: "-20vw",
+                            bottom: "-30vh",
+                            width: "65vw",
+                            height: "65vh",
+                            borderRadius: "50%",
+                            background:
+                                "radial-gradient(closest-side, var(--vibe-a, rgba(255,140,60,.38)), transparent)",
+                            filter: "blur(70px)",
+                            opacity: 0.35,
+                            animation: reduced
+                                ? "none"
+                                : "dbnav-breathe 11s ease-in-out -4s infinite",
+                        }}
+                    />
                 </div>
             )}
             <div data-dbnav="">
@@ -886,23 +1494,97 @@ export default function PortfolioNav(props: Props) {
             {narrow ? phone : desktop}
         </>
     )
-    return <div ref={hostRef} style={{ width: 1, height: 1 }}>{mounted && active && typeof document !== "undefined" ? createPortal(tree, document.body) : null}</div>
+    return (
+        <div ref={hostRef} style={{ width: 1, height: 1 }}>
+            {mounted && active && typeof document !== "undefined"
+                ? createPortal(tree, document.body)
+                : null}
+        </div>
+    )
 }
 
 addPropertyControls(PortfolioNav, {
     tabs: {
         type: ControlType.Array,
         title: "Links",
-        control: { type: ControlType.Object, controls: { label: { type: ControlType.String, title: "Label", defaultValue: "link" }, href: { type: ControlType.String, title: "Link", defaultValue: "/" } } },
+        control: {
+            type: ControlType.Object,
+            controls: {
+                label: {
+                    type: ControlType.String,
+                    title: "Label",
+                    defaultValue: "link",
+                },
+                href: {
+                    type: ControlType.String,
+                    title: "Link",
+                    defaultValue: "/",
+                },
+            },
+        },
         defaultValue: DEFAULT_TABS,
     },
-    fontSize: { type: ControlType.Number, title: "Text size", min: 12, max: 20, step: 1, defaultValue: 15, unit: "px" },
-    tabHeight: { type: ControlType.Number, title: "Tab height", min: 28, max: 52, step: 2, defaultValue: 40, unit: "px" },
-    tabPadding: { type: ControlType.Number, title: "Tab padding", min: 6, max: 24, step: 1, defaultValue: 16, unit: "px" },
-    showTheme: { type: ControlType.Boolean, title: "Light/dark button", defaultValue: true },
-    brand: { type: ControlType.String, title: "Phone title", defaultValue: "dhwani" },
-    breakpoint: { type: ControlType.Number, title: "Phone below", min: 480, max: 1200, step: 10, defaultValue: 810, unit: "px" },
-    showLights: { type: ControlType.Boolean, title: "Traffic lights", defaultValue: true },
-    showAsk: { type: ControlType.Boolean, title: "Ask row (phone)", defaultValue: true },
-    vibeGlow: { type: ControlType.Boolean, title: "Vibe glow", defaultValue: true },
+    fontSize: {
+        type: ControlType.Number,
+        title: "Text size",
+        min: 12,
+        max: 20,
+        step: 1,
+        defaultValue: 15,
+        unit: "px",
+    },
+    tabHeight: {
+        type: ControlType.Number,
+        title: "Tab height",
+        min: 28,
+        max: 52,
+        step: 2,
+        defaultValue: 40,
+        unit: "px",
+    },
+    tabPadding: {
+        type: ControlType.Number,
+        title: "Tab padding",
+        min: 6,
+        max: 24,
+        step: 1,
+        defaultValue: 16,
+        unit: "px",
+    },
+    showTheme: {
+        type: ControlType.Boolean,
+        title: "Light/dark button",
+        defaultValue: true,
+    },
+    brand: {
+        type: ControlType.String,
+        title: "Phone title",
+        defaultValue: "dhwani",
+    },
+    breakpoint: {
+        type: ControlType.Number,
+        title: "Phone below",
+        min: 480,
+        max: 1200,
+        step: 10,
+        defaultValue: 810,
+        unit: "px",
+    },
+    showLights: {
+        type: ControlType.Boolean,
+        title: "Traffic lights",
+        defaultValue: false,
+        hidden: () => true,
+    },
+    showAsk: {
+        type: ControlType.Boolean,
+        title: "Ask row (phone)",
+        defaultValue: true,
+    },
+    vibeGlow: {
+        type: ControlType.Boolean,
+        title: "Vibe glow",
+        defaultValue: false,
+        hidden: () => true,
+    },
 })
