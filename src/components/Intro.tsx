@@ -179,7 +179,7 @@ export function Intro() {
               </div>
               {stage >= 1 && (
                 <motion.div className="intro-pick" initial={{ opacity: 0, y: 14 }} animate={{ opacity: stage === 2 ? 0 : 1, y: 0 }} transition={{ duration: 0.5 }}>
-                  <p className="intro-ask">before you come in, pick a vibe.<br /><span>the whole site breathes in it.</span></p>
+                  <p className="intro-ask">pick a vibe</p>
                   <div role="radiogroup" aria-label="Color vibes" className="intro-vibes" onMouseLeave={() => hover(null)}
                     onKeyDown={(e) => {
                       if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return
