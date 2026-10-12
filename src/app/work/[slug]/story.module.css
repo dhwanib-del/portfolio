@@ -37,3 +37,13 @@
 .archiveIntro h2{font-size:clamp(30px,5vw,60px);line-height:1.07;letter-spacing:-.045em;margin:12px 0 16px;text-wrap:balance}.archiveIntro p{color:var(--text-2);font-size:16px;line-height:1.65;max-width:54ch}
 .archiveGrid{display:grid;gap:clamp(22px,4vw,52px)}.archiveFigure{margin:0;min-width:0;padding:clamp(14px,3vw,30px);background:var(--surface);border:1px solid var(--line-strong);border-radius:20px}.figureNumber{display:block;margin-bottom:16px}.archiveFigure a{display:block;border-radius:12px;overflow:hidden;cursor:zoom-in}.archiveFigure img,.archiveFigure video{display:block;max-height:800px;object-fit:contain;background:var(--bg);border-radius:12px}.archiveFigure figcaption{color:var(--text-2);font-size:13px;line-height:1.6;margin-top:14px}
 @media(max-width:600px){.archiveFigure{border-radius:14px}.archiveIntro p{font-size:14px}}
+
+/* Shared editorial foundations: visual hierarchy stays consistent across projects. */
+.storyHead{padding-top:var(--space-section)}
+.storyHead :global(.case-h1){font-size:var(--type-page);line-height:var(--leading-display);letter-spacing:var(--tracking-display);max-width:18ch;text-wrap:balance}
+.fastStory,.archiveFigure,.fragmented,.evidence,.turn{border-radius:var(--radius-card)}
+.archiveIntro h2{font-size:var(--type-section);line-height:var(--leading-display);letter-spacing:var(--tracking-display)}
+.archiveIntro p,.readingCopy section p{line-height:var(--leading-body)}
+.archiveFigure{padding:var(--space-card)}
+.archiveGrid{gap:var(--space-block)}
+.plot p{line-height:1.35}
