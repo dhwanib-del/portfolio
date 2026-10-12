@@ -18,7 +18,6 @@ export function generateStaticParams() {
 }
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}) {
  const {slug}=await params
- if(slug==="general-motors") return <GMRebuild/>
  const c=cases.find(x=>x.slug===slug)
  return {title:c?`${c.org.split(" · ")[0]} · Dhwani Bagrecha`:"Prime Video · Dhwani Bagrecha",description:c?.hook}
 }
