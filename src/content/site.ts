@@ -62,7 +62,7 @@ export const projects: Project[] = [
     title: "Convoy · General Motors",
     result: "I challenged the biometric direction",
     tags: ["HMI", "Advanced prototyping", "Design system"],
-    body: "I pushed us from biometrics toward a community-centered convoy. I built advanced Figma interactions and reusable components in our first shared design system; cab testing helped us weigh the trade-offs.",
+    body: "Four weeks into a biometric concept, I suggested we design for groups road-tripping across cars instead. I built the interactive Figma screens and reusable components; we tested in a 3D-printed truck cab.",
     coverNote: "Original screens coming soon",
     hint: "group coordination across phone and vehicle →",
     brand: "gm",
