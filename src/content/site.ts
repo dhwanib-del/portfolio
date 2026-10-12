@@ -8,7 +8,7 @@ export const person = {
   location: "Ann Arbor, open to moving anywhere",
   email: "", // add to show an email button
   linkedin: "", // add to show a LinkedIn button
-  resume: "", // e.g. "/resume.pdf"
+  resume: "/resume", // stable résumé route; update destination in src/app/resume/page.tsx
 }
 
 export const bubbleLines = [
