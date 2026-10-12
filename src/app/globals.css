@@ -12,13 +12,13 @@
 }
 
 :root {
-  --font-sans: "Satoshi", "Plus Jakarta Sans Variable", system-ui, -apple-system, sans-serif;
+  --font-sans: "Poppins", "Satoshi", system-ui, -apple-system, sans-serif;
   --font-nav: "Poppins", "Satoshi", system-ui, sans-serif;
   --font-script: "Pinyon Script", cursive;
 
   --bg: #000000;
-  --surface: #0d0d0e;
-  --surface-2: #161618;
+  --surface: #111111;
+  --surface-2: #1f1f1f;
   --card: rgba(255, 255, 255, 0.04);
   --card-hover: rgba(255, 255, 255, 0.07);
   --text: #ffffff;
@@ -60,8 +60,8 @@
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     --bg: #ffffff;
-    --surface: #f4f4f2;
-    --surface-2: #ebebe8;
+    --surface: #eeeeee;
+    --surface-2: #e0e0e0;
     --card: rgba(0, 0, 0, 0.035);
     --card-hover: rgba(0, 0, 0, 0.06);
     --text: #0a0a0a;
@@ -159,3 +159,13 @@ a { color: inherit; }
 .ui-panel{background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-card)}
 .ui-control{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border:1px solid var(--line-strong);border-radius:var(--radius-control);background:transparent;color:var(--text);font:500 .875rem var(--font-nav);cursor:pointer;transition:background var(--motion-fast) ease,border-color var(--motion-fast) ease}
 .ui-control:hover{background:var(--card-hover)}
+
+/* Framer PortfolioNav v14 compatibility. This is a mirror of the Framer visual vocabulary,
+   not a second independent palette. Framer component assets keep their --db-* API. */
+:root {
+ --db-bg:var(--bg);--db-surface:var(--surface);--db-surface-2:var(--surface-2);
+ --db-text:var(--text);--db-text-2:var(--text-2);--db-line:var(--line);
+ --db-glass:var(--glass);--db-glass-line:var(--line);--db-shadow:var(--shadow);
+ --db-accent:var(--accent);--db-on-accent:var(--on-accent);
+ --db-glow-blend:var(--glow-blend);--db-aurora-opacity:var(--aurora-opacity);
+}
