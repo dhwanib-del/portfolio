@@ -10,6 +10,7 @@ import { CaseVideo } from "@/components/case/Scenes"
 import styles from "./story.module.css"
 import {ScreenStory} from "@/components/case/ScreenStory"
 import {screenStories} from "@/content/screenStories"
+import {PrototypeExplorer} from "@/components/case/PrototypeExplorer"
 
 export function generateStaticParams() {
  return [...cases.map(c=>({slug:c.slug})),{slug:"prime-video"}]
@@ -78,6 +79,7 @@ export default async function CasePage({params}:{params:Promise<{slug:string}>})
     <details className={styles.interactiveDepth}><summary>Explore the interactive story <span>optional deep dive ↗</span></summary><CaseStoryPlayer project={c} story={story} readMinutes={readMinutes}/></details>
    </section>
   {screenStories[slug] && <div className="container">{screenStories[slug].readyForPublic?<ScreenStory title={screenStories[slug].title} screens={screenStories[slug].screens}/>:<div className={styles.privateScreens}><span>SCREEN ASSETS FOUND · CLEARANCE REQUIRED</span><h2>{screenStories[slug].title}</h2><p>The existing repo includes {screenStories[slug].screens.length} mapped screens for this project. They are withheld from the public preview until source and publication permissions are checked. The reusable ScreenStory component is ready to render them once cleared.</p></div>}</div>}
+  {slug==="budgetcart" && <div className="container"><PrototypeExplorer title="Explore BudgetCart up close." screens={c.figures.filter(f=>Boolean(f.src)).map(f=>({src:f.src!,alt:f.alt,caption:f.caption}))} prototypeUrl="https://www.figma.com/proto/UUNYyLmIxrEFfMTnM3u2e6/BudgetCart-HighFi-Prototype?node-id=1-5643&starting-point-node-id=1%3A5643" note="Zoom into the original screens or click through the Figma prototype to see the shopping flow." /></div>}
   {c.video && <div className="container case-media"><CaseVideo src={c.video} label="Project walkthrough video"/></div>}
   {c.figures.some(f=>f.src) && <section className={`container ${styles.screenArchive}`} aria-label="Project visuals">
     <div className={styles.archiveIntro}><span>THE WORK, UP CLOSE</span><h2>Explore the actual screens and artifacts.</h2><p>Selected visuals from the project. Each one has a job in the story — from early evidence to the final design direction.</p></div>
