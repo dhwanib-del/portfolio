@@ -29,7 +29,8 @@ export function AnnotatedScreen({ screen }: { screen: Screen }) {
             data-active={active === i ? "true" : "false"}
             aria-label={`Note ${i + 1}: ${n.title}`}
             aria-describedby={`${id}-n${i}`}
-            onClick={() => setActive(active === i ? null : i)}
+            // Select, don't toggle: focus already fires before click, so a toggle would undo itself.
+            onClick={() => setActive(i)}
             onFocus={() => setActive(i)}
           >
             {i + 1}

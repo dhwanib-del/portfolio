@@ -21,7 +21,7 @@
   --glass: rgba(18, 18, 20, 0.78);
   --shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.9);
   --accent: var(--vibe-accent, #f3500f);
-  --on-accent: #0a0a0a;
+  --on-accent: var(--vibe-on-accent, #0a0a0a);
   --ok: #1bc47d;
   --aurora-opacity: 1;
   --glow-blend: screen;
@@ -63,7 +63,7 @@
     --line-strong: rgba(0, 0, 0, 0.18);
     --glass: rgba(255, 255, 255, 0.82);
     --shadow: 0 18px 40px -22px rgba(0, 0, 0, 0.3);
-    --accent: #c23d08;
+    --accent: var(--vibe-accent-ink, #c23d08);
     --on-accent: #ffffff;
     --ok: #0e7a43;
     --aurora-opacity: 0.45;
@@ -87,7 +87,7 @@
   --line-strong: rgba(0, 0, 0, 0.18);
   --glass: rgba(255, 255, 255, 0.82);
   --shadow: 0 18px 40px -22px rgba(0, 0, 0, 0.3);
-  --accent: #c23d08;
+  --accent: var(--vibe-accent-ink, #c23d08);
   --on-accent: #ffffff;
   --ok: #0e7a43;
   --aurora-opacity: 0.45;

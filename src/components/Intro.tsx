@@ -23,11 +23,31 @@ function hexRgba(hex: string, alpha: number) {
   return `rgba(${r},${g},${b},${alpha})`
 }
 
-function inkFor(hex: string) {
+function rgbOf(hex: string) {
   const value = hex.replace("#", "")
   const n = Number.parseInt(value.length === 3 ? value.split("").map((c) => c + c).join("") : value, 16)
-  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255
-  return (r * 299 + g * 587 + b * 114) / 1000 > 155 ? "#111114" : "#ffffff"
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255] as const
+}
+function lum(r: number, g: number, b: number) {
+  const f = (c: number) => { const x = c / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4 }
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b)
+}
+// Text on a filled accent: whichever of near-black / white has the higher WCAG contrast.
+function inkFor(hex: string) {
+  const L = lum(...rgbOf(hex))
+  return (L + 0.05) / 0.05 >= 1.05 / (L + 0.05) ? "#0a0a0a" : "#ffffff"
+}
+// Light mode: darken the accent until it reaches 4.5:1 on the darkest light surface (#E0E0E0),
+// so accent text passes on the page, cards and panels alike. Same approach as PortfolioNav v14's
+// inkOnWhite, which targets white only and can dip under 4.5:1 on grey surfaces.
+const LIGHT_SURFACE_LUM = lum(0xe0, 0xe0, 0xe0)
+function inkOnWhite(hex: string) {
+  const [r, g, b] = rgbOf(hex)
+  for (let t = 0; t <= 1.0001; t += 0.02) {
+    const k = 1 - t, rr = Math.round(r * k), gg = Math.round(g * k), bb = Math.round(b * k)
+    if ((LIGHT_SURFACE_LUM + 0.05) / (lum(rr, gg, bb) + 0.05) >= 4.5) return "#" + [rr, gg, bb].map((x) => x.toString(16).padStart(2, "0")).join("")
+  }
+  return "#000000"
 }
 
 function makeCustomVibe(first: string, second: string): Vibe {
@@ -39,9 +59,13 @@ function applyVibe(v: Vibe, persist: boolean) {
   r.style.setProperty("--vibe-a", v.a)
   r.style.setProperty("--vibe-b", v.b)
   r.style.setProperty("--vibe-c", v.c)
+  // Theme tokens in globals.css choose between these; setting --accent inline here used to
+  // override the light theme's darker accent and fail contrast on white.
   r.style.setProperty("--vibe-accent", v.accent)
-  r.style.setProperty("--accent", v.accent)
-  r.style.setProperty("--on-accent", inkFor(v.accent))
+  r.style.setProperty("--vibe-accent-ink", inkOnWhite(v.accent))
+  r.style.setProperty("--vibe-on-accent", inkFor(v.accent))
+  r.style.removeProperty("--accent")
+  r.style.removeProperty("--on-accent")
   r.setAttribute("data-vibe", v.id)
   if (persist) try { localStorage.setItem("vibe", v.id) } catch {}
 }
