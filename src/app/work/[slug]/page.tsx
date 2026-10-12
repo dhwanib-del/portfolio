@@ -8,6 +8,8 @@ import { CaseStoryPlayer } from "@/components/case/CaseStoryPlayer"
 import { DecisionComments } from "@/components/case/DecisionComments"
 import { CaseVideo } from "@/components/case/Scenes"
 import styles from "./story.module.css"
+import {ScreenStory} from "@/components/case/ScreenStory"
+import {screenStories} from "@/content/screenStories"
 
 export function generateStaticParams() {
  return [...cases.map(c=>({slug:c.slug})),{slug:"prime-video"}]
@@ -75,6 +77,7 @@ export default async function CasePage({params}:{params:Promise<{slug:string}>})
     <div className={styles.outcomePanel}><span>WHAT HAPPENED NEXT</span><h3>{c.status}</h3><p><strong>The next question:</strong> {c.next}</p></div>
     <details className={styles.interactiveDepth}><summary>Explore the interactive story <span>optional deep dive ↗</span></summary><CaseStoryPlayer project={c} story={story} readMinutes={readMinutes}/></details>
    </section>
+  {screenStories[slug] && <div className="container">{screenStories[slug].readyForPublic?<ScreenStory title={screenStories[slug].title} screens={screenStories[slug].screens}/>:<div className={styles.privateScreens}><span>SCREEN ASSETS FOUND · CLEARANCE REQUIRED</span><h2>{screenStories[slug].title}</h2><p>The existing repo includes {screenStories[slug].screens.length} mapped screens for this project. They are withheld from the public preview until source and publication permissions are checked. The reusable ScreenStory component is ready to render them once cleared.</p></div>}</div>}
   {c.video && <div className="container case-media"><CaseVideo src={c.video} label="Project walkthrough video"/></div>}
   {c.figures.some(f=>f.src) && <section className={`container ${styles.screenArchive}`} aria-label="Project visuals">
     <div className={styles.archiveIntro}><span>THE WORK, UP CLOSE</span><h2>Explore the actual screens and artifacts.</h2><p>Selected visuals from the project. Each one has a job in the story — from early evidence to the final design direction.</p></div>
