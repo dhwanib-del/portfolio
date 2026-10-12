@@ -18,9 +18,22 @@ import { useEffect, useRef, useState, CSSProperties } from "react"
  * @framerSupportedLayoutHeight any
  */
 export default function AuroraBackground(props: any) {
-    const { colorA, colorB, colorC, intensity, speed, layout, breathe, followVibe } = props
+    const {
+        colorA,
+        colorB,
+        colorC,
+        intensity,
+        speed,
+        layout,
+        breathe,
+        followVibe,
+    } = props
     const [reduced, setReduced] = useState(false)
-    const [vibe, setVibe] = useState<{ a: string; b: string; c: string } | null>(null)
+    const [vibe, setVibe] = useState<{
+        a: string
+        b: string
+        c: string
+    } | null>(null)
     const rootRef = useRef<HTMLDivElement | null>(null)
 
     useEffect(() => {
@@ -53,9 +66,15 @@ export default function AuroraBackground(props: any) {
             el.style.pointerEvents = "none"
             if (window.getComputedStyle(el).position === "fixed") break
             const parent: HTMLElement | null = el.parentElement
-            if (!parent || parent === document.body || parent.id === "main") break
+            if (!parent || parent === document.body || parent.id === "main")
+                break
             // Framer can inject <style> siblings next to the component; they don't count
-            if (Array.from(parent.children).filter((c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName)).length !== 1) break
+            if (
+                Array.from(parent.children).filter(
+                    (c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName)
+                ).length !== 1
+            )
+                break
             el = parent
         }
     }, [])
@@ -68,7 +87,13 @@ export default function AuroraBackground(props: any) {
     const breatheDur = `${Math.max(4, speed * 0.3)}s`
     const full = layout === "full"
 
-    const orb = (color: string, size: string, top: string, left: string, delay: string): CSSProperties => ({
+    const orb = (
+        color: string,
+        size: string,
+        top: string,
+        left: string,
+        delay: string
+    ): CSSProperties => ({
         position: "absolute",
         width: size,
         height: size,
@@ -77,21 +102,26 @@ export default function AuroraBackground(props: any) {
         borderRadius: "50%",
         background: `radial-gradient(circle, ${color} 0%, rgba(0,0,0,0) 70%)`,
         opacity: intensity,
-        filter: "blur(80px)",
-        transition: "background 0.9s ease",
-        animation: reduced
-            ? "none"
-            : full && breathe
-              ? `auroraDrift ${dur} ease-in-out ${delay} infinite alternate, auroraBreathe ${breatheDur} ease-in-out ${delay} infinite`
-              : `auroraDrift ${dur} ease-in-out ${delay} infinite alternate`,
-        willChange: reduced ? "auto" : "transform, opacity",
+        filter: "none",
+        transition: "none",
+        animation: "none",
+        willChange: "auto",
     })
 
     return (
         <div
             ref={rootRef}
             aria-hidden="true"
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "hidden", pointerEvents: "none", zIndex: 0, opacity: "var(--db-aurora-opacity, 1)" as any }}
+            style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                overflow: "hidden",
+                pointerEvents: "none",
+                zIndex: 0,
+                opacity: "var(--db-aurora-opacity, 1)" as any,
+            }}
         >
             <style>{`
                 @keyframes auroraDrift {
@@ -130,17 +160,47 @@ AuroraBackground.defaultProps = {
     intensity: 1,
     speed: 24,
     layout: "hero",
-    breathe: true,
+    breathe: false,
     followVibe: false,
 }
 
 addPropertyControls(AuroraBackground, {
-    layout: { type: ControlType.Enum, title: "Layout", options: ["hero", "full"], optionTitles: ["Hero", "Full page"], defaultValue: "hero", displaySegmentedControl: true },
-    breathe: { type: ControlType.Boolean, title: "Breathe", defaultValue: true, hidden: ({ layout }: any) => layout !== "full" },
-    followVibe: { type: ControlType.Boolean, title: "Follow vibe", defaultValue: false, description: "Use the colors the visitor picked in the intro." },
+    layout: {
+        type: ControlType.Enum,
+        title: "Layout",
+        options: ["hero", "full"],
+        optionTitles: ["Hero", "Full page"],
+        defaultValue: "hero",
+        displaySegmentedControl: true,
+    },
+    breathe: {
+        type: ControlType.Boolean,
+        title: "Breathe",
+        defaultValue: false,
+        description: "Ambient motion is disabled for a faster site.",
+        hidden: ({ layout }: any) => layout !== "full",
+    },
+    followVibe: {
+        type: ControlType.Boolean,
+        title: "Follow vibe",
+        defaultValue: false,
+        description: "Use the colors the visitor picked in the intro.",
+    },
     colorA: { type: ControlType.Color, defaultValue: "rgba(243,80,15,0.45)" },
     colorB: { type: ControlType.Color, defaultValue: "rgba(123,92,255,0.35)" },
     colorC: { type: ControlType.Color, defaultValue: "rgba(0,229,255,0.22)" },
-    intensity: { type: ControlType.Number, min: 0, max: 1, step: 0.05, defaultValue: 1 },
-    speed: { type: ControlType.Number, min: 10, max: 60, step: 1, defaultValue: 24 },
+    intensity: {
+        type: ControlType.Number,
+        min: 0,
+        max: 1,
+        step: 0.05,
+        defaultValue: 1,
+    },
+    speed: {
+        type: ControlType.Number,
+        min: 10,
+        max: 60,
+        step: 1,
+        defaultValue: 24,
+    },
 })
