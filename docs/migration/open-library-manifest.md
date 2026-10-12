@@ -320,3 +320,9 @@ Interactive and section states (each at 1440 and 390, prefix `local-1440-` / `lo
 Total 48 PNGs. Live Vercel screenshot: none (blocked).
 
 Raw data: `audit-local.json` (computed styles for ~65 selectors × 4 viewports, DOM text outline, media list, font load status, network log). Scripts: `audit.js`, `slides.js`, `live.js`.
+
+## 9. Decisions (Dhwani, Oct 11)
+- Fonts: use her existing Framer fonts/text styles (not Satoshi / Plus Jakarta Sans).
+- Screens: place her existing Framer Open Library screens into the Vercel placeholder slots where they fit; leave the rest as hidden slots.
+- Slide view / working folder / design-choice toggle: simplify natively. The toggle becomes two panels side by side and the folder becomes 3 cards. The slide view is dropped; native scroll plus the chapter rail covers it.
+- Target: a NEW draft page (e.g. /work/openlibrary-draft). The live page wqALJyWjk stays untouched. Nothing gets published.
