@@ -50,7 +50,7 @@ export default function Home() {
           <div className="contact-actions">
             {person.email && <a className="btn btn-primary" href={`mailto:${person.email}`}>Email me</a>}
             {person.linkedin && <a className="btn" href={person.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>}
-            {person.resume && <a className="btn" href={person.resume}>Résumé (PDF)</a>}
+            {person.resume && <a className="btn" href={person.resume}>Résumé ↗</a>}
           </div>
         </div>
       </section>
