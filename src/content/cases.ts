@@ -317,8 +317,8 @@ export const cases: Case[] = [
         "href": "https://docs.google.com/document/d/1A3DYPNe7f7799FZ6WSzoFFgkkHUHTBwmLgYzPkPPsjs/edit"
       },
       {
-        "label": "View final project",
-        "href": "https://docs.google.com/presentation/d/1HDW0dLSZCc09ewu0dh__M0BJS2c-ByhvlvdnQMwyYZs"
+        "label": "View research report",
+        "href": "https://docs.google.com/document/d/1A3DYPNe7f7799FZ6WSzoFFgkkHUHTBwmLgYzPkPPsjs/edit"
       }
     ]
   },
