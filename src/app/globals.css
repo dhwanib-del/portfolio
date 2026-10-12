@@ -4,16 +4,9 @@
    Dark is the original site. Light is the contrast-checked inverse (every text pair ≥ 4.5:1).
    Theme: follows the OS; the nav toggle sets html[data-theme] and wins. */
 
-@font-face {
-  font-family: "Satoshi";
-  src: url("/fonts/Satoshi-Variable.woff2") format("woff2");
-  font-weight: 300 900;
-  font-display: swap;
-}
-
 :root {
-  --font-sans: "Poppins", "Satoshi", system-ui, -apple-system, sans-serif;
-  --font-nav: "Poppins", "Satoshi", system-ui, sans-serif;
+  --font-sans: "Poppins", system-ui, -apple-system, sans-serif;
+  --font-nav: "Poppins", system-ui, sans-serif;
   --font-script: "Pinyon Script", cursive;
 
   --bg: #000000;
@@ -65,8 +58,8 @@
     --card: rgba(0, 0, 0, 0.035);
     --card-hover: rgba(0, 0, 0, 0.06);
     --text: #0a0a0a;
-    --text-2: rgba(0, 0, 0, 0.64);
-    --line: rgba(0, 0, 0, 0.1);
+    --text-2: rgba(0, 0, 0, 0.62);
+    --line: rgba(0, 0, 0, 0.12);
     --line-strong: rgba(0, 0, 0, 0.18);
     --glass: rgba(255, 255, 255, 0.82);
     --shadow: 0 18px 40px -22px rgba(0, 0, 0, 0.3);
@@ -77,20 +70,20 @@
     --glow-blend: multiply;
     color-scheme: light;
   }
-  :root:not([data-theme="dark"])[data-vibe="goblue"] { --accent: #00274c; }
+  :root:not([data-theme="dark"])[data-vibe="goblue"] { --accent: #0369a1; }
   :root:not([data-theme="dark"])[data-vibe="nightshift"] { --accent: #5b3fd6; }
   :root:not([data-theme="dark"])[data-vibe="afterhours"] { --accent: #c2185b; }
-  :root:not([data-theme="dark"])[data-vibe="greenroom"] { --accent: #0e7a43; }
+  :root:not([data-theme="dark"])[data-vibe="greenroom"] { --accent: #854d0e; }
 }
 :root[data-theme="light"] {
   --bg: #ffffff;
-  --surface: #f4f4f2;
-  --surface-2: #ebebe8;
+  --surface: #eeeeee;
+  --surface-2: #e0e0e0;
   --card: rgba(0, 0, 0, 0.035);
   --card-hover: rgba(0, 0, 0, 0.06);
   --text: #0a0a0a;
-  --text-2: rgba(0, 0, 0, 0.64);
-  --line: rgba(0, 0, 0, 0.1);
+  --text-2: rgba(0, 0, 0, 0.62);
+  --line: rgba(0, 0, 0, 0.12);
   --line-strong: rgba(0, 0, 0, 0.18);
   --glass: rgba(255, 255, 255, 0.82);
   --shadow: 0 18px 40px -22px rgba(0, 0, 0, 0.3);
@@ -101,10 +94,10 @@
   --glow-blend: multiply;
   color-scheme: light;
 }
-:root[data-theme="light"][data-vibe="goblue"] { --accent: #00274c; }
+:root[data-theme="light"][data-vibe="goblue"] { --accent: #0369a1; }
 :root[data-theme="light"][data-vibe="nightshift"] { --accent: #5b3fd6; }
 :root[data-theme="light"][data-vibe="afterhours"] { --accent: #c2185b; }
-:root[data-theme="light"][data-vibe="greenroom"] { --accent: #0e7a43; }
+:root[data-theme="light"][data-vibe="greenroom"] { --accent: #854d0e; }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
