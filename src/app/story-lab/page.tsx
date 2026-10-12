@@ -1,0 +1,42 @@
+"use client"
+import {useState} from "react"
+import Link from "next/link"
+import styles from "./page.module.css"
+
+type Tab="decision"|"xray"|"evidence"
+const beats=[
+ {label:"Observation",tag:"01 / THE RESEARCH",title:"People weren't asking for one more translator.",body:"The Open Library team conducted eight interviews and mapped 330 data points. Readers described switching between books, dictionaries and translation services — then rebuilding their context.",note:"Research evidence · team synthesis"},
+ {label:"Reframe",tag:"02 / THE INSIGHT",title:"The friction lived between the tools.",body:"Translation quality mattered, but so did preserving the reading flow. The research reframed a translation-feature question into a continuity-and-trust problem.",note:"Interpretation grounded in final report"},
+ {label:"Design response",tag:"03 / THE PROPOSAL",title:"Bring support closer to the passage.",body:"We recommended making existing translation and comprehension help easier to discover within reading, with lightweight feedback. These were recommendations, not shipped or user-tested features.",note:"Client-facing recommendation · not implemented"}
+]
+const annotations=[
+ {label:"01 · Persistent information",title:"What stays in view?",body:"The BRIEFS direction keeps urgent building information visible as someone navigates a profile. This prioritizes mid-call retrieval but takes up valuable screen space."},
+ {label:"02 · Predictable categories",title:"Where should a detail live?",body:"Related information has a predictable home rather than requiring a dispatcher to remember which long document contains it."},
+ {label:"03 · Source verification",title:"Can someone trust the answer?",body:"The proposed assistant references approved records and should acknowledge gaps. Human review remains necessary before changing records."}
+]
+export default function StorytellingLab(){
+ const [tab,setTab]=useState<Tab>("decision")
+ const [choice,setChoice]=useState(1)
+ const [hot,setHot]=useState(0)
+ const [beat,setBeat]=useState(0)
+ return <main className={styles.page}>
+  <div className={styles.shell}>
+   <Link className={styles.back} href="/#work">← back to selected work</Link>
+   <div className={styles.kicker}>PORTFOLIO / INTERACTION STUDIES / 001</div>
+   <div className={styles.intro}><div><h1>Make the thinking <em>visible.</em></h1><p>Three ways to tell a stronger case-study story, built from real project decisions. Interactions add depth; the argument should still be clear before you click.</p></div><div className={styles.index}>STORY LAB<br/>03 COMPONENTS<br/>WORKING PROTOTYPES</div></div>
+   <div className={styles.tabs} role="tablist" aria-label="Select storytelling component">
+    {([["decision","01 / Decision Split"],["xray","02 / Screen X-Ray"],["evidence","03 / Evidence → Decision"]] as const).map(([id,label])=><button key={id} role="tab" aria-selected={tab===id} className={tab===id?styles.selected:""} onClick={()=>setTab(id)}>{label}</button>)}
+   </div>
+   {tab==="decision"&&<section className={styles.story}><div className={styles.sectionHead}><span>GM CONVOY / THE PIVOT</span><h2>Four weeks in, the question changed.</h2><p>The original concept focused on biometric personalization for one driver. The team reconsidered that direction after research surfaced a different challenge: coordinating a group trip.</p></div>
+    <div className={styles.split}>
+     <button className={choice===0?styles.activeCard:styles.option} onClick={()=>setChoice(0)} aria-pressed={choice===0}><span className={styles.small}>DIRECTION A / EARLY EXPLORATION</span><div className={styles.visual}><div className={styles.portrait}><div className={styles.scanLine}/><div className={styles.face}>◯</div><span>INDIVIDUAL PROFILE</span></div></div><strong>Personalize the driver.</strong><span>Biometric concept</span></button>
+     <button className={choice===1?styles.activeCard:styles.option} onClick={()=>setChoice(1)} aria-pressed={choice===1}><span className={styles.small}>DIRECTION B / TEAM PIVOT</span><div className={styles.visual}><div className={styles.trip}><span>● ─── ● ─── ●</span><small>PLAN · DRIVE · REMEMBER</small></div></div><strong>Coordinate the convoy.</strong><span>Group-trip experience</span></button>
+    </div><div className={styles.explain}><span>{choice===0?"WHAT WE QUESTIONED":"WHY THE TEAM PIVOTED"}</span><h3>{choice===0?"Interesting technology isn't the same as a compelling user need.":"Design around the whole trip, not the driver profile."}</h3><p>{choice===0?"The biometric direction had already absorbed weeks of work. The key question became whether knowing more about one driver actually solved the coordination problem the research revealed.":"Planning could live on the phone; in-car displays needed to focus on glanceable group status, and memories could wait until after the drive. This was a concept evaluated in a physical cab, not a launched vehicle feature."}</p></div>
+    <div className={styles.footnote}>Conceptual diagrams created for this storytelling demo. Replace with the original GM research, biometric explorations and final HMI screens before publication.</div>
+   </section>}
+   {tab==="xray"&&<section className={styles.story}><div className={styles.sectionHead}><span>BRIEFS / INFORMATION ARCHITECTURE</span><h2>Look where the decision lives.</h2><p>Choose an annotation to see how a building-information prototype addresses lookup, information hierarchy and trust.</p></div><div className={styles.xrayLayout}><div className={styles.mock}><div className={styles.mockTop}><span>◈ BRIEFS</span><span>FICTIONAL DEMO · NOT OPERATIONAL DATA</span></div><div className={styles.mockTitle}>Example Building <small>Illustrative information structure</small></div><div className={styles.warning}>RESPONSE INFORMATION <span>Visible across the record</span><button className={styles.dot} onClick={()=>setHot(0)} aria-label="Explain persistent information">1</button></div><div className={styles.mockTabs}>Response　 Contacts　 Maps & Plans　 Resources　 Details <button className={styles.dot} onClick={()=>setHot(1)} aria-label="Explain information categories">2</button></div><div className={styles.mockRows}><div><b>Building overview</b><p>Information grouped for predictable retrieval.</p></div><div><b>Reference documents</b><p>Approved records and supporting material.</p><button className={styles.dot} onClick={()=>setHot(2)} aria-label="Explain source verification">3</button></div></div></div><aside className={styles.notes}><span className={styles.small}>DESIGN ANNOTATIONS</span>{annotations.map((a,i)=><button key={a.label} className={hot===i?styles.activeNote:styles.note} onClick={()=>setHot(i)} aria-pressed={hot===i}>{a.label}<strong>{a.title}</strong></button>)}<div className={styles.insight}><span>DESIGN REASONING</span><p>{annotations[hot].body}</p></div></aside></div><div className={styles.footnote}>Synthetic schematic only. Real DPSS operational screens and records are deliberately not reproduced.</div></section>}
+   {tab==="evidence"&&<section className={styles.story}><div className={styles.sectionHead}><span>OPEN LIBRARY / RESEARCH TO RECOMMENDATION</span><h2>A finding isn't a design decision. Show the bridge.</h2><p>A three-beat story that makes the evidence, interpretation and recommendation traceable.</p></div><div className={styles.timeline}>{beats.map((b,i)=><button key={b.label} onClick={()=>setBeat(i)} className={beat===i?styles.currentBeat:styles.beat}><span>0{i+1}</span>{b.label}</button>)}</div><div className={styles.beatBody}><div className={styles.beatVisual}><span>{beats[beat].tag}</span>{beat===0?<div className={styles.flow}>READ <b>↗</b> LEAVE TO TRANSLATE <b>↘</b> RETURN</div>:beat===1?<div className={styles.flow}>TOOLS <b>≠</b> CONTINUITY</div>:<div className={styles.flow}>BOOK <b>+</b> CONTEXTUAL SUPPORT</div>}</div><div className={styles.beatCopy}><span>{beats[beat].note}</span><h3>{beats[beat].title}</h3><p>{beats[beat].body}</p><button onClick={()=>setBeat((beat+1)%3)}>Next story beat →</button></div></div><div className={styles.footnote}>The reading flow is an illustrative diagram. Findings and recommendation status follow the Open Library research summary; no product impact is claimed.</div></section>}
+   <footer className={styles.footer}><span>THE RULE: INTERACTION REVEALS REASONING, NOT ESSENTIAL INFORMATION.</span><Link href="/work/general-motors">Explore GM Convoy ↗</Link></footer>
+  </div>
+ </main>
+}
