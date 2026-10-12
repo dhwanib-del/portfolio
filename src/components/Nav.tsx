@@ -13,6 +13,7 @@ const TABS = [
   { label: "work", href: "/#work" },
   { label: "AI Lab", href: "/lab" },
   { label: "connect", href: "/#contact" },
+  { label: "résumé ↗", href: "/resume" },
 ]
 
 function Lights() {
