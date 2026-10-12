@@ -1,0 +1,145 @@
+/* Shared case-study layout. Tokens come from globals.css (mirrors framer/PortfolioNav v14 --db-*). */
+
+.page {
+  position: relative;
+  z-index: 1;
+  max-width: calc(var(--max) + var(--gutter) * 2);
+  margin: 0 auto;
+  padding: 116px var(--gutter) 96px;
+  color: var(--text);
+}
+
+/* ---------- Intro ---------- */
+.intro { padding-bottom: clamp(32px, 5vw, 56px); }
+.back {
+  display: inline-flex; align-items: center; min-height: 44px;
+  font: 500 13px/1 var(--font-nav); color: var(--text-2); text-decoration: none;
+  margin-bottom: clamp(32px, 6vw, 64px);
+}
+.back:hover { color: var(--text); }
+.back:focus-visible, .toc a:focus-visible, .next a:focus-visible, .links a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+
+.org, .kicker {
+  font: 500 12px/1.5 var(--font-nav); letter-spacing: .085em; text-transform: uppercase;
+  color: var(--text-2); margin: 0;
+}
+.name {
+  font-size: clamp(64px, 13vw, 168px); font-weight: 600; line-height: .9;
+  letter-spacing: -.07em; margin: 14px 0 clamp(20px, 3vw, 32px);
+  overflow-wrap: anywhere;
+}
+.dot { color: var(--accent); }
+.product {
+  font-size: clamp(21px, 2.7vw, 32px); line-height: 1.3; letter-spacing: -.03em;
+  max-width: 30ch; margin: 0 0 clamp(32px, 5vw, 48px); text-wrap: pretty;
+}
+.meta {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px;
+  border-top: 1px solid var(--line-strong); padding-top: 22px; margin: 0;
+}
+.meta dt, .decisionBody dt, .evalGrid h3, .outcome h3, .partGrid h3 {
+  font: 500 11px/1.5 var(--font-nav); letter-spacing: .085em; text-transform: uppercase;
+  color: var(--text-2); margin: 0 0 6px;
+}
+.meta dd { margin: 0; font-size: 14px; line-height: 1.55; }
+
+/* ---------- Hero ---------- */
+.hero {
+  border: 1px solid var(--line); border-radius: var(--radius-lg);
+  background: var(--surface); padding: clamp(20px, 4vw, 48px);
+}
+.heroCaption { margin: 18px 0 0; text-align: center; color: var(--text-2); font-size: 14px; }
+
+/* ---------- My part ---------- */
+.part { padding: clamp(48px, 7vw, 80px) 0 0; }
+.partGrid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 4vw, 56px); margin-top: 18px; }
+.partGrid ul, .evalGrid ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.partGrid li, .evalGrid li { position: relative; padding-left: 20px; font-size: 16px; line-height: 1.55; }
+.partGrid li::before, .evalGrid li::before {
+  content: ""; position: absolute; left: 0; top: .62em; width: 8px; height: 2px; background: var(--accent);
+}
+.partGrid > div + div li::before { background: var(--text-2); }
+
+/* ---------- On this page ---------- */
+.toc {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: clamp(48px, 7vw, 72px) 0 0;
+  padding: 16px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.toc a {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 14px;
+  border-radius: var(--radius-control); border: 1px solid var(--line);
+  font: 500 13px/1 var(--font-nav); color: var(--text-2); text-decoration: none;
+  transition: color var(--motion-fast), border-color var(--motion-fast);
+}
+.toc a:hover { color: var(--text); border-color: var(--line-strong); }
+.toc a span { color: var(--accent); font-variant-numeric: tabular-nums; }
+
+/* ---------- Sections ---------- */
+.section { padding: clamp(56px, 8vw, 96px) 0 0; scroll-margin-top: 96px; }
+.sectionTitle {
+  display: flex; align-items: baseline; gap: 14px;
+  font-size: var(--type-section); font-weight: 600; letter-spacing: -.05em; line-height: 1.05;
+  margin: 0 0 clamp(24px, 4vw, 40px);
+}
+.sectionTitle span { font: 500 13px/1 var(--font-nav); letter-spacing: .06em; color: var(--accent); }
+.sectionIntro { color: var(--text-2); font-size: 16px; line-height: 1.7; max-width: var(--content-readable); margin: 0; }
+.prose { max-width: var(--content-readable); }
+.prose p { font-size: 17px; line-height: var(--leading-body); margin: 0 0 1.1em; color: var(--text); }
+.prose p + p { color: var(--text-2); }
+.stack { display: grid; gap: clamp(28px, 4vw, 48px); }
+
+/* ---------- Decisions ---------- */
+.decisions { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.decision {
+  border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--card);
+  padding: var(--space-card);
+}
+.decisionHead { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-bottom: 18px; }
+.decisionHead h3 { font-size: clamp(20px, 2.2vw, 26px); font-weight: 600; letter-spacing: -.035em; line-height: 1.2; margin: 0; flex: 1 1 260px; }
+.decisionNum { font: 500 13px/1 var(--font-nav); color: var(--accent); font-variant-numeric: tabular-nums; }
+.decisionBody { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 32px; margin: 0; }
+.decisionBody dd { margin: 0; font-size: 15px; line-height: 1.6; }
+.rejected { color: var(--text-2); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--text-2) 60%, transparent); }
+.evidence { color: var(--text-2); }
+
+/* ---------- Product ---------- */
+.slotGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; align-items: start; }
+
+/* ---------- Evaluation ---------- */
+.evalGrid { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: clamp(20px, 3vw, 40px); }
+.evalGrid p { margin: 0; font-size: 16px; line-height: 1.6; }
+.untested li::before { background: var(--text-2) !important; }
+
+/* ---------- Outcome ---------- */
+.outcome { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.outcome > div { border: 1px solid var(--line); border-radius: var(--radius-card); padding: var(--space-card); background: var(--card); }
+.outcome p { margin: 0; font-size: 16px; line-height: 1.6; }
+.nextQ { grid-column: 1 / -1; border-color: color-mix(in srgb, var(--accent) 45%, var(--line)) !important; }
+.nextQ p { font-size: clamp(19px, 2.2vw, 24px); letter-spacing: -.02em; line-height: 1.35; }
+.aiNote { grid-column: 1 / -1; }
+.links { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 12px; }
+.links a {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px;
+  border-radius: var(--radius-control); border: 1px solid var(--line-strong);
+  color: var(--text); text-decoration: none; font: 500 14px/1 var(--font-nav);
+}
+.links a:hover { background: var(--card-hover); }
+
+/* ---------- Next ---------- */
+.next { margin-top: clamp(72px, 10vw, 120px); border-top: 1px solid var(--line-strong); }
+.next a { display: grid; gap: 8px; padding: 28px 0 0; text-decoration: none; color: var(--text); }
+.nextName { font-size: clamp(30px, 4.5vw, 52px); font-weight: 600; letter-spacing: -.05em; }
+.next a:hover .nextName { color: var(--accent); }
+.nextProduct { color: var(--text-2); font-size: 15px; max-width: 60ch; }
+
+@media (max-width: 860px) {
+  .meta { grid-template-columns: 1fr 1fr; }
+  .evalGrid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .page { padding-top: 96px; }
+  .partGrid, .decisionBody, .outcome { grid-template-columns: 1fr; }
+  .hero { padding: 16px; border-radius: var(--radius-md); }
+  .toc { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-left: calc(var(--gutter) * -1); margin-right: calc(var(--gutter) * -1); padding-left: var(--gutter); padding-right: var(--gutter); }
+  .toc a { flex: none; }
+}

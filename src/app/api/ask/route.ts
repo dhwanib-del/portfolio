@@ -1,5 +1,5 @@
 // DhwaniGPT answers from published portfolio content; unknown details route to Dhwani.
-import { cases } from "@/content/cases"
+import { caseStudies, caseStudyText } from "@/content/caseStudies"
 import { experience, person, projects } from "@/content/site"
 
 const MODEL = process.env.DHWANIGPT_MODEL || "claude-haiku-4-5-20251001"
@@ -8,7 +8,7 @@ type Answer = { reply: string; href?: string; linkLabel?: string; mode: "portfol
 
 function knowledge() {
   const p = projects.map((x) => "- " + x.title + ": " + x.result + ". " + x.body + (x.nda ? " (Under NDA: share nothing beyond this line.)" : "")).join("\n")
-  const c = cases.map((x) => "## " + x.org + "\n" + x.headline + "\n" + x.hook + "\n" + x.meta.map((m) => m.label + ": " + m.value).join("; ") + "\n" + x.sections.map((s) => s.heading + " " + s.body.join(" ")).join("\n") + "\n" + (x.ai ? "AI: " + x.ai : "") + "\nStatus: " + x.status).join("\n\n")
+  const c = caseStudies.map(caseStudyText).join("\n\n")
   const e = experience.map((r) => "- " + r.dates + ": " + r.role + ", " + r.org + ". " + r.summary).join("\n")
   return "Name: " + person.name + "\nRoles sought: " + person.roles + "\nSchool: " + person.school + ", graduating " + person.grad + "\nLocation: " + person.location + "\n\nProjects:\n" + p + "\n\nCase studies:\n" + c + "\n\nExperience:\n" + e
 }
@@ -39,7 +39,7 @@ function portfolioAnswer(question: string): Answer {
     const slug = match[0]
     if (slug === "prime-video") return direct("Dhwani’s current capstone is a family-oriented Prime Video concept. It’s under NDA, so she can’t share project details yet. You can ask her about the process.", "mailto:dhwanib@umich.edu", "Ask Dhwani ↗")
     const project = projects.find((item) => item.slug === slug)
-    const study = cases.find((item) => item.slug === slug)
+    const study = caseStudies.find((item) => item.slug === slug)
     if (project && study) return direct(project.result + ". " + project.body, "/work/" + slug, "Read the " + project.title.split(" · ")[0] + " case study ↗")
   }
 

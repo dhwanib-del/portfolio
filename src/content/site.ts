@@ -28,6 +28,10 @@ export type Project = {
   video?: string // /media/<slug>.mp4
   image?: string // /work/<slug>/cover.jpg
   poster?: string
+  /** real screens for the card cover (phone exports) */
+  coverScreens?: string[]
+  /** shown on the typographic cover when there are no public screens */
+  coverNote?: string
   nda?: boolean
   hint: string // talk-to-me cursor line
   brand?: "dpss" | "gm" | "openlibrary" | "primevideo"
@@ -37,19 +41,21 @@ export const projects: Project[] = [
   {
     slug: "briefs",
     title: "BRIEFS · UM DPSS",
-    result: "A clearer path through seven dispatch screens",
+    result: "A building profile dispatchers can use mid-call",
     tags: ["Contextual inquiry", "Workflow", "Apps Script"],
     body: "In my first contextual inquiry, I watched dispatchers search across seven screens. Starting with no design files, I mapped the workflow and built a prototype + PRD, then explored a Sheets-backed Apps Script.",
+    coverNote: "Screens pending DPSS approval",
     hint: "dispatchers, mid-call, no time to dig →",
     brand: "dpss",
   },
   {
     slug: "intel",
-    title: "Intel workspace · UM DPSS",
+    title: "Intelligence Hub · UM DPSS",
     result: "Case history in one shared workspace",
     tags: ["Case management", "Stakeholder research", "Workflow"],
-    body: "The concept connects requests and investigation work in a shared, role-aware workspace. The public screens use fictional demo records.",
-    hint: "explore the fictional workflow demo →",
+    body: "A shared, role-aware case workspace connecting requests and investigation work. I co-led it through an internal pilot.",
+    coverNote: "Screens pending DPSS approval",
+    hint: "how a case keeps its history →",
   },
   {
     slug: "general-motors",
@@ -57,6 +63,7 @@ export const projects: Project[] = [
     result: "I challenged the biometric direction",
     tags: ["HMI", "Advanced prototyping", "Design system"],
     body: "I pushed us from biometrics toward a community-centered convoy. I built advanced Figma interactions and reusable components in our first shared design system; cab testing helped us weigh the trade-offs.",
+    coverNote: "Original screens coming soon",
     hint: "group coordination across phone and vehicle →",
     brand: "gm",
   },
@@ -76,6 +83,7 @@ export const projects: Project[] = [
     result: "Language help, inside the reading flow",
     tags: ["Research", "Multilingual", "Accessibility"],
     body: "I contributed to interviews, client calls and my first affinity map. Our team synthesized 330 data points into recommendations for multilingual reading access.",
+    coverNote: "Research project · artifacts coming soon",
     hint: "language help in the reading flow →",
     brand: "openlibrary",
   },
@@ -85,6 +93,7 @@ export const projects: Project[] = [
     result: "Better grocery deals, built around SNAP/WIC",
     tags: ["Grocery", "SNAP / WIC", "Budgeting"],
     body: "My first Figma project: stakeholder interviews, paper prototypes, and a self-taught component system. We explored a concept that prioritized SNAP/WIC needs and better grocery deals.",
+    coverScreens: ["/case-shots/budgetcart/smart-ai.png", "/case-shots/budgetcart/budget-calendar.png"],
     hint: "the moment before checkout →",
   },
 ]
