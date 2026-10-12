@@ -377,6 +377,11 @@ export const cases: Case[] = [
       "why": "People trusted their cart less when we hid the numbers. Simple can't mean hidden.",
       "rejected": "Hiding brands, stores and prices to look simple"
     },
-    "figures": []
+    "figures": [
+      {"src":"/case-shots/budgetcart/item-first-browse.png","alt":"BudgetCart item-first browsing design","caption":"Product discovery: item-first browsing restores concrete choice information."},
+      {"src":"/case-shots/budgetcart/store-comparison.png","alt":"BudgetCart store comparison screen","caption":"Compare stores as a budget decision, with the selected choice visible."},
+      {"src":"/case-shots/budgetcart/smart-ai.png","alt":"BudgetCart AI cart-builder interface","caption":"The cart assistant needs clear starting cues rather than an unexplained blank prompt."},
+      {"src":"/case-shots/budgetcart/budget-calendar.png","alt":"BudgetCart budget and deal calendar design","caption":"Budget and offers are part of the shopping journey, not only checkout."}
+    ]
   }
 ]
