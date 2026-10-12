@@ -63,7 +63,18 @@ export default async function CasePage({params}:{params:Promise<{slug:string}>})
    <dl className="case-meta">{c.meta.filter(m=>m.label!=="Status"&&m.label!=="Read"&&m.label!=="Role"&&m.label!=="My part").map(m=><div key={m.label}><dt>{m.label}</dt><dd>{m.value}</dd></div>)}</dl>
    <p className={styles.readCue}>Got the gist? Scroll for the evidence, or try the slide view.</p>
   </header>
-  <div className="container"><CaseStoryPlayer project={c} story={story} readMinutes={readMinutes}/></div>
+  <section className={`container ${styles.editorial}`} aria-label="Project story">
+    <div className={styles.editorialLead}><span>THE PROJECT / IN THREE DECISIONS</span><h2>What I noticed. What changed. What I made.</h2><p>{c.hook}</p></div>
+    <div className={styles.chapters}>
+      {c.sections.map((chapter,i)=><section className={styles.chapter} key={chapter.heading}>
+        <div className={styles.chapterIndex}><span>{String(i+1).padStart(2,"0")}</span><span>{i===0?"THE CONTEXT":i===1?"THE TURNING POINT":"THE DESIGN MOVE"}</span></div>
+        <div className={styles.chapterText}><h3>{chapter.heading}</h3>{chapter.body.map((paragraph,j)=><p key={j}>{paragraph}</p>)}</div>
+      </section>)}
+    </div>
+    {c.decision && <div className={styles.decisionPanel}><span>THE KEY DECISION</span><h3>{c.decision.decision}</h3><p>{c.decision.why}</p><div><strong>What we moved away from</strong><span>{c.decision.rejected}</span></div></div>}
+    <div className={styles.outcomePanel}><span>WHAT HAPPENED NEXT</span><h3>{c.status}</h3><p><strong>The next question:</strong> {c.next}</p></div>
+    <details className={styles.interactiveDepth}><summary>Explore the interactive story <span>optional deep dive ↗</span></summary><CaseStoryPlayer project={c} story={story} readMinutes={readMinutes}/></details>
+   </section>
   {c.video && <div className="container case-media"><CaseVideo src={c.video} label="Project walkthrough video"/></div>}
   {c.figures.some(f=>f.src) && <section className={`container ${styles.screenArchive}`} aria-label="Project visuals">
     <div className={styles.archiveIntro}><span>THE WORK, UP CLOSE</span><h2>Explore the actual screens and artifacts.</h2><p>Selected visuals from the project. Each one has a job in the story — from early evidence to the final design direction.</p></div>
