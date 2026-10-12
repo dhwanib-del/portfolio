@@ -34,6 +34,7 @@ export default async function CasePage({params}:{params:Promise<{slug:string}>})
     )
   }
 
+ if (slug === "general-motors") return <GMRebuild />
  const c=cases.find(x=>x.slug===slug)
  if(!c) notFound()
  const story=caseStories[slug]
