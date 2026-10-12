@@ -11,12 +11,14 @@ import styles from "./story.module.css"
 import {ScreenStory} from "@/components/case/ScreenStory"
 import {screenStories} from "@/content/screenStories"
 import {PrototypeExplorer} from "@/components/case/PrototypeExplorer"
+import GMRebuild from "@/components/case/GMRebuild"
 
 export function generateStaticParams() {
  return [...cases.map(c=>({slug:c.slug})),{slug:"prime-video"}]
 }
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}) {
  const {slug}=await params
+ if(slug==="general-motors") return <GMRebuild/>
  const c=cases.find(x=>x.slug===slug)
  return {title:c?`${c.org.split(" · ")[0]} · Dhwani Bagrecha`:"Prime Video · Dhwani Bagrecha",description:c?.hook}
 }
