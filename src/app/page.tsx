@@ -13,7 +13,7 @@ export default function Home() {
         <div className={styles.intro}>
           <p className="hero-hi">hi, i&apos;m</p>
           <h1 id="hero-name" className="hero-name">{person.name}</h1>
-          <p className="hero-line">I design digital products, from public safety tools to in-vehicle experiences.</p>
+          <p className="hero-line">AI-native product designer working across public safety tools, automotive interfaces, and emerging experiences.</p>
           <WelcomeChat />
           <ul className="hero-meta" aria-label="At a glance">
             <li>{person.roles}</li>
