@@ -81,11 +81,11 @@ export const caseStudies: CaseStudy[] = [
     slug: "general-motors",
     name: "Convoy",
     org: "General Motors · sponsored UMSI project",
-    product: "An app and in-car experience for people taking road trips together, designed around the 2030 Silverado EV Trail Boss.",
+    product: "A phone and in-car experience to help groups plan and coordinate road trips together.",
     role: "Research, advanced Figma interactions, reusable components",
     team: "Three designers: me, Sara and Julia",
     timeline: "Jan – May 2026",
-    status: "Concept. Evaluated in three usability tests in a 3D-printed truck cab. Not road-tested.",
+    status: "Concept prototype. Tested three times using a physical vehicle mockup; not on the road.",
     contributions: {
       mine: [
         "Suggested moving away from the biometric concept after an interview pointed us toward group road trips",
@@ -94,7 +94,7 @@ export const caseStudies: CaseStudy[] = [
       ],
       team: [
         "Explored HVAC and in-drive views at vehicle size",
-        "Ran three usability tests in a 3D-printed truck cab",
+        "Ran three usability tests using a physical vehicle mockup",
       ],
     },
     hero: {
@@ -108,8 +108,8 @@ export const caseStudies: CaseStudy[] = [
       },
     },
     context: [
-      "GM sponsored our team to explore the in-car experience for a future electric truck. We started with biometric features that personalized the car for one driver.",
-      "Four weeks in, I wasn't sure it was solving a problem drivers really had. One driver interview got us talking about road trips with friends and family, and I suggested we focus on how people plan and stay connected across cars. That meant rethinking the screens too.",
+      "GM asked our team to explore experiences for a future electric truck. Our first concept used biometrics to personalize the vehicle for one driver.",
+      "After four weeks, an interview made me question whether personalization was the right problem. I suggested focusing on groups taking road trips in separate cars instead.",
     ],
     decisions: [
       {
@@ -121,7 +121,7 @@ export const caseStudies: CaseStudy[] = [
         owner: "shared",
       },
       {
-        title: "Plan on the phone, keep the dashboard narrow",
+        title: "Plan on the phone. Keep driving updates simple.",
         chose: "Trip planning on the phone; the car screen shows where everyone is and how the group is doing",
         over: "Putting planning on the in-car display",
         because: "People can plan together on their phones before leaving. Once they're driving, the car screen only needs essential group updates.",
@@ -129,10 +129,10 @@ export const caseStudies: CaseStudy[] = [
         owner: "team",
       },
       {
-        title: "A trip organizer — still an open question",
+        title: "Who should organize the trip?",
         chose: "One person organizes the trip and sets the plan",
         over: "Everyone in the group editing the plan equally",
-        because: "A group trip needs someone to own the plan.",
+        because: "We explored having one person manage the shared trip plan.",
         evidence: "Not settled. We didn't test whether everyone else feels included and comfortable with that setup.",
         owner: "team",
       },
@@ -140,19 +140,19 @@ export const caseStudies: CaseStudy[] = [
     slots: [
       { label: "Early biometric exploration", reason: "missing", expected: ["case-shots/gm/biometric-early.png"], note: "Shows the direction we moved away from.", aspect: "16 / 10" },
       { label: "Phone trip-planning screen", reason: "missing", expected: ["case-shots/gm/phone-planning.png"], note: "Final phone export.", aspect: "9 / 19.5" },
-      { label: "3D-printed cab test photo", reason: "clearance", expected: ["case-shots/gm/cab-test.jpg"], note: "Only if cleared by the team and sponsor; no participant faces.", aspect: "4 / 3" },
+      { label: "Physical prototype test photo", reason: "clearance", expected: ["case-shots/gm/cab-test.jpg"], note: "Only with permission from the team and sponsor; don't show participant faces.", aspect: "4 / 3" },
     ],
     evaluation: {
-      method: "Three usability tests of the prototype in a 3D-printed truck cab, run by the team.",
+      method: "Three usability tests using a physical vehicle mockup, run by the team.",
       learned: [
-        "Testing at vehicle size changed what we could judge compared with the Figma canvas.",
+        "We could see how the screens worked in a physical setup rather than only in Figma.",
         "How much control the trip organizer should have stayed an open question.",
       ],
       notTested: ["Real driving conditions", "Whether in-car updates are easy and safe to use while driving", "How the rest of the group feels about the organizer role"],
     },
     outcome: {
-      confirmed: "A concept and prototype evaluated in three cab tests.",
-      limitation: "We didn't test it on the road, so there are no safety findings. Test details stay with the team and sponsor.",
+      confirmed: "A concept prototype evaluated in three usability sessions.",
+      limitation: "We didn't test it in real driving conditions. Some details aren't available for public sharing.",
       next: "How much control should the trip organizer have?",
     },
   },
