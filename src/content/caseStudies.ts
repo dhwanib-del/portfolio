@@ -84,7 +84,7 @@ export const caseStudies: CaseStudy[] = [
     name: "Convoy",
     org: "General Motors · sponsored UMSI project",
     product: "A phone and in-car experience to help groups plan and coordinate road trips together.",
-    challenge: "The project began with biometric personalization for one driver, then shifted to group road trips.",
+    challenge: "We spoke with one truck driver, then moved from a single-driver biometric concept to group road trips.",
     role: "Research, advanced Figma interactions, reusable components",
     team: "Three designers: me, Sara and Julia",
     timeline: "Jan – May 2026",
@@ -112,7 +112,7 @@ export const caseStudies: CaseStudy[] = [
     },
     context: [
       "GM asked our team to explore experiences for a future electric truck. Our first concept used biometrics to personalize the vehicle for one driver.",
-      "After the initial biometric concept, the team explored a different direction: helping people travel together in separate cars.",
+      "After speaking with one truck driver, we moved from the biometric idea to a concept for people travelling together in separate cars.",
     ],
     decisions: [
       {
@@ -120,7 +120,7 @@ export const caseStudies: CaseStudy[] = [
         chose: "A convoy concept for a group travelling across several vehicles",
         over: "Personalizing the drive for a single driver with biometrics",
         because: "The interview was about planning and staying together across cars, which the biometric concept didn't address.",
-        evidence: "The project included a driver interview. Who proposed the change in direction has not been confirmed.",
+        evidence: "One interview with a truck driver informed the team discussion. This was a team change of direction.",
         owner: "shared",
       },
       {
@@ -130,6 +130,14 @@ export const caseStudies: CaseStudy[] = [
         because: "People can plan together on their phones before leaving. Once they're driving, the car screen only needs essential group updates.",
         evidence: "Team rationale, tried in the three cab tests. We still need to test whether that information is easy and safe to use on the road.",
         owner: "team",
+      },
+      {
+        title: "Designing the in-car interface in dark mode",
+        chose: "A dark-mode visual direction for the in-car screens",
+        over: "A light-mode visual direction",
+        because: "We chose to design the in-car experience in dark mode. The specific reasons behind that choice still need to be documented from the team's work rather than inferred.",
+        evidence: "Design direction identified by Dhwani. Contrast, hierarchy and driving-context benefits have not been independently verified.",
+        owner: "shared",
       },
       {
         title: "Who should organize the trip?",
