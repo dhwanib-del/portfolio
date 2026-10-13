@@ -13,7 +13,7 @@ export default function Home() {
         <div className={styles.intro}>
           <p className="hero-hi">hi, i&apos;m</p>
           <h1 id="hero-name" className="hero-name">{person.name}</h1>
-          <p className="hero-line">I design thoughtful products for complicated, real-world workflows.</p>
+          <p className="hero-line">I design digital products, from public safety tools to in-vehicle experiences.</p>
           <WelcomeChat />
           <ul className="hero-meta" aria-label="At a glance">
             <li>{person.roles}</li>
@@ -26,7 +26,7 @@ export default function Home() {
       </section>
 
 
-      <WorkReel projects={projects} eyebrow="selected work" heading="Complex work, made clearer." />
+      <WorkReel projects={projects} eyebrow="selected projects · 2025–2026" heading="The work, and what went into it." />
 
       <section className="section"><div className="container"><TheSet roles={experience.map((r) => ({ ...r, skills: ({
             "Adobe": "workshops, content, campus events",
