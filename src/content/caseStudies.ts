@@ -84,16 +84,16 @@ export const caseStudies: CaseStudy[] = [
     name: "Convoy",
     org: "General Motors · sponsored UMSI project",
     product: "A phone and in-car experience to help groups plan and coordinate road trips together.",
-    challenge: "We spoke with one truck driver, then moved from a single-driver biometric concept to group road trips.",
-    role: "Research, advanced Figma interactions, reusable components",
+    challenge: "How do you design a connected road-trip experience that feels native to a GM truck—not like a phone app on a dashboard?",
+    role: "Interface explorations, Figma interaction design, reusable components",
     team: "Three designers: me, Sara and Julia",
     timeline: "Jan – May 2026",
     status: "Concept prototype. Tested three times using a physical vehicle mockup; not on the road.",
     contributions: {
       mine: [
-        "Worked on research and prototyping for the GM-sponsored design project",
-        "Built the interactive screens in Figma",
-        "Built reusable components for our first shared team design system",
+        "Explored driver- and center-display interface layouts",
+        "Built interactive Figma prototypes",
+        "Helped build the shared design library and reusable components",
       ],
       team: [
         "Explored HVAC and in-drive views at vehicle size",
@@ -116,7 +116,7 @@ export const caseStudies: CaseStudy[] = [
     ],
     decisions: [
       {
-        title: "Design for the group, not one driver",
+        title: "From one driver to a group road trip",
         chose: "A convoy concept for a group travelling across several vehicles",
         over: "Personalizing the drive for a single driver with biometrics",
         because: "The interview was about planning and staying together across cars, which the biometric concept didn't address.",
@@ -132,11 +132,11 @@ export const caseStudies: CaseStudy[] = [
         owner: "team",
       },
       {
-        title: "Designing the in-car interface in dark mode",
+        title: "A dark interface that feels at home in a Silverado",
         chose: "A dark-mode visual direction for the in-car screens",
         over: "A light-mode visual direction",
         because: "We wanted Convoy to feel like it belonged in a GM truck, not like a phone app placed on a dashboard. Dark mode was part of that visual direction.",
-        evidence: "Dhwani recalls the goal of a more truck-like GM experience. The specific link between user testing and the dark-mode decision is not confirmed.",
+        evidence: "The team chose a dark visual direction to make the experience feel truck-like. No claim of improved driving safety or test-validated contrast is made.",
         owner: "shared",
       },
       {
@@ -149,6 +149,8 @@ export const caseStudies: CaseStudy[] = [
       },
     ],
     slots: [
+      { label: "Driver display sketches and alternatives", reason: "missing", expected: ["case-shots/gm/display-iterations.png"], note: "Use original versions from the GM Figma file to show layout decisions.", aspect: "16 / 9" },
+      { label: "Shared component library and variants", reason: "missing", expected: ["case-shots/gm/component-library.png"], note: "Show the real components, states and where they appear in final screens.", aspect: "16 / 9" },
       { label: "Early biometric exploration", reason: "missing", expected: ["case-shots/gm/biometric-early.png"], note: "Shows the direction we moved away from.", aspect: "16 / 10" },
       { label: "Phone trip-planning screen", reason: "missing", expected: ["case-shots/gm/phone-planning.png"], note: "Final phone export.", aspect: "9 / 19.5" },
       { label: "Physical prototype test photo", reason: "clearance", expected: ["case-shots/gm/cab-test.jpg"], note: "Only with permission from the team and sponsor; don't show participant faces.", aspect: "4 / 3" },
