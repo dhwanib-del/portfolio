@@ -5,6 +5,7 @@ import { AssetSlot } from "./AssetSlot"
 import { BeforeAfter } from "./BeforeAfter"
 import { OwnerTag } from "./OwnerTag"
 import { PrototypeEmbed } from "./PrototypeEmbed"
+import { FigmaListeningRoom } from "./FigmaListeningRoom"
 import { ScreenViewer } from "./ScreenViewer"
 import s from "./CaseStudyLayout.module.css"
 
@@ -132,6 +133,8 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
           <AssetSlot slot={study.hero.slot} />
         )}
       </section>
+
+      {study.slug === "general-motors" && <FigmaListeningRoom />}
 
       <section className={s.atGlance} aria-label="Case study at a glance">
         <span className={s.kicker}>The project in three points</span>
