@@ -19,13 +19,13 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
 
   sections.push({
     id: "context",
-    title: "Context",
+    title: study.slug === "general-motors" ? "From the vehicle to the idea" : "The problem and the setting",
     body: <div className={s.prose}>{study.context.map((p) => <p key={p}>{p}</p>)}</div>,
   })
 
   sections.push({
     id: "decisions",
-    title: "Key decisions",
+    title: study.slug === "general-motors" ? "The interface choices" : "Decisions that shaped the work",
     body: (
       <ol className={s.decisions}>
         {study.decisions.map((d, i) => (
@@ -36,10 +36,10 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
               <OwnerTag owner={d.owner} />
             </div>
             <dl className={s.decisionBody}>
-              <div><dt>Chose</dt><dd>{d.chose}</dd></div>
-              <div><dt>Over</dt><dd className={s.rejected}>{d.over}</dd></div>
-              <div><dt>Because</dt><dd>{d.because}</dd></div>
-              <div><dt>Evidence</dt><dd className={s.evidence}>{d.evidence}</dd></div>
+              <div><dt>What we designed</dt><dd>{d.chose}</dd></div>
+              <div><dt>Alternative</dt><dd>{d.over}</dd></div>
+              <div><dt>Why</dt><dd>{d.because}</dd></div>
+              <div><dt>What supports this</dt><dd className={s.evidence}>{d.evidence}</dd></div>
             </dl>
           </li>
         ))}
@@ -51,7 +51,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
   if (hasProduct) {
     sections.push({
       id: "product",
-      title: study.experience?.heading ?? "Product experience",
+      title: study.experience?.heading ?? (study.slug === "general-motors" ? "From layouts to a shared design library" : "The experience"),
       body: (
         <div className={s.stack}>
           {study.experience && (
@@ -82,7 +82,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
 
   sections.push({
     id: "evaluation",
-    title: "Evaluation",
+    title: "What testing could tell us",
     body: (
       <div className={s.evalGrid}>
         <div className={s.evalMethod}><h3>What we did</h3><p>{study.evaluation.method}</p></div>
@@ -94,7 +94,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
 
   sections.push({
     id: "outcome",
-    title: "Outcome",
+    title: "Where the work landed",
     body: (
       <div className={s.outcome}>
         <div><h3>Confirmed</h3><p>{study.outcome.confirmed}</p></div>
@@ -134,16 +134,16 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
         )}
       </section>
 
-      {study.slug === "general-motors" && <FigmaListeningRoom />}
-
       <section className={s.atGlance} aria-label="Case study at a glance">
-        <span className={s.kicker}>The project in three points</span>
+        <span className={s.kicker}>The short version</span>
         <ol className={s.glanceItems}>
           <li><span>01 / The challenge</span><strong>{study.challenge ?? study.context[0]}</strong></li>
           <li><span>02 / What changed</span><strong>{study.decisions[0]?.chose}</strong></li>
           <li><span>03 / What we made</span><strong>{study.outcome.confirmed}</strong></li>
         </ol>
       </section>
+
+      {study.slug === "general-motors" && <FigmaListeningRoom />}
 
       <section className={s.part} aria-labelledby="my-part">
         <h2 id="my-part" className={s.kicker}>My part</h2>
