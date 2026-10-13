@@ -136,9 +136,9 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
       <section className={s.atGlance} aria-label="Case study at a glance">
         <span className={s.kicker}>The project in three points</span>
         <ol className={s.glanceItems}>
-          <li><span>01 / Context</span><strong>{study.context[0]}</strong></li>
-          <li><span>02 / Design decision</span><strong>{study.decisions[0]?.title}</strong></li>
-          <li><span>03 / Result</span><strong>{study.outcome.confirmed}</strong></li>
+          <li><span>01 / The challenge</span><strong>{study.challenge ?? study.context[0]}</strong></li>
+          <li><span>02 / What changed</span><strong>{study.decisions[0]?.chose}</strong></li>
+          <li><span>03 / What we made</span><strong>{study.outcome.confirmed}</strong></li>
         </ol>
       </section>
 
