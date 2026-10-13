@@ -84,14 +84,14 @@ export const caseStudies: CaseStudy[] = [
     name: "Convoy",
     org: "General Motors · sponsored UMSI project",
     product: "A phone and in-car experience to help groups plan and coordinate road trips together.",
-    challenge: "We spent four weeks exploring biometric personalization. After a driver interview, I questioned whether we were solving the right problem.",
+    challenge: "The project began with biometric personalization for one driver, then shifted to group road trips.",
     role: "Research, advanced Figma interactions, reusable components",
     team: "Three designers: me, Sara and Julia",
     timeline: "Jan – May 2026",
     status: "Concept prototype. Tested three times using a physical vehicle mockup; not on the road.",
     contributions: {
       mine: [
-        "Suggested moving away from the biometric concept after an interview pointed us toward group road trips",
+        "Worked on research and prototyping for the GM-sponsored design project",
         "Built the interactive screens in Figma",
         "Built reusable components for our first shared team design system",
       ],
@@ -112,7 +112,7 @@ export const caseStudies: CaseStudy[] = [
     },
     context: [
       "GM asked our team to explore experiences for a future electric truck. Our first concept used biometrics to personalize the vehicle for one driver.",
-      "After four weeks, an interview made me question whether personalization was the right problem. I suggested focusing on groups taking road trips in separate cars instead.",
+      "After the initial biometric concept, the team explored a different direction: helping people travel together in separate cars.",
     ],
     decisions: [
       {
@@ -120,7 +120,7 @@ export const caseStudies: CaseStudy[] = [
         chose: "A convoy concept for a group travelling across several vehicles",
         over: "Personalizing the drive for a single driver with biometrics",
         because: "The interview was about planning and staying together across cars, which the biometric concept didn't address.",
-        evidence: "One driver interview and the team's discussion of it. I suggested the change; the team agreed.",
+        evidence: "The project included a driver interview. Who proposed the change in direction has not been confirmed.",
         owner: "shared",
       },
       {
