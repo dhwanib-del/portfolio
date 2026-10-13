@@ -17,8 +17,9 @@ function ProjectCover({ project }: { project: Project }) {
   const name = project.title.split(" · ")[0]
   return (
     <div className="reel-cover-type" aria-hidden="true">
-      <small>{project.coverNote ?? "Screens coming soon"}</small>
+      <div className="reel-cover-overline"><span>SELECTED PROJECT / {project.tags[0]}</span><span aria-hidden="true">↗</span></div>
       <strong>{name}<span>.</span></strong>
+      <div className="reel-cover-bottom"><span>{project.result}</span><small>{project.coverNote ?? "Project overview"}</small></div>
     </div>
   )
 }
@@ -48,7 +49,7 @@ export function WorkReel({ projects, eyebrow, heading }: { projects: Project[]; 
     return () => observer.disconnect()
   }, [])
 
-  const cards = projects.map((project) => {
+  const cards = projects.map((project, index) => {
     const media = project.nda ? (
       <div className="reel-ph reel-ph-nda"><span>Under NDA</span><small>Ask me about the work</small></div>
     ) : project.video ? (
@@ -64,7 +65,7 @@ export function WorkReel({ projects, eyebrow, heading }: { projects: Project[]; 
       <>
         <div className="reel-media">
           {media}
-          <span className="reel-media-label">{project.tags[0]}</span>
+          <span className="reel-media-label">{String(index + 1).padStart(2, "0")} / {project.tags[0]}</span>
         </div>
         <div className="reel-body">
           <div className="reel-title-row"><p className="reel-title">{project.title}</p>{project.brand && <BrandMark brand={project.brand} />}</div>
@@ -72,14 +73,14 @@ export function WorkReel({ projects, eyebrow, heading }: { projects: Project[]; 
           <div className="reel-extra">
             <ul className="reel-tags" aria-label="Topics">{project.tags.map((tag) => <li key={tag}>{tag}</li>)}</ul>
             <p className="reel-text">{project.body}</p>
-            <span className="reel-cta" aria-hidden="true">{project.nda ? "Ask me about it →" : "View case study →"}</span>
+            <span className="reel-cta" aria-hidden="true">{project.nda ? "Current work" : "Explore the case study"} <span>↗</span></span>
           </div>
         </div>
       </>
     )
     const label = `${project.title}. ${project.result}. ${project.nda ? "Under NDA." : "View case study."}`
     return (
-      <li key={project.slug} data-project={project.slug} className={`reel-card project-${project.slug} ${visible ? "is-revealed" : ""}`}>
+      <li key={project.slug} data-project={project.slug} className={`reel-card project-${project.slug} ${index === 0 ? "reel-featured" : ""} ${visible ? "is-revealed" : ""}`}>
         {project.nda ? (
           <article className="reel-link" tabIndex={0} aria-label={label} onFocus={() => setRevealed((current) => current.includes(project.slug) ? current : [...current, project.slug])}>{inside}</article>
         ) : (
