@@ -143,3 +143,11 @@
   .toc { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-left: calc(var(--gutter) * -1); margin-right: calc(var(--gutter) * -1); padding-left: var(--gutter); padding-right: var(--gutter); }
   .toc a { flex: none; }
 }
+
+/* Evidence-led skim: read the page in three quick statements before diving deeper. */
+.atGlance{padding:clamp(35px,6vw,68px) 0;border-bottom:1px solid var(--line-strong)}
+.glanceItems{list-style:none;padding:0;margin:20px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.glanceItems li{border-top:1px solid var(--line);padding-top:17px;display:grid;align-content:start;gap:12px}
+.glanceItems li>span{font:500 11px/1.5 var(--font-nav);letter-spacing:.05em;color:var(--accent);text-transform:uppercase}
+.glanceItems strong{font-size:clamp(17px,1.8vw,22px);line-height:1.4;font-weight:500;letter-spacing:-.025em}
+@media(max-width:700px){.glanceItems{grid-template-columns:1fr;gap:18px}}
