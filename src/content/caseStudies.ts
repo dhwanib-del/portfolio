@@ -135,8 +135,8 @@ export const caseStudies: CaseStudy[] = [
         title: "Designing the in-car interface in dark mode",
         chose: "A dark-mode visual direction for the in-car screens",
         over: "A light-mode visual direction",
-        because: "We chose to design the in-car experience in dark mode. The specific reasons behind that choice still need to be documented from the team's work rather than inferred.",
-        evidence: "Design direction identified by Dhwani. Contrast, hierarchy and driving-context benefits have not been independently verified.",
+        because: "We wanted Convoy to feel like it belonged in a GM truck, not like a phone app placed on a dashboard. Dark mode was part of that visual direction.",
+        evidence: "Dhwani recalls the goal of a more truck-like GM experience. The specific link between user testing and the dark-mode decision is not confirmed.",
         owner: "shared",
       },
       {
