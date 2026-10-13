@@ -49,6 +49,8 @@ export type CaseStudy = {
   org: string
   /** one sentence: what the product is, in plain words */
   product: string
+  /** Short, evidence-based tension: shown in the 30-second scan. */
+  challenge?: string
   role: string
   team: string
   timeline: string
@@ -82,6 +84,7 @@ export const caseStudies: CaseStudy[] = [
     name: "Convoy",
     org: "General Motors · sponsored UMSI project",
     product: "A phone and in-car experience to help groups plan and coordinate road trips together.",
+    challenge: "We spent four weeks exploring biometric personalization. After a driver interview, I questioned whether we were solving the right problem.",
     role: "Research, advanced Figma interactions, reusable components",
     team: "Three designers: me, Sara and Julia",
     timeline: "Jan – May 2026",
