@@ -1,10 +1,16 @@
 /* ---------- Aurora background ---------- */
-.aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; opacity: var(--aurora-opacity); }
-.aurora i { position: absolute; border-radius: 50%; filter: blur(80px); animation: drift 24s ease-in-out infinite alternate; }
+.aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; opacity: var(--aurora-opacity); mix-blend-mode: var(--glow-blend); transition: opacity .45s ease; isolation: isolate; }
+.aurora i { position: absolute; border-radius: 50%; filter: blur(clamp(38px, 7vw, 80px)); opacity: .7; animation: drift 24s ease-in-out infinite alternate, aurora-breathe 8s ease-in-out infinite; will-change: transform,opacity; }
 .aurora i:nth-child(1) { width: 70vmax; height: 70vmax; top: -30vmax; left: -15vmax; background: radial-gradient(circle, var(--vibe-b, rgba(243,80,15,.5)) 0%, transparent 70%); }
 .aurora i:nth-child(2) { width: 50vmax; height: 50vmax; top: 40%; left: 55%; background: radial-gradient(circle, var(--vibe-a, rgba(255,140,60,.38)) 0%, transparent 70%); animation-delay: -8s; }
 .aurora i:nth-child(3) { width: 40vmax; height: 40vmax; top: 70%; left: -10%; background: radial-gradient(circle, var(--vibe-c, rgba(255,203,5,.16)) 0%, transparent 70%); animation-delay: -14s; }
-@keyframes drift { 0% { transform: translate(0,0) scale(1) } 50% { transform: translate(40px,-30px) scale(1.12) } 100% { transform: translate(-30px,20px) scale(.95) } }
+@keyframes drift { 0% { transform: translate3d(0,0,0) scale(1) } 50% { transform: translate3d(52px,-38px,0) scale(1.12) } 100% { transform: translate3d(-30px,24px,0) scale(.94) } }
+@keyframes aurora-breathe { 0%,100% { opacity: .38 } 50% { opacity: 1 } }
+.aurora i:nth-child(2){animation-delay:-8s,-2.8s}
+.aurora i:nth-child(3){animation-delay:-14s,-5s}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .aurora i{filter:blur(clamp(30px,6vw,70px));}}
+:root[data-theme="light"] .aurora i{filter:blur(clamp(30px,6vw,70px));}
+@media(prefers-reduced-motion:reduce){.aurora i{animation:none;opacity:.72;will-change:auto}}
 
 /* ---------- Nav ---------- */
 .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; pointer-events: none; }
@@ -30,7 +36,7 @@
 .nav-sheet a[aria-current="page"] { color: var(--text); background: var(--card-hover); }
 @media (max-width: 809px) {
   .nav-pill { display: none; }
-  .nav-bar { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 4px 4px 4px 16px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); font-family: var(--font-nav); }
+  .nav-bar { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 4px 4px 4px 16px; border-radius: 14px; background: var(--glass); border: 1px solid var(--line); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); font-family: var(--font-nav); }
   .nav-brand { display: inline-flex; align-items: center; gap: 10px; }
   .nav-brand a { color: var(--text); text-decoration: none; font-weight: 500; padding: 10px 4px; }
   .nav-bar-r { display: inline-flex; align-items: center; gap: 4px; }
@@ -1085,16 +1091,16 @@ html,body { max-width:100%; overflow-x:clip; }
 /* Framer SelectedWork parity: Poppins, dark-first DB tokens, horizontal reel, quiet glow. */
 .reel-editorial{overflow:hidden}
 .reel-editorial .reel-head{margin-bottom:26px;align-items:center}
-.reel-editorial .reel-head .h2{font-family:var(--font-sans),Poppins,sans-serif;max-width:none}
+.reel-editorial .reel-head .h2{font-family:var(--font-editorial),Georgia,serif;font-size:clamp(35px,4.5vw,70px);line-height:1.03;letter-spacing:-.022em;max-width:none}
 .reel-editorial .reel-grid{display:flex;grid-template-columns:none;gap:22px;max-width:none;width:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-padding-inline:max(var(--gutter),calc((100vw - var(--max))/2));padding:8px max(var(--gutter),calc((100vw - var(--max))/2)) 32px;scrollbar-width:none;overscroll-behavior-x:contain}
 .reel-editorial .reel-grid::-webkit-scrollbar{display:none}
 .reel-editorial .reel-grid .reel-card,.reel-editorial .reel-grid .reel-card.reel-featured{flex:0 0 min(500px,82vw);grid-column:auto;min-width:0;scroll-snap-align:start}
 .reel-editorial .reel-grid .reel-featured .reel-link{display:flex;flex-direction:column;min-height:0}
 .reel-editorial .reel-grid .reel-featured .reel-media{aspect-ratio:16/10;min-height:0}
-.reel-editorial .reel-grid .reel-link{border:1px solid var(--db-line,var(--line));border-radius:18px;background:var(--db-surface,var(--card));color:var(--db-text,var(--text));box-shadow:var(--db-shadow,var(--shadow));font-family:Poppins,var(--font-sans),sans-serif}
+.reel-editorial .reel-grid .reel-link{border:1px solid var(--db-line,var(--line));border-radius:18px;background:var(--db-surface,var(--card));color:var(--db-text,var(--text));box-shadow:var(--db-shadow,var(--shadow));font-family:var(--font-sans);min-width:0;}
 .reel-editorial .reel-grid .reel-media{aspect-ratio:16/10}
 .reel-editorial .reel-grid .reel-featured .reel-body,.reel-editorial .reel-grid .reel-body{justify-content:start;gap:12px;padding:24px 26px 27px}
-.reel-editorial .reel-grid .reel-featured .reel-result,.reel-editorial .reel-grid .reel-result{font-size:clamp(23px,2.2vw,30px);line-height:1.2;letter-spacing:-.025em;font-weight:600}
+.reel-editorial .reel-grid .reel-featured .reel-result,.reel-editorial .reel-grid .reel-result{font-family:var(--font-story);font-size:var(--type-card);line-height:1.27;letter-spacing:-.02em;font-weight:600}
 .reel-editorial .reel-grid .reel-title{color:var(--db-text-2,var(--text-2))}
 .reel-editorial .reel-grid .reel-text{font-size:14px}
 .reel-editorial .reel-grid .reel-cover-type{background:radial-gradient(ellipse at 15% 8%,color-mix(in srgb,var(--db-accent,var(--accent)) 15%,transparent),transparent 65%),var(--db-surface-2,var(--surface-2));color:var(--db-text,var(--text))}
