@@ -13,18 +13,10 @@ const TABS = [
   { label: "work", href: "/#work" },
   { label: "AI Lab", href: "/lab" },
   { label: "connect", href: "/#contact" },
-  { label: "résumé ↗", href: "/resume" },
+  { label: "résumé", href: "/resume" },
 ]
 
-function Lights() {
-  return (
-    <span aria-hidden className="nav-lights">
-      <i style={{ background: "#FF5F57" }} />
-      <i style={{ background: "#FFBD2E" }} />
-      <i style={{ background: "#28CA41" }} />
-    </span>
-  )
-}
+
 
 export function Nav() {
   const path = usePathname() || "/"
@@ -95,8 +87,7 @@ export function Nav() {
     <header className="nav">
       <a href="#main" className="skip-link">Skip to content</a>
       <nav aria-label="Main" className="nav-pill">
-        <Link className="nav-wordmark" href="/" aria-label="Dhwani Bagrecha home"><span lang="hi">ध्वनि</span><span className="nav-wordmark-question" aria-hidden="true">?</span></Link>
-        <Lights />
+        <Link className="nav-wordmark" href="/" aria-label="Dhwani Bagrecha home"><span>db.</span></Link>
         <span aria-hidden className="nav-div" />
         <ul>
           {TABS.map((t) => (
@@ -113,8 +104,7 @@ export function Nav() {
 
       <div className="nav-bar">
         <span className="nav-brand">
-          <Lights />
-          <Link href="/" className="nav-wordmark" aria-label="Dhwani Bagrecha home"><span lang="hi">ध्वनि</span><span className="nav-wordmark-question" aria-hidden="true">?</span></Link>
+          <Link href="/" className="nav-wordmark" aria-label="Dhwani Bagrecha home"><span>db.</span></Link>
         </span>
         <span className="nav-bar-r">
           <ThemeToggle />
@@ -126,7 +116,7 @@ export function Nav() {
       </div>
       {open && (
         <>
-          <div className="nav-scrim" aria-hidden onClick={() => setOpen(false)} />
+          <button type="button" className="nav-scrim" aria-label="Close navigation" tabIndex={-1} onClick={() => setOpen(false)} />
           <div id="nav-sheet" ref={sheetRef} className="nav-sheet">
             <nav aria-label="Main">
               <ul>
