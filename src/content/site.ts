@@ -8,7 +8,7 @@ export const person = {
   location: "Ann Arbor, open to moving anywhere",
   email: "", // add to show an email button
   linkedin: "", // add to show a LinkedIn button
-  resume: "", // e.g. "/resume.pdf"
+  resume: "/resume", // stable résumé route; update destination in src/app/resume/page.tsx
 }
 
 export const bubbleLines = [
@@ -28,6 +28,10 @@ export type Project = {
   video?: string // /media/<slug>.mp4
   image?: string // /work/<slug>/cover.jpg
   poster?: string
+  /** real screens for the card cover (phone exports) */
+  coverScreens?: string[]
+  /** shown on the typographic cover when there are no public screens */
+  coverNote?: string
   nda?: boolean
   hint: string // talk-to-me cursor line
   brand?: "dpss" | "gm" | "openlibrary" | "primevideo"
@@ -35,57 +39,62 @@ export type Project = {
 
 export const projects: Project[] = [
   {
-    slug: "briefs",
-    title: "BRIEFS · UM DPSS",
-    result: "A clearer path through seven dispatch screens",
-    tags: ["Contextual inquiry", "Workflow", "Apps Script"],
-    body: "In my first contextual inquiry, I watched dispatchers search across seven screens. Starting with no design files, I mapped the workflow and built a prototype + PRD, then explored a Sheets-backed Apps Script.",
-    hint: "dispatchers, mid-call, no time to dig →",
-    brand: "dpss",
-  },
-  {
-    slug: "intel",
-    title: "Intel workspace · UM DPSS",
-    result: "Case history in one shared workspace",
-    tags: ["Case management", "Stakeholder research", "Workflow"],
-    body: "The concept connects requests and investigation work in a shared, role-aware workspace. The public screens use fictional demo records.",
-    hint: "explore the fictional workflow demo →",
-  },
-  {
     slug: "general-motors",
     title: "Convoy · General Motors",
-    result: "I challenged the biometric direction",
-    tags: ["HMI", "Advanced prototyping", "Design system"],
-    body: "I pushed us from biometrics toward a community-centered convoy. I built advanced Figma interactions and reusable components in our first shared design system; cab testing helped us weigh the trade-offs.",
-    hint: "group coordination across phone and vehicle →",
+    result: "Designing a road-trip experience across phone and truck displays",
+    tags: ["Automotive UI", "Design system", "Figma prototyping"],
+    body: "A GM-sponsored team concept. We explored interface layouts, built a reusable component library, and developed an interactive prototype for groups traveling together. Evaluated in three usability sessions.",
+    coverNote: "Original GM screens awaiting approved exports",
+    hint: "See the layouts, components, and prototype →",
     brand: "gm",
   },
   {
-    slug: "prime-video",
-    title: "Prime Video · Capstone",
-    result: "Under NDA",
-    tags: ["Streaming", "Capstone"],
-    body: "Current capstone with Prime Video. Nothing goes here until it's cleared. Ask me about the process.",
-    nda: true,
-    hint: "NDA 🔒 ask me about this one",
-    brand: "primevideo",
+    slug: "intel",
+    title: "Intelligence Hub · UM DPSS",
+    result: "A shared workspace for investigation workflows",
+    tags: ["Product design", "Complex workflows", "Pilot"],
+    body: "Co-designed an internal case-management workspace with role-aware navigation, research with stakeholders, and pilot feedback.",
+    coverNote: "Screens pending DPSS approval",
+    hint: "How we organized complex casework →",
+  },
+  {
+    slug: "briefs",
+    title: "BRIEFS · UM DPSS",
+    result: "Helping emergency dispatchers find building information mid-call",
+    tags: ["Field research", "Information architecture", "Prototype"],
+    body: "Observed the real building-information lookup workflow, then designed a prototype and requirements document. Not yet tested with dispatchers.",
+    coverNote: "Screens pending DPSS approval",
+    hint: "See the mid-call information problem →",
+    brand: "dpss",
   },
   {
     slug: "openlibrary",
     title: "Open Library · Internet Archive",
-    result: "Language help, inside the reading flow",
-    tags: ["Research", "Multilingual", "Accessibility"],
-    body: "I contributed to interviews, client calls and my first affinity map. Our team synthesized 330 data points into recommendations for multilingual reading access.",
-    hint: "language help in the reading flow →",
+    result: "Researching language barriers in digital reading",
+    tags: ["UX research", "Synthesis", "Accessibility"],
+    body: "Worked on research, affinity mapping and client recommendations for a more inclusive reading experience.",
+    coverNote: "Research artifacts awaiting review",
+    hint: "Follow the research findings →",
     brand: "openlibrary",
   },
   {
     slug: "budgetcart",
     title: "BudgetCart · UMSI",
-    result: "Better grocery deals, built around SNAP/WIC",
-    tags: ["Grocery", "SNAP / WIC", "Budgeting"],
-    body: "My first Figma project: stakeholder interviews, paper prototypes, and a self-taught component system. We explored a concept that prioritized SNAP/WIC needs and better grocery deals.",
-    hint: "the moment before checkout →",
+    result: "A grocery planning concept for shoppers on tight budgets",
+    tags: ["Mobile design", "Grocery", "SNAP / WIC"],
+    body: "A student team prototype exploring grocery comparison, budgets, and SNAP/WIC-aware shopping.",
+    coverScreens: ["/case-shots/budgetcart/smart-ai.png", "/case-shots/budgetcart/budget-calendar.png"],
+    hint: "Explore the mobile designs →",
+  },
+  {
+    slug: "prime-video",
+    title: "Prime Video · Capstone",
+    result: "Current research project · details not public",
+    tags: ["Capstone", "Research"],
+    body: "Current capstone work. Details are not public.",
+    nda: true,
+    hint: "Current work · limited details",
+    brand: "primevideo",
   },
 ]
 

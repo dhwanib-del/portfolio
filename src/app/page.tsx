@@ -1,4 +1,4 @@
-import { PhotoBooth } from "@/components/PhotoBooth"
+import { AlbumIntro } from "@/components/AlbumIntro"
 import styles from "./home.module.css"
 import { Bubble } from "@/components/Bubble"
 import { WelcomeChat } from "@/components/WelcomeChat"
@@ -13,7 +13,7 @@ export default function Home() {
         <div className={styles.intro}>
           <p className="hero-hi">hi, i&apos;m</p>
           <h1 id="hero-name" className="hero-name">{person.name}</h1>
-          <p className="hero-line">I design thoughtful products for complicated, real-world workflows.</p>
+          <p className="hero-line">AI-native product designer working across public safety tools, automotive interfaces, and emerging experiences.</p>
           <WelcomeChat />
           <ul className="hero-meta" aria-label="At a glance">
             <li>{person.roles}</li>
@@ -22,11 +22,11 @@ export default function Home() {
           </ul>
           <Bubble lines={bubbleLines} />
         </div>
-        <PhotoBooth />
+        <AlbumIntro />
       </section>
 
 
-      <WorkReel projects={projects} eyebrow="selected work" heading="Complex work, made clearer." />
+      <WorkReel projects={projects} eyebrow="selected projects · 2025–2026" heading="The work, and what went into it." />
 
       <section className="section"><div className="container"><TheSet roles={experience.map((r) => ({ ...r, skills: ({
             "Adobe": "workshops, content, campus events",
@@ -50,7 +50,7 @@ export default function Home() {
           <div className="contact-actions">
             {person.email && <a className="btn btn-primary" href={`mailto:${person.email}`}>Email me</a>}
             {person.linkedin && <a className="btn" href={person.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>}
-            {person.resume && <a className="btn" href={person.resume}>Résumé (PDF)</a>}
+            {person.resume && <a className="btn" href={person.resume}>Résumé ↗</a>}
           </div>
         </div>
       </section>
