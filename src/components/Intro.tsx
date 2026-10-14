@@ -1,202 +1,120 @@
 "use client"
 
-// A quiet editorial entrance. The actual portfolio is always one click away.
-// Existing palette IDs, storage keys, custom gradients, and theme tokens remain compatible.
-import { useCallback, useEffect, useRef, useState } from "react"
+// Lightweight sitewide vibe switcher. No splash screen or blocked navigation.
+import { useEffect, useRef, useState } from "react"
 import styles from "./Intro.module.css"
 
-type Vibe = { id: string; name: string; accent: string; ambient: [string, string, string] }
+type Vibe = { id: string; name: string; accent: string; a: string; b: string; c: string }
 const VIBES: Vibe[] = [
-  { id: "ember", name: "Orange", accent: "#F3500F", ambient: ["rgba(255,140,60,.33)", "rgba(243,80,15,.44)", "rgba(255,203,5,.12)"] },
-  { id: "goblue", name: "Blue", accent: "#38BDF8", ambient: ["rgba(125,211,252,.27)", "rgba(56,189,248,.45)", "rgba(2,132,199,.18)"] },
-  { id: "afterhours", name: "Pink", accent: "#FF4D8D", ambient: ["rgba(255,177,153,.26)", "rgba(255,77,141,.36)", "rgba(123,92,255,.14)"] },
-  { id: "greenroom", name: "Yellow", accent: "#FACC15", ambient: ["rgba(254,240,138,.27)", "rgba(250,204,21,.39)", "rgba(234,179,8,.18)"] },
+  { id: "ember", name: "Orange", accent: "#F3500F", a:"rgba(255,140,60,.38)", b:"rgba(243,80,15,.50)", c:"rgba(255,203,5,.16)" },
+  { id: "goblue", name: "Blue", accent: "#38BDF8", a:"rgba(125,211,252,.32)", b:"rgba(56,189,248,.50)", c:"rgba(2,132,199,.22)" },
+  { id: "afterhours", name: "Pink", accent: "#FF4D8D", a:"rgba(255,177,153,.32)", b:"rgba(255,77,141,.46)", c:"rgba(123,92,255,.20)" },
+  { id: "greenroom", name: "Yellow", accent: "#FACC15", a:"rgba(254,240,138,.35)", b:"rgba(250,204,21,.48)", c:"rgba(234,179,8,.22)" },
 ]
-const defaultColors: [string, string] = ["#8B5CF6", "#F3500F"]
-
-function rgb(hex: string) {
-  const raw = hex.slice(1)
-  const normalized = raw.length === 3 ? raw.split("").map(c => c + c).join("") : raw
-  const x = Number.parseInt(normalized, 16)
-  return [(x >> 16) & 255, (x >> 8) & 255, x & 255] as const
+const DEFAULT_COLORS: [string,string] = ["#8B5CF6","#F3500F"]
+function rgb(hex:string) {
+  const h = hex.slice(1), n = parseInt(h.length===3?h.split("").map(c=>c+c).join(""):h,16)
+  return [(n>>16)&255,(n>>8)&255,n&255] as const
 }
-function rgba(hex: string, a: number) {
+function rgba(hex:string,opacity:number) {
   const [r,g,b] = rgb(hex)
-  return "rgba(" + r + "," + g + "," + b + "," + a + ")"
+  return "rgba("+r+","+g+","+b+","+opacity+")"
 }
-function luminance(r: number, g: number, b: number) {
-  const channel = (n: number) => { const x = n / 255; return x <= .04045 ? x / 12.92 : ((x + .055) / 1.055) ** 2.4 }
-  return .2126 * channel(r) + .7152 * channel(g) + .0722 * channel(b)
+function luminance(r:number,g:number,b:number) {
+  const cv=(n:number)=>{const x=n/255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}
+  return .2126*cv(r)+.7152*cv(g)+.0722*cv(b)
 }
-function inkForLight(hex: string) {
-  const [r,g,b] = rgb(hex)
-  const surface = luminance(224,224,224)
-  for(let k=0; k<=100; k+=2) {
-    const mult = (100-k)/100
-    const rr = Math.round(r*mult),gg=Math.round(g*mult),bb=Math.round(b*mult)
-    if((surface+.05)/(luminance(rr,gg,bb)+.05)>=4.5) return "#" + [rr,gg,bb].map(n=>n.toString(16).padStart(2,"0")).join("")
+function accentOnLight(hex:string) {
+  const [r,g,b] = rgb(hex), surface=luminance(224,224,224)
+  for(let t=0;t<=100;t+=2) {
+    const m=(100-t)/100, rr=Math.round(r*m),gg=Math.round(g*m),bb=Math.round(b*m)
+    if((surface+.05)/(luminance(rr,gg,bb)+.05)>=4.5) return "#"+[rr,gg,bb].map(v=>v.toString(16).padStart(2,"0")).join("")
   }
   return "#000000"
 }
-function custom(first: string, second: string): Vibe {
-  return { id: "custom", name: "Custom", accent: second, ambient: [rgba(first,.29),rgba(second,.42),rgba(first,.13)] }
+function custom(first:string,second:string):Vibe {
+  return {id:"custom",name:"Custom",accent:second,a:rgba(first,.34),b:rgba(second,.48),c:rgba(first,.18)}
 }
-function apply(v: Vibe, save = false) {
-  const doc = document.documentElement
-  doc.dataset.vibe = v.id
-  doc.style.setProperty("--vibe-a", v.ambient[0])
-  doc.style.setProperty("--vibe-b", v.ambient[1])
-  doc.style.setProperty("--vibe-c", v.ambient[2])
-  doc.style.setProperty("--vibe-accent", v.accent)
-  doc.style.setProperty("--vibe-accent-ink", inkForLight(v.accent))
-  doc.style.setProperty("--vibe-on-accent", luminance(...rgb(v.accent)) > .22 ? "#0a0a0a" : "#ffffff")
-  doc.style.removeProperty("--accent")
-  doc.style.removeProperty("--on-accent")
-  if (save) {
-    try { localStorage.setItem("vibe",v.id); localStorage.setItem("db_vibe",v.id) } catch {}
-    window.dispatchEvent(new CustomEvent("db-vibe",{detail:{id:v.id,accent:v.accent}}))
+function apply(v:Vibe,save:boolean) {
+  const el=document.documentElement
+  el.dataset.vibe=v.id
+  el.style.setProperty("--vibe-a",v.a)
+  el.style.setProperty("--vibe-b",v.b)
+  el.style.setProperty("--vibe-c",v.c)
+  el.style.setProperty("--vibe-accent",v.accent)
+  el.style.setProperty("--vibe-accent-ink",accentOnLight(v.accent))
+  el.style.setProperty("--vibe-on-accent",luminance(...rgb(v.accent))>.22?"#0a0a0a":"#ffffff")
+  el.style.removeProperty("--accent")
+  el.style.removeProperty("--on-accent")
+  if(save) {
+    try{
+      localStorage.setItem("vibe",v.id)
+      localStorage.setItem("db_vibe",JSON.stringify({id:v.id,a:v.a,b:v.b,c:v.c,accent:v.accent}))
+    }catch{}
+    window.dispatchEvent(new CustomEvent("db-vibe",{detail:{id:v.id,a:v.a,b:v.b,c:v.c,accent:v.accent}}))
   }
 }
-function restored() {
-  let colors = defaultColors
+function restore() {
+  let colors:[string,string]=[...DEFAULT_COLORS]
   try {
-    const savedColors = JSON.parse(localStorage.getItem("custom-vibe-colors") || "null")
-    if (Array.isArray(savedColors) && savedColors.length === 2 && savedColors.every(v => typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v))) colors = [savedColors[0], savedColors[1]]
-    const id = localStorage.getItem("vibe") || localStorage.getItem("db_vibe")
-    const saved = id === "custom" ? custom(...colors) : VIBES.find(v=>v.id === (id === "cherry" ? "afterhours" : id)) || VIBES[2]
-    return {saved, colors}
-  } catch { return {saved: VIBES[2], colors} }
+    const raw=JSON.parse(localStorage.getItem("custom-vibe-colors")||"null")
+    if(Array.isArray(raw)&&raw.length===2&&raw.every(x=>typeof x==="string"&&/^#[0-9a-f]{6}$/i.test(x)))colors=[raw[0],raw[1]]
+    let id=localStorage.getItem("vibe")
+    if(!id) {
+      const legacy=JSON.parse(localStorage.getItem("db_vibe")||"null")
+      id=typeof legacy==="string"?legacy:legacy?.id
+    }
+    if(id==="custom")return {vibe:custom(...colors),colors}
+    return {vibe:VIBES.find(v=>v.id===(id==="cherry"?"afterhours":id))||VIBES[2],colors}
+  }catch{return {vibe:VIBES[2],colors}}
 }
 
 export function Intro() {
-  const [mounted,setMounted] = useState(false)
-  const [open,setOpen] = useState(false)
-  const [current,setCurrent] = useState<Vibe>(VIBES[2])
-  const [preview,setPreview] = useState<Vibe|null>(null)
-  const [colors,setColors] = useState<[string,string]>(defaultColors)
-  const [menu,setMenu] = useState(false)
-  const [reduced,setReduced] = useState(false)
-  const dialog = useRef<HTMLDivElement>(null)
-  const initialFocus = useRef<HTMLElement|null>(null)
-  const skip = useRef<HTMLButtonElement>(null)
-
+  const [ready,setReady]=useState(false)
+  const [selected,setSelected]=useState<Vibe>(VIBES[2])
+  const [preview,setPreview]=useState<Vibe|null>(null)
+  const [colors,setColors]=useState<[string,string]>(DEFAULT_COLORS)
+  const [open,setOpen]=useState(false)
+  const panel=useRef<HTMLDivElement>(null)
+  const trigger=useRef<HTMLButtonElement>(null)
   useEffect(()=>{
-    const {saved,colors:existing} = restored()
-    setCurrent(saved);setColors(existing);apply(saved)
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
-    const update=()=>setReduced(mq.matches)
-    update();mq.addEventListener("change",update)
-    let seen=false
-    try{seen=Boolean(sessionStorage.getItem("intro-seen"))}catch{}
-    const forced = new URLSearchParams(location.search).has("intro")
-    if (!seen || forced) {initialFocus.current=document.activeElement as HTMLElement;setOpen(true)}
-    setMounted(true)
-    return ()=>mq.removeEventListener("change",update)
+    const result=restore()
+    setSelected(result.vibe);setColors(result.colors);apply(result.vibe,false)
+    setReady(true)
   },[])
-
   useEffect(()=>{
     if(!open)return
-    const old=document.body.style.overflow
-    document.body.style.overflow="hidden"
-    skip.current?.focus({preventScroll:true})
-    return ()=>{document.body.style.overflow=old}
+    const dismiss=(e:PointerEvent)=>{if(e.target instanceof Node&&!panel.current?.contains(e.target)&&!trigger.current?.contains(e.target))setOpen(false)}
+    const key=(e:KeyboardEvent)=>{if(e.key==="Escape"){setOpen(false);trigger.current?.focus()}}
+    document.addEventListener("pointerdown",dismiss)
+    document.addEventListener("keydown",key)
+    return ()=>{document.removeEventListener("pointerdown",dismiss);document.removeEventListener("keydown",key)}
   },[open])
-
-  const leave=useCallback((work = false)=>{
-    setPreview(null);apply(current)
-    setOpen(false);setMenu(false)
-    try{sessionStorage.setItem("intro-seen","1")}catch{}
-    requestAnimationFrame(()=>{
-      const focus = initialFocus.current?.isConnected ? initialFocus.current : document.getElementById("main")
-      focus?.focus({preventScroll:true})
-      if(work) document.getElementById("work")?.scrollIntoView({behavior:reduced?"instant":"smooth",block:"start"})
-    })
-  },[current,reduced])
-
-  useEffect(()=>{
-    if(!open)return
-    const handle=(e:KeyboardEvent)=>{
-      if(e.key==="Escape"){e.preventDefault();leave();return}
-      if(e.key!=="Tab")return
-      const nodes=Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]),input:not([disabled]),summary')||[])
-      if(!nodes.length)return
-      const first=nodes[0],last=nodes[nodes.length-1]
-      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
-      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
-    }
-    window.addEventListener("keydown",handle)
-    return ()=>window.removeEventListener("keydown",handle)
-  },[open,leave])
-
-  function select(v:Vibe) {
-    setCurrent(v);setPreview(null);apply(v,true);setMenu(false)
+  function choose(v:Vibe) {
+    apply(v,true);setSelected(v);setPreview(null);setOpen(false)
     if(v.id==="custom")try{localStorage.setItem("custom-vibe-colors",JSON.stringify(colors))}catch{}
   }
-  function display(v:Vibe|null) {setPreview(v);apply(v||current)}
-  function edit(index:0|1,hex:string) {
-    const next:[string,string]=[...colors];next[index]=hex;setColors(next)
-    display(custom(...next))
+  function show(v:Vibe|null){setPreview(v);apply(v||selected,false)}
+  function change(index:0|1,value:string) {
+    const next:[string,string]=[...colors];next[index]=value;setColors(next);show(custom(...next))
   }
-  const chosen=preview||current
-  const swatches = (isIntro:boolean)=><div className={isIntro?styles.swatches:styles.menuSwatches} role="group" aria-label="Choose a color">
-    {VIBES.map(v=><button type="button" key={v.id} aria-label={v.name} aria-pressed={current.id===v.id}
-      className={styles.swatch} data-active={current.id===v.id} title={v.name}
-      onMouseEnter={()=>display(v)} onMouseLeave={()=>display(null)}
-      onFocus={()=>display(v)} onBlur={()=>display(null)} onClick={()=>select(v)}>
-      <span style={{background:v.accent}} aria-hidden="true"/><span>{v.name}</span>
-    </button>)}
-  </div>
-
-  if(!mounted)return null
-  return <>
-    {open&&<div className={styles.overlay} role="dialog" aria-modal="true" aria-labelledby="intro-heading" ref={dialog} data-reduced={reduced}>
-      <div className={styles.shell}>
-        <header className={styles.topbar}>
-          <span className={styles.edition}>a little introduction <span>— 01 / 01</span></span>
-          <button ref={skip} type="button" className={styles.skip} onClick={()=>leave()}>Skip <span aria-hidden="true">↗</span></button>
-        </header>
-        <div className={styles.center}>
-          <p className={styles.overline}>01 / THE INTRODUCTION</p>
-          <div className={styles.nameLockup}>
-            <span className={styles.signature}>hi, i&apos;m</span>
-            <h1 id="intro-heading">Dhwani<span>.</span></h1>
-          </div>
-          <p className={styles.descriptor}>AI-native product designer, finding the interesting bits between people, technology, and everyday life.</p>
-          <div className={styles.actions}>
-            <button type="button" className={styles.primary} onClick={()=>leave(true)}>See my work <span aria-hidden="true">↗</span></button>
-            <button type="button" className={styles.secondary} onClick={()=>leave()}>Explore the site <span aria-hidden="true">→</span></button>
-          </div>
-        </div>
-        <footer className={styles.bottom}>
-          <div className={styles.colors}>
-            <span>Set the tone <span className={styles.colorsHint}>/ optional</span></span>
-            {swatches(true)}
-            <details className={styles.customIntro}>
-              <summary>mix a color ↗</summary>
-              <div className={styles.customIntroFields}>
-                <label>From<input type="color" aria-label="First custom gradient color" value={colors[0]} onChange={e=>edit(0,e.target.value)}/></label>
-                <label>To<input type="color" aria-label="Second custom gradient color" value={colors[1]} onChange={e=>edit(1,e.target.value)}/></label>
-                <button type="button" onClick={()=>select(custom(...colors))}>Use blend</button>
-              </div>
-            </details>
-          </div>
-          <div className={styles.finePrint}>Designed with a little personality.<br/>The interesting stuff is inside.</div>
-        </footer>
+  if(!ready)return null
+  return <div className={styles.switcher}>
+    {open&&<div className={styles.popover} ref={panel} role="group" aria-label="Choose a color vibe">
+      <div className={styles.popTitle}>Make it your color</div>
+      <div className={styles.menuSwatches}>
+        {VIBES.map(v=><button key={v.id} type="button" className={styles.swatch} data-active={selected.id===v.id} aria-pressed={selected.id===v.id} onMouseEnter={()=>show(v)} onMouseLeave={()=>show(null)} onFocus={()=>show(v)} onBlur={()=>show(null)} onClick={()=>choose(v)}>
+          <span style={{background:v.accent}} aria-hidden="true"/>{v.name}
+        </button>)}
+      </div>
+      <div className={styles.custom}>
+        <label>From <input type="color" aria-label="First gradient color" value={colors[0]} onChange={e=>change(0,e.target.value)}/></label>
+        <label>To <input type="color" aria-label="Second gradient color" value={colors[1]} onChange={e=>change(1,e.target.value)}/></label>
+        <button type="button" onClick={()=>choose(custom(...colors))}>Apply</button>
       </div>
     </div>}
-    {!open&&<div className={styles.switcher}>
-      {menu&&<div className={styles.popover}>
-        <div className={styles.popTitle}>Change the mood</div>
-        {swatches(false)}
-        <div className={styles.custom}>
-          <label>From <input type="color" aria-label="Gradient first color" value={colors[0]} onChange={e=>edit(0,e.target.value)}/></label>
-          <label>To <input type="color" aria-label="Gradient second color" value={colors[1]} onChange={e=>edit(1,e.target.value)}/></label>
-          <button type="button" onClick={()=>select(custom(...colors))}>Use blend</button>
-        </div>
-      </div>}
-      <button type="button" className={styles.chip} onClick={()=>setMenu(v=>!v)} aria-expanded={menu} aria-label={"Change color vibe. Current: "+current.name}>
-        <span style={{background:chosen.accent}} aria-hidden="true"/> vibe · {current.name.toLowerCase()}
-      </button>
-    </div>}
-  </>
+    <button ref={trigger} type="button" className={styles.chip} aria-expanded={open} aria-label={"Change site accent color. Current: "+selected.name} onClick={()=>setOpen(x=>!x)}>
+      <span aria-hidden="true" style={{background:(preview||selected).accent}}/> vibe · {selected.name.toLowerCase()}
+    </button>
+  </div>
 }
