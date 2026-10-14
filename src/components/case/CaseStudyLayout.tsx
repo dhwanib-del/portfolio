@@ -102,7 +102,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
         <div className={s.nextQ}><h3>Next question</h3><p>{study.outcome.next}</p></div>
         {study.ai && <div className={s.aiNote}><h3>Where AI fits</h3><p>{study.ai}</p></div>}
         {study.links?.length ? (
-          <p className={s.links}>{study.links.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}</p>
+          <p className={s.links}>{study.links.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">{l.label}</a>)}</p>
         ) : null}
       </div>
     ),
