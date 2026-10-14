@@ -5,7 +5,7 @@ import { AssetSlot } from "./AssetSlot"
 import { BeforeAfter } from "./BeforeAfter"
 import { OwnerTag } from "./OwnerTag"
 import { PrototypeEmbed } from "./PrototypeEmbed"
-import { FigmaListeningRoom } from "./FigmaListeningRoom"
+import { CinematicDeviceReveal } from "./CinematicDeviceReveal"
 import { ScreenViewer } from "./ScreenViewer"
 import s from "./CaseStudyLayout.module.css"
 
@@ -143,7 +143,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
         </ol>
       </section>
 
-      {study.slug === "general-motors" && <FigmaListeningRoom />}
+      {study.slug === "general-motors" && <CinematicDeviceReveal />}
 
       <section className={s.part} aria-labelledby="my-part">
         <h2 id="my-part" className={s.kicker}>My part</h2>
