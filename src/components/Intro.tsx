@@ -118,7 +118,7 @@ export function Intro() {
     const handle=(e:KeyboardEvent)=>{
       if(e.key==="Escape"){e.preventDefault();leave();return}
       if(e.key!=="Tab")return
-      const nodes=Array.from(dialog.current?.querySelectorAll<HTMLButtonElement>('button:not([disabled])')||[])
+      const nodes=Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]),input:not([disabled]),summary')||[])
       if(!nodes.length)return
       const first=nodes[0],last=nodes[nodes.length-1]
       if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
@@ -156,10 +156,12 @@ export function Intro() {
           <button ref={skip} type="button" className={styles.skip} onClick={()=>leave()}>Skip <span aria-hidden="true">↗</span></button>
         </header>
         <div className={styles.center}>
-          <p className={styles.overline}>Hi there,</p>
-          <h1 id="intro-heading">I&apos;m <span>Dhwani.</span></h1>
-          <p className={styles.signature}>nice to meet you</p>
-          <p className={styles.descriptor}>AI-native product designer. Curious about how things work, and how they could work better.</p>
+          <p className={styles.overline}>01 / THE INTRODUCTION</p>
+          <div className={styles.nameLockup}>
+            <span className={styles.signature}>hi, i&apos;m</span>
+            <h1 id="intro-heading">Dhwani<span>.</span></h1>
+          </div>
+          <p className={styles.descriptor}>AI-native product designer, finding the interesting bits between people, technology, and everyday life.</p>
           <div className={styles.actions}>
             <button type="button" className={styles.primary} onClick={()=>leave(true)}>See my work <span aria-hidden="true">↗</span></button>
             <button type="button" className={styles.secondary} onClick={()=>leave()}>Explore the site <span aria-hidden="true">→</span></button>
@@ -169,6 +171,14 @@ export function Intro() {
           <div className={styles.colors}>
             <span>Set the tone <span className={styles.colorsHint}>/ optional</span></span>
             {swatches(true)}
+            <details className={styles.customIntro}>
+              <summary>mix a color ↗</summary>
+              <div className={styles.customIntroFields}>
+                <label>From<input type="color" aria-label="First custom gradient color" value={colors[0]} onChange={e=>edit(0,e.target.value)}/></label>
+                <label>To<input type="color" aria-label="Second custom gradient color" value={colors[1]} onChange={e=>edit(1,e.target.value)}/></label>
+                <button type="button" onClick={()=>select(custom(...colors))}>Use blend</button>
+              </div>
+            </details>
           </div>
           <div className={styles.finePrint}>Designed with a little personality.<br/>The interesting stuff is inside.</div>
         </footer>
