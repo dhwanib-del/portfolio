@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react"
 import styles from "./AlbumIntro.module.css"
 
 // Intro stays compact: the case is a photo, the CD is the interaction.
@@ -16,6 +16,19 @@ export function AlbumIntro() {
   const [open, setOpen] = useState(false)
   const [track, setTrack] = useState(0)
   const root = useRef<HTMLElement>(null)
+  const [scrubAngle, setScrubAngle] = useState(0)
+  const drag = useRef<{ startX: number; startAngle: number } | null>(null)
+
+  function startScrub(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!open || event.pointerType === "mouse" && event.button !== 0) return
+    drag.current = { startX: event.clientX, startAngle: scrubAngle }
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+  function moveScrub(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!drag.current) return
+    setScrubAngle(drag.current.startAngle + (event.clientX - drag.current.startX) * 1.15)
+  }
+  function stopScrub() { drag.current = null }
 
   useEffect(() => {
     if (!open) return
@@ -36,9 +49,9 @@ export function AlbumIntro() {
   return (
     <aside ref={root} className={styles.root} aria-label="Dhwani's personal debut album">
       <div className={styles.stage} data-open={open}>
-        <div className={styles.disc} aria-hidden="true">
+        <div className={styles.disc} aria-hidden="true" style={{ "--scrub-angle": `${scrubAngle}deg` } as CSSProperties} onPointerDown={startScrub} onPointerMove={moveScrub} onPointerUp={stopScrub} onPointerCancel={stopScrub}>
           <div className={styles.discTracks}/>
-          <div className={styles.discCenter}><strong>db.</strong><span>VOL. 01</span></div>
+          <div className={styles.discCenter}><strong>db.</strong><span>side a · 01</span></div>
         </div>
         <button type="button" className={styles.case} onClick={() => setOpen(value => !value)} aria-expanded={open} aria-controls="album-liner-notes" aria-label={open ? "Close Dhwani's album notes" : "Open Dhwani's album"}>
           <span className={styles.cover}>
@@ -53,7 +66,7 @@ export function AlbumIntro() {
       <div className={styles.meta}>
         <span>dhwani · vol. 01</span>
         <button type="button" onClick={() => setOpen(value => !value)} aria-expanded={open} aria-controls="album-liner-notes">
-          {open ? "Close ↖" : "Flip through ↗"}
+          {open ? "Close ↖" : "Read the liner notes"}
         </button>
       </div>
       <div id="album-liner-notes" className={styles.notes} data-open={open} aria-hidden={!open}>
