@@ -1,36 +1,49 @@
-/* Responsive homepage: content-led grid, not a fixed-height canvas. */
-.hero{
-  box-sizing:border-box;
-  display:grid;
-  width:min(100%,calc(var(--max) + var(--gutter)*2));
-  grid-template-columns:minmax(0,1fr) minmax(240px,320px);
-  gap:clamp(22px,4vw,62px);
-  align-items:center;
-  min-width:0;
-  min-height:0;
-  max-width:none;
-  margin-inline:auto;
-  padding:clamp(88px,12vh,136px) var(--gutter) clamp(24px,4vw,48px);
-  text-align:left;
+/* Homepage: the editorial name stays quiet so the album object can be playful. */
+.hero {
+  box-sizing: border-box;
+  display: grid;
+  width: min(100%, calc(var(--max) + var(--gutter) * 2));
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 340px);
+  gap: clamp(25px, 4vw, 60px);
+  align-items: center;
+  margin-inline: auto;
+  padding: clamp(102px, 13vh, 148px) var(--gutter) clamp(34px, 5vw, 66px);
+  text-align: left;
+  min-width: 0;
 }
-.intro{min-width:0;width:100%;padding:0}
-.hero :global(.hero-hi){font:500 clamp(14px,1.5vw,18px)/1.4 var(--font-nav);color:var(--text-2)}
-.hero :global(.hero-line){font:400 clamp(18px,2.15vw,27px)/1.46 var(--font-story);letter-spacing:-.015em;max-width:35ch;margin:0 0 22px}
-.hero :global(.welcome-chat){margin-bottom:18px}
-.hero :global(.hero-meta){margin-bottom:16px}
-.hero :global(.bubble){max-width:100%}
-.hero + :global(.reel){padding-top:clamp(20px,3vw,38px)}
-@media(max-width:900px){
-  .hero{grid-template-columns:minmax(0,1fr) minmax(200px,275px);gap:clamp(20px,3vw,36px)}
+.intro { min-width: 0; width: 100%; }
+.hero :global(.hero-line) {
+  font: 400 clamp(18px, 1.56vw, 21px)/1.52 var(--font-story);
+  letter-spacing: -.016em;
+  max-width: 46ch;
+  margin: 0 0 24px;
+  color: var(--text-2);
 }
-@media(max-width:700px){
-  .hero{grid-template-columns:minmax(0,1fr);justify-items:stretch;gap:24px;align-items:start;padding-top:clamp(90px,12vh,116px);padding-bottom:22px;text-align:left}
-  .intro{max-width:620px}
-  .hero :global(.hero-line){max-width:37ch}
-  .hero > :last-child{justify-self:center;min-width:0;width:min(100%,310px)}
-  .hero + :global(.reel){padding-top:20px}
+.hero :global(.welcome-chat) { margin-bottom: 20px; }
+.hero :global(.hero-meta) { margin-bottom: 15px; }
+.hero :global(.bubble) { max-width: 100%; }
+.hero + :global(.reel) { padding-top: clamp(20px, 3vw, 38px); }
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(205px, 285px);
+    gap: clamp(18px, 3vw, 32px);
+  }
 }
-@media(max-width:390px){
-  .hero{padding-inline:16px;gap:18px}
-  .hero :global(.hero-line){font-size:18px}
+@media (max-width: 700px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: stretch;
+    align-items: start;
+    gap: 28px;
+    padding-top: clamp(92px, 12vh, 116px);
+    padding-bottom: 28px;
+  }
+  .intro { max-width: 620px; }
+  .hero :global(.hero-line) { max-width: 40ch; }
+  .hero > :last-child { justify-self: center; min-width: 0; width: min(100%, 310px); }
+  .hero + :global(.reel) { padding-top: 20px; }
+}
+@media (max-width: 390px) {
+  .hero { padding-inline: 16px; gap: 24px; }
+  .hero :global(.hero-line) { font-size: 18px; }
 }
