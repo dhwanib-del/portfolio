@@ -39,7 +39,7 @@
   min-width: 0;
   justify-self: center;
   align-self: center;
-  width: min(100%, 33vw, 510px);
+  width: min(100%, 33vw, 580px);
 }
 .hero + :global(.reel) { padding-top: clamp(20px, 3vw, 38px); }
 
