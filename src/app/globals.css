@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+Devanagari:wght@500;600;700&display=swap");
 
 /* Dhwani Bagrecha — design tokens.
    Dark is the original site. Light is the contrast-checked inverse (every text pair ≥ 4.5:1).
@@ -8,6 +8,9 @@
   --font-sans: "Poppins", system-ui, -apple-system, sans-serif;
   --font-nav: "Poppins", system-ui, sans-serif;
   --font-script: "Pinyon Script", cursive;
+  --font-editorial: "Cormorant Garamond", Georgia, serif;
+  /* Satoshi is not bundled; existing Plus Jakarta Sans is the explicit fallback. */
+  --font-story: "Satoshi", "Plus Jakarta Sans Variable", "Plus Jakarta Sans", Poppins, sans-serif;
 
   --bg: #000000;
   --surface: #111111;
@@ -27,9 +30,9 @@
   --glow-blend: screen;
 
   /* Editorial system: shared typography, geometry, rhythm and movement. */
-  --type-display: clamp(3.25rem, 7vw, 6.75rem);
+  --type-display: clamp(3.5rem, 7.3vw, 6rem);
   --type-page: clamp(2.5rem, 5.6vw, 5rem);
-  --type-section: clamp(1.9rem, 3.8vw, 3.2rem);
+  --type-section: clamp(2.7rem, 6vw, 5.5rem);
   --type-body: 1rem;
   --type-caption: .8rem;
   --leading-display: 1.04;
@@ -39,6 +42,7 @@
   --space-block: clamp(1.5rem, 3vw, 3rem);
   --space-card: clamp(1.125rem, 2.2vw, 2rem);
   --content-readable: 68ch;
+  --case-readable: 850px;
   --radius-card: 20px;
   --radius-control: 999px;
   --motion-fast: 180ms;
@@ -162,3 +166,10 @@ a { color: inherit; }
  --db-accent:var(--accent);--db-on-accent:var(--on-accent);
  --db-glow-blend:var(--glow-blend);--db-aurora-opacity:var(--aurora-opacity);
 }
+
+/* Editorial typography shared by homepage and case-study shell. */
+.h2{font-family:var(--font-editorial);font-size:var(--type-section);font-weight:600;letter-spacing:-.024em;line-height:1.02;text-wrap:balance}
+.btn{font-size:13px;font-weight:500}
+.btn svg,.btn span[aria-hidden]{transition:transform .18s ease}
+.btn:hover svg,.btn:hover span[aria-hidden]{transform:translateX(2px)}
+@media(prefers-reduced-motion:reduce){.btn svg,.btn span[aria-hidden]{transition:none!important}}
