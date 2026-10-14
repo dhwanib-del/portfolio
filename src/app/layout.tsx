@@ -40,10 +40,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ChatLauncher />
             <p className="footer-note">Talk design, music, or the portfolio I’m probably editing again.</p>
             <div className="footer-actions">
-              <a className="btn btn-primary" href="mailto:dhwanib@umich.edu">Get in touch ↗</a>
+              <a className="btn btn-primary" href="mailto:dhwanib@umich.edu">Get in touch</a>
               <a className="btn" href="https://www.linkedin.com/in/dhwanibagrecha/" target="_blank" rel="noreferrer">LinkedIn</a>
             </div>
-            <p className="footer-credit">© 2026 Dhwani Bagrecha · Made with Claude, edited by Dhwani.</p>
+            <p className="footer-credit">© 2026 Dhwani Bagrecha · Designed with care.</p>
           </div>
         </footer>
       </body>
