@@ -1,4 +1,5 @@
 import { AlbumIntro } from "@/components/AlbumIntro"
+import { EditorialHello } from "@/components/EditorialHello"
 import styles from "./home.module.css"
 import { Bubble } from "@/components/Bubble"
 import { WelcomeChat } from "@/components/WelcomeChat"
@@ -11,8 +12,7 @@ export default function Home() {
     <>
       <section className={`hero ${styles.hero}`} aria-labelledby="hero-name">
         <div className={styles.intro}>
-          <p className="hero-hi">hi, i&apos;m</p>
-          <h1 id="hero-name" className="hero-name">{person.name}</h1>
+          <EditorialHello name={person.name} />
           <p className="hero-line">AI-native product designer working across public safety tools, automotive interfaces, and emerging experiences.</p>
           <WelcomeChat />
           <ul className="hero-meta" aria-label="At a glance">
