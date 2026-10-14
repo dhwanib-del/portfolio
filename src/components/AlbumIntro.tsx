@@ -1,55 +1,70 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import styles from "./AlbumIntro.module.css"
 
+// Intro stays compact: the case is a photo, the CD is the interaction.
+// No made-up album image, no photo replacement, and no layout reflow when notes open.
 const tracks = [
-  { n: "01", title: "The designer", note: "AI-native product design, research, and a love for figuring things out." },
-  { n: "02", title: "Behind the lens", note: "Photography, light, and collecting little moments." },
-  { n: "03", title: "Frequent flyer", note: "Places, people, and a very long list of places still to visit." },
-  { n: "04", title: "After hours", note: "Learning to DJ and finding new things to make." },
+  { number: "01", name: "The designer", note: "AI-native product design, research, and a love for figuring things out." },
+  { number: "02", name: "Behind the lens", note: "Photography, light, and collecting little moments." },
+  { number: "03", name: "Frequent flyer", note: "Places, people, and the ones I’m still dreaming about." },
+  { number: "04", name: "After hours", note: "Learning to DJ and making things just because." },
 ]
 
 export function AlbumIntro() {
-  const [opened, setOpened] = useState(false)
-  const [selected, setSelected] = useState(0)
+  const [open, setOpen] = useState(false)
+  const [track, setTrack] = useState(0)
+  const root = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false)
+    }
+    const onPointer = (event: PointerEvent) => {
+      if (root.current && event.target instanceof Node && !root.current.contains(event.target)) setOpen(false)
+    }
+    window.addEventListener("keydown", onKey)
+    window.addEventListener("pointerdown", onPointer)
+    return () => {
+      window.removeEventListener("keydown", onKey)
+      window.removeEventListener("pointerdown", onPointer)
+    }
+  }, [open])
+
   return (
-    <aside className={styles.root} aria-label="A little more about Dhwani">
-      <div className={styles.recordStage} data-open={opened}>
+    <aside ref={root} className={styles.root} aria-label="Dhwani's personal debut album">
+      <div className={styles.stage} data-open={open}>
         <div className={styles.disc} aria-hidden="true">
-          <div className={styles.discLabel}><span>DHWANI</span><small>VOL. 01</small></div>
+          <div className={styles.discTracks}/>
+          <div className={styles.discCenter}><strong>db.</strong><span>VOL. 01</span></div>
         </div>
-        <button type="button" className={styles.jewel} aria-label={opened ? "Close the album" : "Open the album and meet Dhwani"} aria-expanded={opened} onClick={() => setOpened(v => !v)}>
-          <div className={styles.cover}>
-            <div className={styles.coverTop}><span>DB RECORDS</span><span>01 / 04</span></div>
-            <div className={styles.artwork}>
-              <div className={styles.artHalo} aria-hidden="true" />
-              <div className={styles.photoStack}>
-                {/* Original portfolio photos, not AI-generated portraits. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/photobooth/1.svg" alt="" draggable={false} />
-              </div>
-            </div>
-            <div className={styles.coverType}><strong>dhwani<span>.</span></strong><span>THE DEBUT EDITION</span></div>
-          </div>
-          <span className={styles.caseEdge} aria-hidden="true"/>
+        <button type="button" className={styles.case} onClick={() => setOpen(value => !value)} aria-expanded={open} aria-controls="album-liner-notes" aria-label={open ? "Close Dhwani's album notes" : "Open Dhwani's album"}>
+          <span className={styles.cover}>
+            {/* Local photo is the complete artwork: no graphics or text overlays. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/photobooth/1.svg" alt="" draggable={false} width={500} height={500}/>
+          </span>
+          <span className={styles.edge} aria-hidden="true"/>
+          <span className={styles.hairline} aria-hidden="true"/>
         </button>
       </div>
-      <div className={styles.below}>
-        <span>THE DEBUT ALBUM / SIDE A</span>
-        <button type="button" onClick={() => setOpened(v => !v)} aria-expanded={opened}>
-          {opened ? "Put it back ↙" : "Open the album ↗"}
+      <div className={styles.meta}>
+        <span>dhwani · vol. 01</span>
+        <button type="button" onClick={() => setOpen(value => !value)} aria-expanded={open} aria-controls="album-liner-notes">
+          {open ? "Close ↖" : "Flip through ↗"}
         </button>
       </div>
-      <div className={styles.trackPanel} data-open={opened} aria-hidden={!opened}>
-        <div className={styles.panelTitle}><span>LINER NOTES</span><span>VOL. 01 · 2026</span></div>
-        <div className={styles.tracks}>
-          {tracks.map((track, i) => <button key={track.n} type="button" className={styles.track} data-active={selected === i} onClick={() => setSelected(i)} tabIndex={opened ? 0 : -1} disabled={!opened}>
-            <span>{track.n}</span><strong>{track.title}</strong><span>{selected === i ? "●" : "↗"}</span>
+      <div id="album-liner-notes" className={styles.notes} data-open={open} aria-hidden={!open}>
+        <div className={styles.notesHead}><span>Inside the sleeve</span><button type="button" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)} aria-label="Close liner notes">×</button></div>
+        <div className={styles.tracklist} role="group" aria-label="A few things about me">
+          {tracks.map((item,index) => <button type="button" disabled={!open} tabIndex={open ? 0 : -1} aria-pressed={index===track} data-current={index===track} key={item.number} onClick={() => setTrack(index)}>
+            <span>{item.number}</span><strong>{item.name}</strong><span>{index===track ? "●" : "↗"}</span>
           </button>)}
         </div>
-        <p className={styles.trackDetail}>{tracks[selected].note}</p>
-        <a href="#work" tabIndex={opened ? 0 : -1}>Enough about me. See the work ↓</a>
+        <p aria-live="polite">{tracks[track].note}</p>
+        <a href="#work" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)}>Okay, show me the work ↓</a>
       </div>
     </aside>
   )
