@@ -4,7 +4,7 @@ import { AnnotatedScreen } from "./AnnotatedScreen"
 import { AssetSlot } from "./AssetSlot"
 import { BeforeAfter } from "./BeforeAfter"
 import { OwnerTag } from "./OwnerTag"
-import { PrototypeEmbed } from "./PrototypeEmbed"
+import { ScrollLaptop } from "./ScrollLaptop"
 import { CinematicDeviceReveal } from "./CinematicDeviceReveal"
 import { ScreenViewer } from "./ScreenViewer"
 import s from "./CaseStudyLayout.module.css"
@@ -62,7 +62,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
               )}
             </>
           )}
-          {study.prototype && <PrototypeEmbed url={study.prototype.url} title={study.prototype.title} note={study.prototype.note} />}
+          {study.prototype && <ScrollLaptop url={study.prototype.url} title={study.prototype.title} note={study.prototype.note} poster={study.hero.type === "screens" ? study.hero.screens[0]?.src : undefined} />}
           {study.slots?.length ? (
             <div className={s.slotGrid}>{study.slots.map((slot) => <AssetSlot key={slot.label} slot={slot} />)}</div>
           ) : null}
