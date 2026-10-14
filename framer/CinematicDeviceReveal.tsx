@@ -73,22 +73,22 @@ export default function CinematicDeviceReveal(p: Props) {
     React.useEffect(() => { setPlaying(false); setModal(false) }, [prototypeURL, device])
     const t = preview || reduced || playing ? 1 : ease((progress - .08) / .77)
     const isPad = device === "ipad"
-    const open = t > .87
+    const open = t > .965
     const stages = isPad ? ["SCROLL", "ROTATE", "REVEAL", "INTERACT"] : ["SCROLL", "REVEAL", "OPEN", "INTERACT"]
     const buttonStyle: React.CSSProperties = { border: "1px solid rgba(255,255,255,.38)", borderRadius: 999, background: "rgba(9,9,11,.84)", color: "#fff", padding: "12px 20px", minHeight: 46, font: `500 12px ${FONT}`, cursor: "pointer" }
     const content = playing && figma && !preview ?
         <iframe src={figma.embed} title="Interactive Figma prototype" style={{ width:"100%", height:"100%", border:0, display:"block", background:"#111" }} allowFullScreen /> :
         previewImage ? <img src={previewImage} alt="Prototype screen preview" style={{ width:"100%",height:"100%",objectFit:"cover",display:"block" }} /> :
         <div style={{ width:"100%",height:"100%",display:"grid",placeItems:"center",background:"radial-gradient(circle at 50% 70%,#27272e,#101014 65%)",textAlign:"center",color:"#9f9fa9",padding:24,boxSizing:"border-box",font:`500 clamp(11px,1.5vw,16px) ${FONT}` }}>Add your approved screen image in Framer</div>
-    return <section ref={root} style={{ ...style, width:"100%", position:"relative",background,color:"#f7f6f5",fontFamily:FONT,height: preview || playing ? "auto" : `${Math.max(150,scrollLength)}vh`,minHeight:preview||playing?560:undefined,isolation:"isolate" }}>
-      <div style={{ height:preview||playing?"auto":"100vh",minHeight:560,position:preview||playing?"relative":"sticky",top:0,overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"space-between",padding:mobile?"64px 18px 36px":"clamp(50px,6vw,90px) clamp(25px,6vw,110px) 30px",boxSizing:"border-box",background:`radial-gradient(ellipse at 74% 72%,${accent}17,transparent 53%),${background}` }}>
+    return <section ref={root} style={{ ...style, width:"100%", position:"relative",background,color:"#f7f6f5",fontFamily:FONT,height: preview ? "auto" : `${Math.max(150,scrollLength)}vh`,minHeight:preview?560:undefined,isolation:"isolate" }}>
+      <div style={{ height:preview?"auto":"100vh",minHeight:560,position:preview?"relative":"sticky",top:0,overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"space-between",padding:mobile?"64px 18px 36px":"clamp(50px,6vw,90px) clamp(25px,6vw,110px) 30px",boxSizing:"border-box",background:`radial-gradient(ellipse at 74% 72%,${accent}17,transparent 53%),${background}` }}>
        <div style={{ zIndex:2,maxWidth:mobile?"100%":"33%",pointerEvents:"none" }}>
          <p style={{ fontSize:11,fontWeight:600,letterSpacing:".22em",margin:"0 0 24px",color:"#b2aeb4" }}>{eyebrow}</p>
          <h2 style={{ fontSize:"clamp(30px,4.15vw,68px)",lineHeight:1.08,letterSpacing:"-.053em",fontWeight:600,margin:0 }}>{title}<br/><span style={{ color:accent }}>{accentWord}</span></h2>
          <p style={{ maxWidth:360,color:"#c2c0c6",fontSize:"clamp(13px,1.15vw,17px)",lineHeight:1.6,marginTop:22 }}>{intro}</p>
        </div>
-       <div style={{ position:"absolute",zIndex:1,width:mobile?"92%":"66%",maxWidth:1150,right:mobile?"4%":"2%",top:mobile?"49%":"47%",transform:`translateY(-50%) translateY(${(1-t)*50}px) scale(${.91+t*.09})`,perspective:"1500px",pointerEvents:playing?"auto":"none" }}>
-         <div style={{ position:"relative",width:"100%",transform:isPad?`rotateY(${(1-t)*-43}deg) rotateX(${(1-t)*20}deg) rotateZ(${(1-t)*-5}deg)`:`rotateX(${(1-t)*-73}deg)`,transformOrigin:isPad?"50% 50%":"50% 100%",transformStyle:"preserve-3d",filter:`drop-shadow(0 ${16+24*t}px ${20+28*t}px rgba(0,0,0,.75))` }}>
+       <div style={{ position:"absolute",zIndex:1,width:mobile?"92%":"66%",maxWidth:1150,right:mobile?"4%":"2%",top:mobile?"49%":"47%",transform:`translateY(-50%) translateY(${(1-t)*50}px) scale(${.91+t*.09})`,perspective:"1500px",transition:playing?"transform .42s cubic-bezier(.22,1,.36,1)":"none",pointerEvents:playing?"auto":"none" }}>
+         <div style={{ position:"relative",width:"100%",transform:isPad?`rotateY(${(1-t)*-43}deg) rotateX(${(1-t)*20}deg) rotateZ(${(1-t)*-5}deg)`:`rotateX(${(1-t)*-73}deg)`,transformOrigin:isPad?"50% 50%":"50% 100%",transformStyle:"preserve-3d",transition:playing?"transform .42s cubic-bezier(.22,1,.36,1)":"none",filter:`drop-shadow(0 ${16+24*t}px ${20+28*t}px rgba(0,0,0,.75))` }}>
            <div style={{ width:isPad?"87%":"93%",margin:"0 auto",aspectRatio:isPad?"4 / 3":"16 / 10",padding:isPad?"1.7%":"1.25%",boxSizing:"border-box",borderRadius:isPad?"clamp(18px,3vw,36px)":"16px 16px 6px 6px",background:"linear-gradient(135deg,#85848c 0%,#24232a 4%,#101116 94%,#64636b 100%)",border:"1px solid #585861",boxShadow:"inset 0 1px 1px rgba(255,255,255,.3)",position:"relative" }}>
              <div style={{ width:"100%",height:"100%",overflow:"hidden",borderRadius:isPad?24:6,background:"#080809" }}>{content}</div>
              <span aria-hidden style={{position:"absolute",width:5,height:5,top:isPad?"50%":"0.65%",left:isPad?"1%":"49.8%",borderRadius:"50%",background:"#4e4e58"}}/>
