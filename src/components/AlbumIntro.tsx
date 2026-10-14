@@ -123,6 +123,7 @@ export function AlbumIntro() {
 
   return (
     <aside ref={root} className={styles.root} aria-label="Dhwani's personal debut album">
+      <div className={styles.albumEyebrow} aria-hidden="true"><span>Off the clock</span><span>01 / personal archive</span></div>
       <div
         ref={stage}
         className={styles.stage}
@@ -167,6 +168,7 @@ export function AlbumIntro() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/photobooth/1.svg" alt="" draggable={false} width={500} height={500} />
             </span>
+            <span className={styles.coverShine} aria-hidden="true" />
             <span className={styles.edge} aria-hidden="true" />
             <span className={styles.hairline} aria-hidden="true" />
           </button>
@@ -202,6 +204,7 @@ export function AlbumIntro() {
       </div>
 
       <div id="album-liner-notes" className={styles.notes} data-open={open} aria-hidden={!open}>
+        <div className={styles.notesInner}>
         <div className={styles.notesHead}>
           <span>Inside the sleeve</span>
           <button type="button" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)} aria-label="Close liner notes">×</button>
@@ -227,6 +230,7 @@ export function AlbumIntro() {
         <a href="#work" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)}>
           Okay, show me the work ↓
         </a>
+        </div>
       </div>
     </aside>
   )
