@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+Devanagari:wght@500;600;700&display=swap");
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600&display=swap");
 
 /* Dhwani Bagrecha — design tokens.
    Dark is the original site. Light is the contrast-checked inverse (every text pair ≥ 4.5:1).
@@ -9,7 +10,8 @@
   --font-nav: "Poppins", system-ui, sans-serif;
   --font-script: "Pinyon Script", cursive;
   --font-editorial: "Cormorant Garamond", Georgia, serif;
-  /* Satoshi is not bundled; existing Plus Jakarta Sans is the explicit fallback. */
+  --font-display: var(--font-editorial);
+  /* Load Satoshi via Fontshare; Plus Jakarta Sans remains the local fallback. */
   --font-story: "Satoshi", "Plus Jakarta Sans Variable", "Plus Jakarta Sans", Poppins, sans-serif;
 
   --bg: #000000;
@@ -30,14 +32,17 @@
   --glow-blend: screen;
 
   /* Editorial system: shared typography, geometry, rhythm and movement. */
-  --type-display: clamp(3.5rem, 7.3vw, 6rem);
-  --type-page: clamp(2.5rem, 5.6vw, 5rem);
+  --type-display: clamp(3.5rem, 7.5vw, 6rem);
+  --type-script: clamp(3.25rem, 7.45vw, 5.94rem);
+  --type-story: clamp(1.5rem, 3vw, 3.125rem);
+  --type-page: clamp(3rem, 6.8vw, 5.5rem);
   --type-section: clamp(2.7rem, 6vw, 5.5rem);
   --type-body: 1rem;
   --type-caption: .8rem;
-  --leading-display: 1.04;
+  --leading-display: 1;
+  --leading-script: .88;
   --leading-body: 1.65;
-  --tracking-display: -.055em;
+  --tracking-display: -0.021em;
   --space-section: clamp(4rem, 8vw, 7rem);
   --space-block: clamp(1.5rem, 3vw, 3rem);
   --space-card: clamp(1.125rem, 2.2vw, 2rem);
@@ -150,9 +155,12 @@ a { color: inherit; }
 
 /* Shared semantic primitives across homepage, about, case studies and lab. */
 .ui-kicker{font:500 .75rem/1.5 var(--font-nav);letter-spacing:.085em;text-transform:uppercase;color:var(--text-2)}
-.ui-display{font-family:var(--font-sans);font-size:var(--type-display);line-height:var(--leading-display);letter-spacing:var(--tracking-display);font-weight:700;text-wrap:balance}
-.ui-section-title{font-family:var(--font-sans);font-size:var(--type-section);line-height:1.1;letter-spacing:var(--tracking-display);font-weight:700;text-wrap:balance}
-.ui-body{font-size:var(--type-body);line-height:var(--leading-body);max-width:var(--content-readable)}
+.ui-display{font-family:var(--font-display);font-size:var(--type-display);line-height:var(--leading-display);letter-spacing:var(--tracking-display);font-weight:600;text-wrap:balance}
+.ui-section-title{font-family:var(--font-editorial);font-size:var(--type-section);line-height:1.02;letter-spacing:var(--tracking-display);font-weight:600;text-wrap:balance}
+.ui-body{font-family:var(--font-sans);font-size:var(--type-body);line-height:var(--leading-body);max-width:var(--content-readable)}
+.ui-story{font-family:var(--font-story);font-size:var(--type-story);line-height:1.32;letter-spacing:-.015em}
+.ui-script{font-family:var(--font-script);font-size:var(--type-script);line-height:var(--leading-script);font-weight:400;letter-spacing:0}
+.ui-editorial-copy{max-width:var(--case-readable);margin-inline:auto}
 .ui-panel{background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-card)}
 .ui-control{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border:1px solid var(--line-strong);border-radius:var(--radius-control);background:transparent;color:var(--text);font:500 .875rem var(--font-nav);cursor:pointer;transition:background var(--motion-fast) ease,border-color var(--motion-fast) ease}
 .ui-control:hover{background:var(--card-hover)}
