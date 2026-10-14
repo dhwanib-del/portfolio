@@ -16,6 +16,8 @@ export function AlbumIntro() {
   const [open, setOpen] = useState(false)
   const [track, setTrack] = useState(0)
   const root = useRef<HTMLElement>(null)
+  const stage = useRef<HTMLDivElement>(null)
+  const [constructionRun, setConstructionRun] = useState(0)
   const [scrubAngle, setScrubAngle] = useState(0)
   const drag = useRef<{ startX: number; startAngle: number } | null>(null)
 
@@ -29,6 +31,30 @@ export function AlbumIntro() {
     setScrubAngle(drag.current.startAngle + (event.clientX - drag.current.startX) * 1.15)
   }
   function stopScrub() { drag.current = null }
+
+  function drawSelectionFrame() {
+    // Remounting a small decorative layer restarts the one-shot CSS construction.
+    // The layer disappears on its own; no infinite animation or timers remain.
+    setConstructionRun(run => run + 1)
+  }
+
+  function toggleAlbum() {
+    setOpen(value => !value)
+    drawSelectionFrame()
+  }
+
+  useEffect(() => {
+    const node = stage.current
+    if (!node || typeof IntersectionObserver === "undefined") return
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        drawSelectionFrame()
+        observer.disconnect()
+      }
+    }, { threshold: 0.55 })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     if (!open) return
@@ -48,12 +74,22 @@ export function AlbumIntro() {
 
   return (
     <aside ref={root} className={styles.root} aria-label="Dhwani's personal debut album">
-      <div className={styles.stage} data-open={open}>
+      <div
+        ref={stage}
+        className={styles.stage}
+        data-open={open}
+        onPointerEnter={drawSelectionFrame}
+        onFocusCapture={event => {
+          if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) {
+            drawSelectionFrame()
+          }
+        }}
+      >
         <div className={styles.disc} aria-hidden="true" style={{ "--scrub-angle": `${scrubAngle}deg` } as CSSProperties} onPointerDown={startScrub} onPointerMove={moveScrub} onPointerUp={stopScrub} onPointerCancel={stopScrub}>
           <div className={styles.discTracks}/>
           <div className={styles.discCenter}><strong>db.</strong><span>side a · 01</span></div>
         </div>
-        <button type="button" className={styles.case} onClick={() => setOpen(value => !value)} aria-expanded={open} aria-controls="album-liner-notes" aria-label={open ? "Close Dhwani's album notes" : "Open Dhwani's album"}>
+        <button type="button" className={styles.case} onClick={toggleAlbum} aria-expanded={open} aria-controls="album-liner-notes" aria-label={open ? "Close Dhwani's album notes" : "Open Dhwani's album"}>
           <span className={styles.cover}>
             {/* Local photo is the complete artwork: no graphics or text overlays. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -62,10 +98,31 @@ export function AlbumIntro() {
           <span className={styles.edge} aria-hidden="true"/>
           <span className={styles.hairline} aria-hidden="true"/>
         </button>
+        {constructionRun > 0 && (
+          <div key={constructionRun} className={styles.selectionFrame} aria-hidden="true">
+            <span className={styles.selectionTop} />
+            <span className={styles.selectionRight} />
+            <span className={styles.selectionBottom} />
+            <span className={styles.selectionLeft} />
+            <span className={styles.selectionGuideX} />
+            <span className={styles.selectionGuideY} />
+            <span className={styles.selectionHandleTopLeft} />
+            <span className={styles.selectionHandleTopRight} />
+            <span className={styles.selectionHandleBottomLeft} />
+            <span className={styles.selectionHandleBottomRight} />
+            <span className={styles.selectionLabel}>side a / cover art</span>
+            <span className={styles.selectionAnnotation}>made to move</span>
+            <span className={styles.selectionCursor}>
+              <svg viewBox="0 0 18 23" width="18" height="23" focusable="false">
+                <path d="M1 1v17l4.8-4.2 4 7.5 3.2-1.6-4-7.3H16Z" fill="currentColor" stroke="#000" strokeWidth="1.25" />
+              </svg>
+            </span>
+          </div>
+        )}
       </div>
       <div className={styles.meta}>
         <span>dhwani · vol. 01</span>
-        <button type="button" onClick={() => setOpen(value => !value)} aria-expanded={open} aria-controls="album-liner-notes">
+        <button type="button" onClick={toggleAlbum} aria-expanded={open} aria-controls="album-liner-notes">
           {open ? "Close ↖" : "Read the liner notes"}
         </button>
       </div>
