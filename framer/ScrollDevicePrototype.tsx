@@ -133,7 +133,7 @@ export default function ScrollDevicePrototype(props: Props) {
     const bright = light ? "rgba(0,0,0,.13)" : "rgba(255,255,255,.16)"
 
     const p = reduceMotion || isFramerCanvas || launched ? 1 : smooth((scroll - .06) / .76)
-    const ready = p > .88
+    const ready = p > .965
     const enter = () => {
         if (!validLink) return
         setHasInteracted(true)
@@ -178,7 +178,7 @@ export default function ScrollDevicePrototype(props: Props) {
     )
 
     const deviceNode = (
-        <div style={{ width: "100%", maxWidth: deviceWidth, flexShrink: 0, margin: "0 auto", transform: launched ? "none" : `translate3d(0,${(1-p)*20}px,0) scale(${.93+.07*p})`, opacity: .75 + .25*p, transition: reduceMotion ? "none" : "opacity .12s linear", perspective: isMac ? "1900px" : "1500px", position: "relative" }}>
+        <div style={{ width: "100%", maxWidth: deviceWidth, flexShrink: 0, margin: "0 auto", transform: `translate3d(0,${(1-p)*20}px,0) scale(${.93+.07*p})`, opacity: .75 + .25*p, transition: reduceMotion ? "none" : launched ? "transform .42s cubic-bezier(.22,1,.36,1), opacity .2s" : "opacity .12s linear", perspective: isMac ? "1900px" : "1500px", position: "relative" }}>
             {isMac ? (
                 <>
                     <div style={{ width: "91%", margin: "0 auto", aspectRatio: "16 / 10", position: "relative", transformOrigin: "50% 100%", transform: camera, transformStyle: "preserve-3d", borderRadius: "14px 14px 5px 5px", border: "1px solid #64646B", padding: "0.7%", boxSizing: "border-box", background: "linear-gradient(145deg,#6F7077 0%,#222329 4%,#151519 96%,#72737A 100%)", boxShadow: "0 1px 0 rgba(255,255,255,.4) inset,0 30px 65px rgba(0,0,0,.38)" }}>
@@ -200,8 +200,8 @@ export default function ScrollDevicePrototype(props: Props) {
     )
 
     return (
-        <section ref={root} style={{ ...style, position: "relative", width: "100%", height: launched || isFramerCanvas ? "auto" : `${Math.max(145, scrollHeight)}vh`, minHeight: launched || isFramerCanvas ? 530 : undefined, background: bg, color: ink, fontFamily: FONT, boxSizing: "border-box", isolation: "isolate", overflow: "clip" }}>
-            <div style={{ position: launched || isFramerCanvas ? "relative" : "sticky", top: 0, width: "100%", height: launched || isFramerCanvas ? "auto" : "100vh", minHeight: 530, boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "center", padding: compact ? "36px 18px 30px" : "clamp(26px,4vw,58px)", maxWidth: 1600, margin: "0 auto", overflow: "hidden" }}>
+        <section ref={root} style={{ ...style, position: "relative", width: "100%", height: isFramerCanvas ? "auto" : `${Math.max(145, scrollHeight)}vh`, minHeight: isFramerCanvas ? 530 : undefined, background: bg, color: ink, fontFamily: FONT, boxSizing: "border-box", isolation: "isolate", overflow: "clip" }}>
+            <div style={{ position: isFramerCanvas ? "relative" : "sticky", top: 0, width: "100%", height: isFramerCanvas ? "auto" : "100vh", minHeight: 530, boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "center", padding: compact ? "36px 18px 30px" : "clamp(26px,4vw,58px)", maxWidth: 1600, margin: "0 auto", overflow: "hidden" }}>
                 {showHeader && <div style={{ maxWidth: maxWidth, width: "100%", margin: "0 auto clamp(22px,4vh,46px)", display: "flex", gap: 14, justifyContent: "space-between", alignItems: "start" }}>
                     <div><div style={{ font: `600 10px ${FONT}`, letterSpacing: ".14em", color: accent }}>{eyebrow.toUpperCase()}</div><h2 style={{ margin: "12px 0 9px", fontSize: "clamp(25px,4vw,48px)", fontWeight: 600, letterSpacing: "-.055em", lineHeight: 1.1 }}>{title}</h2><p style={{ margin: 0, fontSize: "clamp(12px,1.15vw,14px)", lineHeight: 1.6, color: sub, maxWidth: 450 }}>{description}</p></div>
                     {!compact && <div style={{ fontSize: 10, fontWeight: 500, letterSpacing: ".1em", padding: "10px 13px", borderRadius: 99, border: `1px solid ${rule}`, whiteSpace: "nowrap", color: sub }}>{isMac ? "MACBOOK" : "IPAD"} · INTERACTIVE</div>}
