@@ -3,9 +3,10 @@
 .page {
   position: relative;
   z-index: 1;
-  max-width: calc(var(--case-readable) + 2 * var(--gutter));
+  max-width: calc(var(--case-readable) + 96px);
   margin: 0 auto;
-  padding: 116px var(--gutter) 96px;
+  padding: 116px 48px 96px;
+  border-inline: 1px solid var(--line);
   color: var(--text);
 }
 
@@ -20,7 +21,7 @@
 .back:focus-visible, .toc a:focus-visible, .next a:focus-visible, .links a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 
 .org, .kicker {
-  font: 500 12px/1.5 var(--font-nav); letter-spacing: .085em; text-transform: uppercase;
+  font: 500 12px/1.5 var(--font-nav); letter-spacing: .025em; text-transform: none;
   color: var(--text-2); margin: 0;
 }
 .name {
@@ -137,7 +138,7 @@
   .evalGrid { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
-  .page { padding-top: 96px; }
+  .page { padding: 96px 20px 64px; border-inline: 0; }
   .partGrid, .decisionBody, .outcome { grid-template-columns: 1fr; }
   .hero { padding: 16px; border-radius: var(--radius-md); }
   .toc { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-left: calc(var(--gutter) * -1); margin-right: calc(var(--gutter) * -1); padding-left: var(--gutter); padding-right: var(--gutter); }

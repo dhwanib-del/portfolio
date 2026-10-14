@@ -1,0 +1,40 @@
+name: Editorial portfolio QA
+on:
+  pull_request:
+    branches:
+      - portfolio-case-study-refinement-2026
+    paths:
+      - 'src/**'
+      - 'framer/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/editorial-portfolio-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - name: Lint modified interaction components
+        run: >-
+          npx eslint
+          framer/WorldIntro.tsx
+          src/components/EditorialHello.tsx
+          src/components/AlbumIntro.tsx
+          src/components/case/ScrollLaptop.tsx
+          src/components/case/CinematicDeviceReveal.tsx
+          src/components/case/CaseStudyLayout.tsx
+          src/app/page.tsx
+      - name: Audit existing repository lint debt (informational)
+        continue-on-error: true
+        run: npm run lint
+      - name: Build the production app
+        run: npm run build

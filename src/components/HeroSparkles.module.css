@@ -1,0 +1,83 @@
+.field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  isolation: isolate;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+.glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 45% 50% at 94% 91%, color-mix(in srgb, var(--accent) 14%, transparent) 0, transparent 75%),
+    radial-gradient(ellipse 28% 36% at 7% 9%, color-mix(in srgb, var(--accent) 7%, transparent) 0, transparent 83%);
+  opacity: .7;
+}
+.speck, .star {
+  position: absolute;
+  display: block;
+  transform-origin: center;
+  color: var(--text);
+  opacity: var(--speck-alpha, .28);
+  animation: sparkle-drift 11s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.speck {
+  background: currentColor;
+  border-radius: 50%;
+  box-shadow: 0 0 10px 3px color-mix(in srgb, var(--text) 5%, transparent);
+}
+.star::before,.star::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: currentColor;
+  transform: translate(-50%,-50%);
+  border-radius: 90%;
+}
+.star::before { width: 1px; height: 100%; }
+.star::after { width: 100%; height: 1px; }
+.luminary {
+  position: absolute;
+  top: 20%;
+  left: 63%;
+  width: clamp(9px, .95vw, 17px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow:
+    0 0 14px 4px color-mix(in srgb, var(--text) 13%, transparent),
+    0 0 48px 13px color-mix(in srgb, var(--accent) 9%, transparent);
+  opacity: .94;
+  animation: luminary-breathe 9s ease-in-out infinite;
+}
+.guideLeft,.guideRight {
+  position: absolute;
+  bottom: 8.7%;
+  width: 4px;
+  height: 4px;
+  background: color-mix(in srgb, var(--text) 55%, transparent);
+}
+.guideLeft { left: clamp(22px, 3vw, 47px); }
+.guideRight { right: clamp(22px, 3vw, 47px); }
+@keyframes sparkle-drift {
+  0%,100% { opacity: calc(var(--speck-alpha, .28) * .55); transform: translate3d(0,0,0) scale(.8); }
+  44% { opacity: var(--speck-alpha, .28); transform: translate3d(3px,-6px,0) scale(1.15); }
+  72% { opacity: calc(var(--speck-alpha, .28) * .75); transform: translate3d(-2px,-2px,0) scale(.93); }
+}
+@keyframes luminary-breathe {
+  0%,100% { opacity: .69; transform: scale(.92); }
+  50% { opacity: 1; transform: scale(1.11); }
+}
+@media (max-width: 700px) {
+  .speck:nth-of-type(n+24),.star:nth-of-type(n+24) { display:none; }
+  .luminary { top:23%;left:77%;width:10px; }
+  .guideLeft,.guideRight { bottom:7%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .speck,.star,.luminary { animation: none; will-change: auto; }
+}

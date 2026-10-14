@@ -1,41 +1,204 @@
-/* Responsive homepage: content-led grid, not a fixed-height canvas. */
-.hero{
-  box-sizing:border-box;
-  display:grid;
-  width:min(100%,calc(var(--max) + var(--gutter)*2));
-  grid-template-columns:minmax(0,1fr) minmax(240px,320px);
-  gap:clamp(22px,4vw,62px);
-  align-items:center;
-  min-width:0;
-  min-height:0;
-  max-width:none;
-  margin-inline:auto;
-  padding:clamp(88px,12vh,136px) var(--gutter) clamp(24px,4vw,48px);
-  text-align:left;
+/* Act I: a one-screen, non-blocking editorial signature.
+   Auto Layout in the web stack = intrinsic Grid/Flex sizing, not absolute card positioning. */
+.hero:global(.hero) {
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  min-height: 100svh;
+  margin: 0;
+  padding: clamp(104px, 13vh, 155px) clamp(20px, 5vw, 85px) clamp(100px, 14vh, 164px);
+  box-sizing: border-box;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--bg) 97%, #09060d);
 }
-.intro{min-width:0;width:100%;padding:0}
-.hero h1{font-family:var(--font-script);font-size:clamp(60px,7.5vw,108px);font-weight:400;line-height:1.08;letter-spacing:0;margin:4px 0 14px;max-width:100%;overflow-wrap:anywhere}
-.hero h1::after{display:none}
-.hero :global(.hero-hi){font:500 clamp(14px,1.5vw,18px)/1.4 var(--font-nav);color:var(--text-2)}
-.hero :global(.hero-line){font:400 clamp(18px,2.15vw,27px)/1.46 var(--font-story);letter-spacing:-.015em;max-width:35ch;margin:0 0 22px}
-.hero :global(.welcome-chat){margin-bottom:18px}
-.hero :global(.hero-meta){margin-bottom:16px}
-.hero :global(.bubble){max-width:100%}
-.hero + :global(.reel){padding-top:clamp(20px,3vw,38px)}
-@media(max-width:900px){
-  .hero{grid-template-columns:minmax(0,1fr) minmax(200px,275px);gap:clamp(20px,3vw,36px)}
-  .hero h1{font-size:clamp(62px,8vw,84px)}
+.hero > :global(*) { min-width: 0; }
+.hero :global(h1) { position: relative; z-index: 2; }
+.hero > :nth-child(2) { position: relative; z-index: 1; }
+
+/* The dots are an accessible link, not a fake loader or an animation blocker. */
+.scrollCue {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: clamp(27px, 7vh, 63px);
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 42px;
+  border: 1px solid var(--line-strong);
+  border-radius: 17px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--glass) 75%, transparent);
+  backdrop-filter: blur(12px);
+  text-decoration: none;
+  transition: border-color .2s ease, transform .2s ease, background .2s ease;
 }
-@media(max-width:700px){
-  .hero{grid-template-columns:minmax(0,1fr);justify-items:stretch;gap:24px;align-items:start;padding-top:clamp(90px,12vh,116px);padding-bottom:22px;text-align:left}
-  .intro{max-width:620px}
-  .hero h1{font-size:clamp(61px,12vw,92px)}
-  .hero :global(.hero-line){max-width:37ch}
-  .hero > :last-child{justify-self:center;min-width:0;width:min(100%,310px)}
-  .hero + :global(.reel){padding-top:20px}
+.scrollCue:hover { border-color: var(--accent); background: var(--card-hover); transform: translateX(-50%) translateY(-3px); }
+.scrollCue:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.scrollDots { display: inline-flex; gap: 4px; align-items: center; justify-content: center; }
+.scrollDots i { display: block; width: 6px; height: 6px; border-radius: 50%; background: color-mix(in srgb, var(--text) 76%, transparent); }
+.scrollDots i:nth-child(2) { opacity: .74; }
+.scrollDots i:nth-child(3) { opacity: .55; }
+
+/* Act II: the photo, disc and actual portfolio intro have room to breathe.
+   The album/notes component itself uses a content-sized CSS Grid and Flex stack. */
+.albumSection {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  justify-items: stretch;
+  gap: clamp(40px, 6vw, 105px);
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: min(94svh, 1030px);
+  box-sizing: border-box;
+  padding: clamp(84px, 11vh, 144px) clamp(24px, 5.8vw, 110px);
+  scroll-margin-top: 55px;
 }
-@media(max-width:390px){
-  .hero{padding-inline:16px;gap:18px}
-  .hero h1{font-size:clamp(56px,13vw,68px)}
-  .hero :global(.hero-line){font-size:18px}
+.albumSection::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset: 0;
+  background: radial-gradient(ellipse 38% 40% at 82% 45%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 90%);
+}
+.albumCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(17px, 2.5vh, 27px);
+  min-width: 0;
+  width: 100%;
+  max-width: 670px;
+  justify-self: end;
+}
+.albumEyebrow {
+  margin: 0;
+  color: var(--text-2);
+  font: 500 12px/1.4 var(--font-nav),sans-serif;
+  letter-spacing: .045em;
+}
+.albumTitle {
+  margin: 0;
+  color: var(--text);
+  font: 600 clamp(62px, 6vw, 105px)/.98 var(--font-editorial),Georgia,serif;
+  letter-spacing: -.033em;
+  text-wrap: balance;
+}
+.albumTitle em {
+  font-style: italic;
+  font-weight: 500;
+}
+.albumDescription {
+  margin: 0;
+  max-width: 35ch;
+  color: var(--text);
+  font: 400 clamp(21px, 2.05vw, 29px)/1.4 var(--font-story),sans-serif;
+  letter-spacing: -.02em;
+  text-wrap: pretty;
+}
+.albumSecondary {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--text-2);
+  font: 400 clamp(14px, 1.12vw, 16px)/1.7 var(--font-story),sans-serif;
+}
+.albumSection > :last-child {
+  width: 100%;
+  max-width: 640px;
+  min-width: 0;
+  align-self: center;
+  justify-self: center;
+}
+.albumSection :global(.welcome-chat) {
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  border-color: var(--line);
+  background: var(--glass);
+  box-shadow: none;
+  border-radius: 12px;
+}
+.albumSection :global(.welcome-chat-dot) { color: var(--accent); background: var(--card-hover); }
+.albumSection :global(.welcome-chat-button) { color: var(--bg); background: var(--text); border-radius: 8px; font-weight: 500; }
+.albumSection :global(.hero-meta) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 6px 13px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.albumSection :global(.hero-meta li) {
+  margin: 0;
+  padding: 0;
+  color: var(--text-2);
+  border: 0;
+  font: 400 12px/1.5 var(--font-nav),sans-serif;
+}
+.albumSection :global(.hero-meta li + li::before) { content: "·"; margin-right: 13px; }
+.albumSection :global(.bubble-wrap) { min-height: 42px; max-width: 100%; }
+.albumSection :global(.bubble) {
+  min-height: 42px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--glass);
+  color: var(--text-2);
+  font: 500 12px/1.5 var(--font-nav),sans-serif;
+  box-shadow: none;
+  max-width: 100%;
+}
+
+/* The project shelf always follows both editorial chapters; the hero isn't a fixed canvas. */
+.albumSection + :global(.reel) { padding-top: clamp(20px, 3vw, 38px); }
+@media (max-width: 1150px) {
+  .albumSection { gap: clamp(25px, 4vw, 58px); padding-inline: clamp(22px, 4vw, 55px); }
+  .albumTitle { font-size: clamp(57px, 6vw, 88px); }
+}
+@media (max-width: 900px) {
+  .albumSection {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    min-height: auto;
+    gap: clamp(44px, 6vw, 65px);
+    padding: clamp(75px, 8vw, 110px) clamp(24px, 5vw, 48px) 80px;
+  }
+  .albumCopy { justify-self: center; width: 100%; max-width: 650px; }
+  .albumSection > :last-child { max-width: 530px; }
+}
+@media (max-width: 700px) {
+  .hero:global(.hero) { padding-inline: 18px; }
+  .albumTitle { font-size: clamp(54px, 11vw, 83px); }
+}
+@media (max-width: 520px) {
+  .hero:global(.hero) {
+    min-height: 100svh;
+    padding: 108px 14px 112px;
+  }
+  .albumSection {
+    padding: 65px clamp(16px, 4.5vw, 25px) 66px;
+    gap: 32px;
+  }
+  .albumCopy { gap: 16px; }
+  .albumDescription { font-size: clamp(19px, 5vw, 23px); }
+  .albumSection :global(.welcome-chat) { width: 100%; }
+  .albumSection :global(.hero-meta li) { font-size: 11px; }
+  .albumSection > :last-child { max-width: 460px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scrollCue { transition: none; }
 }

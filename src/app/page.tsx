@@ -1,4 +1,6 @@
 import { AlbumIntro } from "@/components/AlbumIntro"
+import { EditorialHello } from "@/components/EditorialHello"
+import { HeroSparkles } from "@/components/HeroSparkles"
 import styles from "./home.module.css"
 import { Bubble } from "@/components/Bubble"
 import { WelcomeChat } from "@/components/WelcomeChat"
@@ -10,10 +12,23 @@ export default function Home() {
   return (
     <>
       <section className={`hero ${styles.hero}`} aria-labelledby="hero-name">
-        <div className={styles.intro}>
-          <p className="hero-hi">hi, i&apos;m</p>
-          <h1 id="hero-name" className="hero-name">{person.name}</h1>
-          <p className="hero-line">AI-native product designer working across public safety tools, automotive interfaces, and emerging experiences.</p>
+        <HeroSparkles />
+        <EditorialHello name={person.name} />
+        <a className={styles.scrollCue} href="#behind-the-cover" aria-label="Scroll to the CD and learn more about me">
+          <span className={styles.scrollDots} aria-hidden="true"><i /><i /><i /></span>
+        </a>
+      </section>
+
+      <section id="behind-the-cover" className={styles.albumSection} aria-labelledby="album-heading">
+        <div className={styles.albumCopy}>
+          <p className={styles.albumEyebrow}>side a / a little about me</p>
+          <h2 id="album-heading" className={styles.albumTitle}>Off the <em>clock.</em></h2>
+          <p className={styles.albumDescription}>
+            I design for public safety, in-car experiences, and whatever I&apos;m curious about next.
+          </p>
+          <p className={styles.albumSecondary}>
+            Outside of design, I&apos;m usually taking photos, finding new music, or planning another trip.
+          </p>
           <WelcomeChat />
           <ul className="hero-meta" aria-label="At a glance">
             <li>{person.roles}</li>
@@ -24,7 +39,6 @@ export default function Home() {
         </div>
         <AlbumIntro />
       </section>
-
 
       <WorkReel projects={projects} eyebrow="selected projects · 2025–2026" heading="The work, and what went into it." />
 
@@ -49,8 +63,8 @@ export default function Home() {
           <h2 id="contact-h" className="h2">Hiring for product, UX or experience design? Let&apos;s talk.</h2>
           <div className="contact-actions">
             {person.email && <a className="btn btn-primary" href={`mailto:${person.email}`}>Email me</a>}
-            {person.linkedin && <a className="btn" href={person.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>}
-            {person.resume && <a className="btn" href={person.resume}>Résumé ↗</a>}
+            {person.linkedin && <a className="btn" href={person.linkedin} target="_blank" rel="noreferrer">LinkedIn</a>}
+            {person.resume && <a className="btn" href={person.resume}>Résumé</a>}
           </div>
         </div>
       </section>

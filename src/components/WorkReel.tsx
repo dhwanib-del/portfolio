@@ -17,7 +17,7 @@ function ProjectCover({ project }: { project: Project }) {
   const name = project.title.split(" · ")[0]
   return (
     <div className="reel-cover-type" aria-hidden="true">
-      <div className="reel-cover-overline"><span>SELECTED PROJECT / {project.tags[0]}</span><span aria-hidden="true">↗</span></div>
+      <div className="reel-cover-overline"><span>SELECTED PROJECT / {project.tags[0]}</span></div>
       <strong>{name}<span>.</span></strong>
       <div className="reel-cover-bottom"><span>{project.result}</span><small>{project.coverNote ?? "Project overview"}</small></div>
     </div>
@@ -81,7 +81,7 @@ export function WorkReel({ projects, eyebrow, heading }: { projects: Project[]; 
           <div className="reel-extra">
             <ul className="reel-tags" aria-label="Topics">{project.tags.map((tag) => <li key={tag}>{tag}</li>)}</ul>
             <p className="reel-text">{project.body}</p>
-            <span className="reel-cta" aria-hidden="true">{project.nda ? "Current work" : "Explore the case study"} <span>↗</span></span>
+            <span className="reel-cta" aria-hidden="true">{project.nda ? "Current work" : "Explore the case study"}</span>
           </div>
         </div>
       </>

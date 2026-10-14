@@ -3,14 +3,14 @@ import { useEffect, useRef, useState } from "react"
 import { figmaEmbed } from "@/lib/case-ui"
 import s from "./CinematicDeviceReveal.module.css"
 
-const stages = ["SCROLL", "ROTATE", "REVEAL", "INTERACT"]
+const stages = ["Context", "Perspective", "Interface", "Explore"]
 const clamp = (x: number) => Math.max(0, Math.min(1, x))
 const ease = (x: number) => { const p = clamp(x); return p*p*(3-2*p) }
 
 export function CinematicDeviceReveal({ initialUrl = "" }: { initialUrl?: string }) {
   const host = useRef<HTMLDivElement>(null)
   const [progress, setProgress] = useState(0)
-  const [url, setUrl] = useState(initialUrl)
+  const url = initialUrl
   const [launched, setLaunched] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [reduce, setReduce] = useState(false)
@@ -47,29 +47,26 @@ export function CinematicDeviceReveal({ initialUrl = "" }: { initialUrl?: string
   return <section ref={host} className={s.section} data-live={launched}>
     <div className={s.sticky}>
       <div className={s.copy}>
-        <span className={s.eyebrow}>GENERAL MOTORS / CONVOY</span>
-        <h2>Take Convoy<br/>for a <em>spin.</em></h2>
-        <p>Explore the interaction design behind a road-trip experience for groups traveling together.</p>
+        <span className={s.eyebrow}>General Motors / Convoy</span>
+        <h2>In the<br/><em>driver’s seat.</em></h2>
+        <p>A concept for group road trips, developed as a shared phone-and-vehicle experience and evaluated in a physical vehicle mockup.</p>
         <div className={s.actions}>
-          {!launched ? <button type="button" disabled={!parsed || !canOpen} onClick={()=>setLaunched(true)}>{parsed ? canOpen ? "Explore prototype ↗" : "Scroll to reveal ↓" : "Add a Figma URL below ↓"}</button> : <><button onClick={()=>setExpanded(true)}>Expand prototype ↗</button><button onClick={()=>setLaunched(false)}>Replay ↺</button></>}
-          {parsed&&<a href={parsed.openUrl} target="_blank" rel="noopener noreferrer">Open in Figma ↗</a>}
+          {parsed ? (!launched ? <button type="button" disabled={!canOpen} onClick={()=>setLaunched(true)}>{canOpen ? "Explore the prototype" : "Scroll to reveal"}</button> : <><button type="button" onClick={()=>setExpanded(true)}>Expand prototype</button><button type="button" onClick={()=>setLaunched(false)}>Replay</button></>) : <a href="#decisions">Explore the interface decisions</a>}
+          {parsed&&<a href={parsed.openUrl} target="_blank" rel="noopener noreferrer">Open in Figma</a>}
         </div>
       </div>
+      <div className={s.cabin} aria-hidden="true"><div className={s.windshield}/><div className={s.steering}/><div className={s.dash}/></div>
       <div className={s.scene} style={{transform: `translateY(${(1-motion)*42}px) scale(${.9+.1*motion})`}}>
         <div className={s.tablet} style={{transform:`rotateY(${(1-motion)*-43}deg) rotateX(${(1-motion)*19}deg) rotateZ(${(1-motion)*-5}deg)`}}>
           <div className={s.glass}>
-            {launched && parsed ? <iframe src={parsed.embedUrl} title="GM Convoy Figma prototype" allowFullScreen /> : <div className={s.preview}><div className={s.ring}>↗</div><strong>Your real prototype,<br/>in the driver’s seat.</strong><span>The interactive Figma experience opens here after the reveal.</span></div>}
+            {launched && parsed ? <iframe src={parsed.embedUrl} title="GM Convoy Figma prototype" allowFullScreen /> : <div className={s.preview}><div className={s.ring}>●</div><strong>Convoy.</strong><span>Interface concept for connected group travel. {parsed ? "Scroll to explore the interactive team prototype." : "The team prototype is not publicly embedded here."}</span></div>}
           </div>
           <span className={s.camera}/>
         </div>
         <div className={s.shadow}/>
       </div>
       <div className={s.bottom}>
-        <div className={s.linkForm}>
-          <label htmlFor="convoy-figma-url">FIGMA PROTOTYPE LINK</label>
-          <input id="convoy-figma-url" type="url" value={url} placeholder="https://www.figma.com/proto/..." onChange={e=>{setUrl(e.target.value);setLaunched(false)}} />
-          <span>Paste a public prototype link to try it. Your input isn’t saved to the site.</span>
-        </div>
+        <p className={s.availabilityNote}>{parsed ? "Prototype available to explore above." : "Concept design · evaluated in three usability sessions using a physical vehicle mockup. Approved prototype access is not available on this page."}</p>
         <div className={s.steps}>{stages.map((stage,i)=><div key={stage}><div className={s.track}><i style={{width:`${clamp(motion*4-i)*100}%`}}/></div><span>{String(i+1).padStart(2,"0")} &nbsp;{stage}</span></div>)}</div>
       </div>
     </div>
