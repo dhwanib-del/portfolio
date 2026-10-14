@@ -49,8 +49,8 @@ export default function Home() {
           <h2 id="contact-h" className="h2">Hiring for product, UX or experience design? Let&apos;s talk.</h2>
           <div className="contact-actions">
             {person.email && <a className="btn btn-primary" href={`mailto:${person.email}`}>Email me</a>}
-            {person.linkedin && <a className="btn" href={person.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a>}
-            {person.resume && <a className="btn" href={person.resume}>Résumé ↗</a>}
+            {person.linkedin && <a className="btn" href={person.linkedin} target="_blank" rel="noreferrer">LinkedIn</a>}
+            {person.resume && <a className="btn" href={person.resume}>Résumé</a>}
           </div>
         </div>
       </section>
