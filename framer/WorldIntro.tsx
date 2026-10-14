@@ -30,7 +30,6 @@ const VIBES: Vibe[] = [
     { id:"greenroom", name:"Yellow", accent:"#FACC15", a:"rgba(254,240,138,.35)", b:"rgba(250,204,21,.48)", c:"rgba(234,179,8,.22)" },
 ]
 const DEFAULT_CUSTOM: [string,string] = ["#8B5CF6","#F3500F"]
-const ROOT_FONT = "'Poppins', system-ui, sans-serif"
 const matchHex = (s: string) => /^#[0-9a-f]{6}$/i.test(s)
 function rgb(hex: string) {
     const n = parseInt(hex.slice(1),16)
@@ -162,15 +161,17 @@ export default function WorldIntro({showWhen="session",showSwitcher=true,switche
         paint(v,false)
         const media=window.matchMedia("(prefers-reduced-motion: reduce)")
         const onMedia=()=>setReduced(media.matches)
-        onMedia()
         media.addEventListener?.("change",onMedia)
-        setColors(col)
-        setCurrent(v)
         let seen=false
         try { seen=!!sessionStorage.getItem("db_intro_seen") } catch {}
-        setOpen(showWhen==="always"||(showWhen==="session"&&!seen))
-        setMounted(true)
-        return ()=>media.removeEventListener?.("change",onMedia)
+        const frame=requestAnimationFrame(()=>{
+            setReduced(media.matches)
+            setColors(col)
+            setCurrent(v)
+            setOpen(showWhen==="always"||(showWhen==="session"&&!seen))
+            setMounted(true)
+        })
+        return ()=>{cancelAnimationFrame(frame);media.removeEventListener?.("change",onMedia)}
     },[defaultVibe,showWhen])
     useEffect(()=>{
         if(!open)return
@@ -282,5 +283,5 @@ addPropertyControls(WorldIntro,{
     showWhen:{type:ControlType.Enum,title:"Show intro",options:["session","always","never"],optionTitles:["Once per visit","Every load","Never"],defaultValue:"session"},
     defaultVibe:{type:ControlType.Enum,title:"Default vibe",options:VIBES.map(v=>v.id),optionTitles:VIBES.map(v=>v.name),defaultValue:"afterhours"},
     showSwitcher:{type:ControlType.Boolean,title:"Vibe chip",defaultValue:true},
-    switcherSide:{type:ControlType.Enum,title:"Chip side",options:["left","right"],optionTitles:["Left","Right"],defaultValue:"left",displaySegmentedControl:true,hidden:(p:any)=>!p.showSwitcher},
+    switcherSide:{type:ControlType.Enum,title:"Chip side",options:["left","right"],optionTitles:["Left","Right"],defaultValue:"left",displaySegmentedControl:true,hidden:(p:Props)=>!p.showSwitcher},
 })
