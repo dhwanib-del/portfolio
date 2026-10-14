@@ -13,7 +13,7 @@ export default function Home() {
       <section className={`hero ${styles.hero}`} aria-labelledby="hero-name">
         <div className={styles.intro}>
           <EditorialHello name={person.name} />
-          <p className="hero-line">AI-native product designer working across public safety tools, automotive interfaces, and emerging experiences.</p>
+          <p className="hero-line">I design for public safety, in-car experiences, and whatever I’m curious about next.</p>
           <WelcomeChat />
           <ul className="hero-meta" aria-label="At a glance">
             <li>{person.roles}</li>
