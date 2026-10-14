@@ -6,17 +6,17 @@
    Theme: follows the OS; the nav toggle sets html[data-theme] and wins. */
 
 :root {
-  --font-sans: "Poppins", system-ui, -apple-system, sans-serif;
+  --font-sans: "Satoshi", "Plus Jakarta Sans Variable", Poppins, system-ui, sans-serif;
   --font-nav: "Poppins", system-ui, sans-serif;
   --font-script: "Pinyon Script", cursive;
   --font-editorial: "Cormorant Garamond", Georgia, serif;
   --font-display: var(--font-editorial);
   /* Load Satoshi via Fontshare; Plus Jakarta Sans remains the local fallback. */
-  --font-story: "Satoshi", "Plus Jakarta Sans Variable", "Plus Jakarta Sans", Poppins, sans-serif;
+  --font-story: "Satoshi", "Plus Jakarta Sans Variable", Poppins, sans-serif;
 
   --bg: #000000;
-  --surface: #111111;
-  --surface-2: #1f1f1f;
+  --surface: #0d0d0e;
+  --surface-2: #161618;
   --card: rgba(255, 255, 255, 0.04);
   --card-hover: rgba(255, 255, 255, 0.07);
   --text: #ffffff;
@@ -32,38 +32,41 @@
   --glow-blend: screen;
 
   /* Editorial system: shared typography, geometry, rhythm and movement. */
-  --type-display: clamp(3.5rem, 7.5vw, 6rem);
-  --type-script: clamp(3.25rem, 7.45vw, 5.94rem);
-  --type-story: clamp(1.5rem, 3vw, 3.125rem);
-  --type-page: clamp(3rem, 6.8vw, 5.5rem);
-  --type-section: clamp(2.7rem, 6vw, 5.5rem);
+  --type-display: clamp(3.5rem, 7vw, 6rem);
+  --type-script: clamp(3.1rem, 6.6vw, 5.9rem);
+  --type-story: clamp(1.35rem, 2.7vw, 2.5rem);
+  --type-card: clamp(1.25rem, 1.9vw, 1.75rem);
+  --type-page: clamp(2.9rem, 6vw, 5.5rem);
+  --type-section: clamp(2.35rem, 5vw, 5rem);
   --type-body: 1rem;
   --type-caption: .8rem;
   --leading-display: 1;
   --leading-script: .88;
   --leading-body: 1.65;
   --tracking-display: -0.021em;
-  --space-section: clamp(4rem, 8vw, 7rem);
+  --space-section: clamp(3.25rem, 6vw, 6rem);
   --space-block: clamp(1.5rem, 3vw, 3rem);
   --space-card: clamp(1.125rem, 2.2vw, 2rem);
   --content-readable: 68ch;
   --case-readable: 850px;
-  --radius-card: 20px;
+  --layout-width: 1104px;
+  --layout-gutter: clamp(16px, 3vw, 32px);
+  --radius-card: 18px;
   --radius-control: 999px;
   --motion-fast: 180ms;
   --motion-base: 260ms;
   --radius-lg: 24px;
   --radius-md: 16px;
   --max: 1104px;
-  --gutter: 20px;
+  --gutter: clamp(16px, 2.4vw, 28px);
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     --bg: #ffffff;
-    --surface: #eeeeee;
-    --surface-2: #e0e0e0;
+    --surface: #f4f4f2;
+    --surface-2: #ebebe8;
     --card: rgba(0, 0, 0, 0.035);
     --card-hover: rgba(0, 0, 0, 0.06);
     --text: #0a0a0a;
@@ -75,7 +78,7 @@
     --accent: var(--vibe-accent-ink, #c23d08);
     --on-accent: #ffffff;
     --ok: #0e7a43;
-    --aurora-opacity: 0.45;
+    --aurora-opacity: .72;
     --glow-blend: multiply;
     color-scheme: light;
   }
@@ -86,8 +89,8 @@
 }
 :root[data-theme="light"] {
   --bg: #ffffff;
-  --surface: #eeeeee;
-  --surface-2: #e0e0e0;
+  --surface: #f4f4f2;
+  --surface-2: #ebebe8;
   --card: rgba(0, 0, 0, 0.035);
   --card-hover: rgba(0, 0, 0, 0.06);
   --text: #0a0a0a;
@@ -99,7 +102,7 @@
   --accent: var(--vibe-accent-ink, #c23d08);
   --on-accent: #ffffff;
   --ok: #0e7a43;
-  --aurora-opacity: 0.45;
+  --aurora-opacity: .72;
   --glow-blend: multiply;
   color-scheme: light;
 }
@@ -109,7 +112,11 @@
 :root[data-theme="light"][data-vibe="greenroom"] { --accent: #854d0e; }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; overflow-x: clip; }
+main, section, article, header, nav { min-width: 0; }
+:where(.container, .section, .reel, .hero) { min-width: 0; }
+:where(h1,h2,h3,p,li,dd,dt) { overflow-wrap: break-word; }
+
 body {
   margin: 0;
   background: var(--bg);
@@ -135,7 +142,7 @@ a { color: inherit; }
 }
 .skip-link:focus { top: 12px; }
 
-.container { width: 100%; max-width: calc(var(--max) + var(--gutter) * 2); margin: 0 auto; padding: 0 var(--gutter); }
+.container { width: 100%; max-width: calc(var(--max) + var(--gutter) * 2); margin: 0 auto; padding-inline: var(--gutter); min-width:0; }
 .eyebrow { font-family: var(--font-nav); font-weight: 500; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); margin: 0 0 12px; }
 .h2 { font-size: var(--type-section); line-height: var(--leading-display); letter-spacing: var(--tracking-display); font-weight: 700; margin: 0; text-wrap: balance; }
 .lede { font-size: 17px; color: var(--text-2); margin: 12px 0 0; max-width: 60ch; }
