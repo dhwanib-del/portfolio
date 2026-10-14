@@ -1,49 +1,93 @@
-/* Homepage: the editorial name stays quiet so the album object can be playful. */
-.hero {
-  box-sizing: border-box;
+/* Full-viewport editorial opening: only the hero breaks out of the site's reading column.
+   Keep the rest of the portfolio's width tokens unchanged. */
+.hero:global(.hero) {
+  width: 100%;
+  max-width: none;
+  min-height: 100svh;
   display: grid;
-  width: min(100%, calc(var(--max) + var(--gutter) * 2));
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 340px);
-  gap: clamp(25px, 4vw, 60px);
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr);
   align-items: center;
-  margin-inline: auto;
-  padding: clamp(102px, 13vh, 148px) var(--gutter) clamp(34px, 5vw, 66px);
+  justify-content: stretch;
+  gap: clamp(32px, 5.2vw, 100px);
+  padding-block: clamp(102px, 12vh, 150px) clamp(52px, 8vh, 100px);
+  padding-inline: clamp(24px, 5.4vw, 108px);
+  margin: 0;
   text-align: left;
+  box-sizing: border-box;
+}
+.intro {
+  width: 100%;
+  max-width: 780px;
   min-width: 0;
+  justify-self: end;
 }
-.intro { min-width: 0; width: 100%; }
 .hero :global(.hero-line) {
-  font: 400 clamp(18px, 1.56vw, 21px)/1.52 var(--font-story);
-  letter-spacing: -.016em;
-  max-width: 46ch;
-  margin: 0 0 24px;
+  max-width: 40ch;
+  margin: 0 0 clamp(22px, 3.1vh, 34px);
   color: var(--text-2);
+  font: 400 clamp(18px, 1.65vw, 24px)/1.49 var(--font-story);
+  letter-spacing: -.014em;
+  text-wrap: pretty;
 }
-.hero :global(.welcome-chat) { margin-bottom: 20px; }
+.hero :global(.welcome-chat) {
+  margin: 0 0 clamp(20px, 3.2vh, 32px);
+  max-width: 100%;
+}
 .hero :global(.hero-meta) { margin-bottom: 15px; }
 .hero :global(.bubble) { max-width: 100%; }
+.hero > :last-child {
+  min-width: 0;
+  justify-self: center;
+  align-self: center;
+  width: min(100%, 510px);
+}
 .hero + :global(.reel) { padding-top: clamp(20px, 3vw, 38px); }
-@media (max-width: 900px) {
-  .hero {
-    grid-template-columns: minmax(0, 1fr) minmax(205px, 285px);
-    gap: clamp(18px, 3vw, 32px);
+
+/* Wide displays: comfortably fill the canvas without giant text or cropped media. */
+@media (min-width: 1700px) {
+  .hero:global(.hero) {
+    padding-inline: max(100px, calc((100vw - 1700px) / 2 + 100px));
+    gap: clamp(85px, 6vw, 135px);
   }
 }
-@media (max-width: 700px) {
-  .hero {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: stretch;
-    align-items: start;
-    gap: 28px;
-    padding-top: clamp(92px, 12vh, 116px);
-    padding-bottom: 28px;
+@media (max-width: 1180px) {
+  .hero:global(.hero) {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+    gap: clamp(24px, 3.8vw, 48px);
+    padding-inline: clamp(24px, 4vw, 48px);
   }
-  .intro { max-width: 620px; }
-  .hero :global(.hero-line) { max-width: 40ch; }
-  .hero > :last-child { justify-self: center; min-width: 0; width: min(100%, 310px); }
-  .hero + :global(.reel) { padding-top: 20px; }
+  .hero > :last-child { width: min(100%, 425px); }
+}
+@media (max-width: 820px) {
+  .hero:global(.hero) {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: clamp(30px, 5vw, 45px);
+    min-height: 100svh;
+    padding: clamp(100px, 12vh, 124px) clamp(22px, 5vw, 42px) 56px;
+  }
+  .intro { max-width: 640px; justify-self: center; }
+  .hero :global(.hero-line) { max-width: 44ch; }
+  .hero > :last-child {
+    justify-self: center;
+    width: min(100%, 430px);
+  }
+}
+@media (max-width: 520px) {
+  .hero:global(.hero) {
+    gap: clamp(22px, 5vw, 36px);
+    min-height: 100svh;
+    padding: 94px 20px 38px;
+  }
+  .hero :global(.hero-line) {
+    font-size: clamp(17px, 4vw, 19px);
+    max-width: 37ch;
+  }
+  .hero :global(.welcome-chat) { margin-bottom: 18px; }
+  .hero > :last-child { width: min(100%, 380px); }
+  .hero + :global(.reel) { padding-top: 18px; }
 }
 @media (max-width: 390px) {
-  .hero { padding-inline: 16px; gap: 24px; }
-  .hero :global(.hero-line) { font-size: 18px; }
+  .hero:global(.hero) { padding-inline: 16px; gap: 20px; }
+  .hero > :last-child { width: min(100%, 330px); }
 }
