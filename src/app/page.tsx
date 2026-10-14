@@ -1,4 +1,4 @@
-import { PhotoBooth } from "@/components/PhotoBooth"
+import { AlbumIntro } from "@/components/AlbumIntro"
 import styles from "./home.module.css"
 import { Bubble } from "@/components/Bubble"
 import { WelcomeChat } from "@/components/WelcomeChat"
@@ -22,7 +22,7 @@ export default function Home() {
           </ul>
           <Bubble lines={bubbleLines} />
         </div>
-        <PhotoBooth />
+        <AlbumIntro />
       </section>
 
 
