@@ -39,7 +39,7 @@
   min-width: 0;
   justify-self: center;
   align-self: center;
-  width: min(100%, 510px);
+  width: min(100%, 33vw, 510px);
 }
 .hero + :global(.reel) { padding-top: clamp(20px, 3vw, 38px); }
 
@@ -56,9 +56,9 @@
     gap: clamp(24px, 3.8vw, 48px);
     padding-inline: clamp(24px, 4vw, 48px);
   }
-  .hero > :last-child { width: min(100%, 425px); }
+  .hero > :last-child { width: min(100%, 36vw, 425px); }
 }
-@media (max-width: 820px) {
+@media (max-width: 960px) {
   .hero:global(.hero) {
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
