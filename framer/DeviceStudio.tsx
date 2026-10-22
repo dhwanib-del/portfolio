@@ -516,7 +516,7 @@ html[data-db-theme=light] .ds-studio{--ds-al1:#e6e7ea;--ds-al2:#c4c6cb;--ds-al3:
 .ds-actions :is(a,button),.ds-dialog button{font:500 14px 'Poppins',sans-serif;min-height:44px;padding:0 18px;display:inline-flex;align-items:center;gap:8px;border-radius:999px;border:1px solid var(--db-line,#ffffff30);color:var(--ds-ink);background:transparent;text-decoration:none;cursor:pointer}
 .ds-actions .ds-primary{background:var(--ds-ink);color:var(--db-bg,#000);border-color:transparent}
 .ds-arrow{width:16px;height:16px;flex-shrink:0;transition:transform .3s cubic-bezier(.16,1,.3,1)}
-a:hover>.ds-arrow{transform:translate(2px,-2px)}
+.ds-studio a:hover>.ds-arrow{transform:translate(2px,-2px)}
 .ds-studio :is(a,button):focus-visible,.ds-dialog button:focus-visible{outline:3px solid var(--ds-accent);outline-offset:4px}
 .ds-dialog{padding:0;width:min(1400px,96vw);height:92dvh;max-height:94dvh;border:1px solid var(--db-line,#777);border-radius:20px;background:var(--db-bg,#000);color:var(--db-text,#fff);overflow:hidden}
 .ds-dialog::backdrop{background:#000c;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
@@ -525,7 +525,7 @@ a:hover>.ds-arrow{transform:translate(2px,-2px)}
 
 .ds-studio[data-narrow=true]{padding:24px 0}
 .ds-studio[data-narrow=true] .ds-stage{perspective:1600px;padding-bottom:28px;perspective-origin:50% calc(100% - 28px - 7%)}
-.ds-studio[data-narrow=true] .ds-lid{width:96%}
+.ds-studio[data-narrow=true] .ds-lid{width:90%}
 .ds-studio[data-narrow=true] .ds-pill{font-size:13px;min-height:40px;padding:0 14px}
 .ds-studio[data-narrow=true] .ds-fallback span{display:none}
 .ds-studio[data-narrow=true] .ds-actions{gap:8px}

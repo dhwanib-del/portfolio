@@ -95,7 +95,7 @@ function DbArrow({ external = false }: { external?: boolean }) {
             aria-hidden="true"
             focusable="false"
         >
-            {external ? <path d="M5 11 11 5M6 5h5v5" /> : <path d="M3 8h10M9 4l4 4-4 4" />}
+            {external ? <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /> : <path d="M3 8h10M9 4l4 4-4 4" />}
         </svg>
     )
 }
@@ -668,8 +668,8 @@ const CSS = `
 .cd3-rot{position:absolute;inset:0;border-radius:50%;will-change:transform}
 .cd3-iri{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 20deg,#e9edf4,#f6d9ea 9%,#d9e7ff 18%,#e3f7ee 27%,#fff3d1 36%,#eef0f6 45%,#f4d6e6 55%,#dcd8ff 64%,#d2f2ff 73%,#f7f1d8 82%,#e9edf4);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85),inset 0 0 0 2px rgba(0,0,0,.06)}
 .cd3-grooves{position:absolute;inset:1.5%;border-radius:50%;background:repeating-radial-gradient(circle closest-side,transparent 0 2px,rgba(255,255,255,.22) 2px 2.6px,transparent 2.6px 4px);mix-blend-mode:soft-light;opacity:.9}
-.cd3-print{position:absolute;inset:10%;border-radius:50%;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6cqw;color:#1a1720;background:radial-gradient(circle closest-side,transparent 0 72%,rgba(0,0,0,.08) 72.5% 73.5%,transparent 74%),#fffaf3;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),0 0 0 1px rgba(255,255,255,.5)}
-.cd3-print-art{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 50%,transparent 0 33%,transparent 33%),repeating-conic-gradient(from 0deg,var(--va) 0 10deg,var(--vb) 10deg 20deg,var(--vc) 20deg 30deg);-webkit-mask:radial-gradient(circle closest-side,transparent 0 74%,#000 75% 97%,transparent 98%);mask:radial-gradient(circle closest-side,transparent 0 74%,#000 75% 97%,transparent 98%);opacity:.9}
+.cd3-print{position:absolute;inset:10%;border-radius:50%;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6cqw;color:#1a1720;background:radial-gradient(circle closest-side,transparent 0 76%,rgba(0,0,0,.07) 76.5% 77.5%,transparent 78%),#fffaf3;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08),0 0 0 1px rgba(255,255,255,.5)}
+.cd3-print-art{position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 50% 50%,transparent 0 33%,transparent 33%),repeating-conic-gradient(from 0deg,var(--va) 0 7.5deg,#fffaf3 7.5deg 15deg,var(--vb) 15deg 22.5deg,#fffaf3 22.5deg 30deg,var(--vc) 30deg 37.5deg,#fffaf3 37.5deg 45deg);-webkit-mask:radial-gradient(circle closest-side,transparent 0 74%,#000 75% 97%,transparent 98%);mask:radial-gradient(circle closest-side,transparent 0 80%,#000 81% 96%,transparent 97%);opacity:.8}
 .cd3-print::after{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 30% 24%,color-mix(in srgb,var(--acc) 22%,transparent) 0 2.2%,transparent 2.6%),radial-gradient(circle at 74% 70%,color-mix(in srgb,var(--vb) 70%,transparent) 0 1.8%,transparent 2.2%),radial-gradient(circle at 70% 26%,color-mix(in srgb,var(--va) 80%,transparent) 0 1.4%,transparent 1.8%);pointer-events:none}
 .cd3-print em{position:relative;z-index:1;font:400 clamp(15px,7.4cqw,30px)/1 'Pinyon Script',cursive;color:#1a1720;margin-top:-13%;transform:translateY(-20%)}
 .cd3-print b{position:relative;z-index:1;margin-top:20%;font:600 clamp(6px,2.1cqw,9px)/1 'Poppins',sans-serif;letter-spacing:.2em;text-transform:uppercase;color:color-mix(in srgb,var(--acc) 80%,#1a1720)}

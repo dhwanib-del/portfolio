@@ -91,7 +91,7 @@ function DbArrow({ external = false }: { external?: boolean }) {
             aria-hidden="true"
             focusable="false"
         >
-            {external ? <path d="M5 11 11 5M6 5h5v5" /> : <path d="M3 8h10M9 4l4 4-4 4" />}
+            {external ? <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /> : <path d="M3 8h10M9 4l4 4-4 4" />}
         </svg>
     )
 }
