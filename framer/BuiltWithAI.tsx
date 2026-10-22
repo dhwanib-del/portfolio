@@ -102,6 +102,34 @@ function CursorTag({ name, bg, fg }: { name: string; bg: string; fg: string }) {
     )
 }
 
+// Shared link arrow (one look across Dhwani's components, Oct 22): 14px, 1.5px stroke, round
+// caps, currentColor. "ne" (↗) for links that leave the site, "e" (→) for links inside it.
+// Hover/focus nudges it 2px (ARROW_CSS); reduced motion keeps it still.
+function DbArrow({ external = false }: { external?: boolean }) {
+    return (
+        <svg
+            className="db-arrow"
+            data-dir={external ? "ne" : "e"}
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+        >
+            {external ? <path d="M5 11 11 5M6 5h5v5" /> : <path d="M3 8h10M9 4l4 4-4 4" />}
+        </svg>
+    )
+}
+const ARROW_CSS = `.db-arrow{flex-shrink:0;display:inline-block;vertical-align:-.125em;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+a:hover .db-arrow[data-dir=e],a:focus-visible .db-arrow[data-dir=e]{transform:translateX(2px)}
+a:hover .db-arrow[data-dir=ne],a:focus-visible .db-arrow[data-dir=ne]{transform:translate(2px,-2px)}
+@media (prefers-reduced-motion:reduce){.db-arrow{transition:none !important;transform:none !important}}`
+
 export default function BuiltWithAI(props: Props) {
     const {
         label,
@@ -265,6 +293,7 @@ export default function BuiltWithAI(props: Props) {
         @keyframes bwa-blink { 50% { opacity: 0 } }
         @keyframes bwa-note { from { opacity: 0; transform: translateY(3px) } to { opacity: 1; transform: none } }
         .bwa-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+        ${ARROW_CSS}
         @media (prefers-reduced-motion: reduce) { .bwa-chip, .bwa-btn, .bwa-spin { transition: none !important; } .bwa-btn:hover .bwa-spin { transform: none; } }
     `
 
@@ -456,7 +485,7 @@ export default function BuiltWithAI(props: Props) {
                     }}
                 >
                     {linkText}
-                    <span aria-hidden="true" style={{ transform: linkHover ? "translateX(3px)" : "none", transition: "transform 0.2s ease" }}>→</span>
+                    <DbArrow external={/^https?:\/\//i.test(linkUrl)} />
                 </a>
             ) : null}
 

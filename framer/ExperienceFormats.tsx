@@ -172,7 +172,8 @@ const pad3 = (n: number) => String(Math.round(n)).padStart(3, "0")
 // Stable 0..1 pseudo-random from a string, so each role gets its own waveform shape
 function seeded(text: string, i: number) {
     let h = 2166136261
-    for (let k = 0; k < text.length; k++) h = Math.imul(h ^ text.charCodeAt(k), 16777619)
+    for (let k = 0; k < text.length; k++)
+        h = Math.imul(h ^ text.charCodeAt(k), 16777619)
     const x = Math.sin((h % 9973) + i * 12.9898) * 43758.5453
     return x - Math.floor(x)
 }
@@ -303,7 +304,29 @@ function useSpin(ref: React.RefObject<HTMLDivElement>, rate: number) {
             }
         )
 
+        let near = false
+        const sync = () => {
+            if (near && !document.hidden) animation.current?.play()
+            else animation.current?.pause()
+        }
+        const observer =
+            typeof IntersectionObserver !== "undefined"
+                ? new IntersectionObserver(
+                      ([entry]) => {
+                          near = entry.isIntersecting
+                          sync()
+                      },
+                      { rootMargin: "80px" }
+                  )
+                : null
+        if (observer) observer.observe(element)
+        else near = true
+        document.addEventListener("visibilitychange", sync)
+        sync()
+
         return () => {
+            observer?.disconnect()
+            document.removeEventListener("visibilitychange", sync)
             animation.current?.cancel()
             animation.current = null
         }
@@ -349,7 +372,7 @@ function MiniVinyl({ image, weight }: { image: any; weight: number }) {
    WAVEFORM STRIP (follows the deck's level)
 ====================================================== */
 
-const WAVE_BARS = 32
+const WAVE_BARS = 16
 
 function Waveform({ seed, weight }: { seed: string; weight: number }) {
     return (
@@ -477,6 +500,34 @@ function RoleSelectorCard({
  * @framerSupportedLayoutHeight auto
  */
 
+// Shared link arrow (one look across Dhwani's components, Oct 22): 14px, 1.5px stroke, round
+// caps, currentColor. "ne" (↗) for links that leave the site, "e" (→) for links inside it.
+// Hover/focus nudges it 2px (ARROW_CSS); reduced motion keeps it still.
+function DbArrow({ external = false }: { external?: boolean }) {
+    return (
+        <svg
+            className="db-arrow"
+            data-dir={external ? "ne" : "e"}
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+        >
+            {external ? <path d="M5 11 11 5M6 5h5v5" /> : <path d="M3 8h10M9 4l4 4-4 4" />}
+        </svg>
+    )
+}
+const ARROW_CSS = `.db-arrow{flex-shrink:0;display:inline-block;vertical-align:-.125em;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+a:hover .db-arrow[data-dir=e],a:focus-visible .db-arrow[data-dir=e]{transform:translateX(2px)}
+a:hover .db-arrow[data-dir=ne],a:focus-visible .db-arrow[data-dir=ne]{transform:translate(2px,-2px)}
+@media (prefers-reduced-motion:reduce){.db-arrow{transition:none !important;transform:none !important}}`
+
 export default function TheSet(props: Props) {
     const {
         eyebrow = "experience",
@@ -498,6 +549,7 @@ export default function TheSet(props: Props) {
     const [open, setOpen] = useState<number | null>(null)
     const [hover, setHover] = useState<number | null>(null)
     const [seen, setSeen] = useState(false)
+    const [inView, setInView] = useState(false)
 
     const [helpPinned, setHelpPinned] = useState(true)
     const [helpHovered, setHelpHovered] = useState(false)
@@ -744,18 +796,21 @@ export default function TheSet(props: Props) {
 
         if (!element || typeof IntersectionObserver === "undefined") {
             setSeen(true)
+            setInView(true)
             return
         }
 
         const observer = new IntersectionObserver(
             (entries) => {
-                if (entries[0]?.isIntersecting) {
-                    startTransition(() => setSeen(true))
-                    observer.disconnect()
-                }
+                const visible = !!entries[0]?.isIntersecting
+                startTransition(() => {
+                    setInView(visible)
+                    if (visible) setSeen(true)
+                })
             },
             {
-                threshold: 0.12,
+                threshold: 0,
+                rootMargin: "80px 0px",
             }
         )
 
@@ -786,6 +841,8 @@ export default function TheSet(props: Props) {
             color: var(--ts-text);
             font-family: ${FONT};
         }
+
+        .ts:not(.is-in-view) *, .ts:not(.is-in-view) *::before, .ts:not(.is-in-view) *::after { animation-play-state: paused !important; }
 
         .ts *, .ts *::before, .ts *::after {
             box-sizing: border-box;
@@ -947,7 +1004,7 @@ export default function TheSet(props: Props) {
             width: 3px;
             border-radius: 999px;
             background: var(--ts-accent);
-            animation: tsEQ .9s ease-in-out infinite;
+            animation: none;
         }
 
         .ts-eq i:nth-child(1) {
@@ -1201,7 +1258,7 @@ export default function TheSet(props: Props) {
             margin-bottom: 13px;
             color: var(--ts-accent);
             font-size: 16px;
-            animation: tsTwinkle 2.6s ease-in-out infinite;
+            animation: none;
         }
 
         .ts-work-cta {
@@ -1231,14 +1288,11 @@ export default function TheSet(props: Props) {
         }
 
         .ts-work-arrow {
+            display: inline-flex;
             color: var(--ts-accent);
-            font-size: 15px;
-            transition: transform .22s cubic-bezier(.16,1,.3,1);
         }
 
-        .ts-work-cta:hover .ts-work-arrow {
-            transform: translate(2px,-2px);
-        }
+        ${ARROW_CSS}
 
         /* ================================================== FUN INTRO ================================================== */
         .ts-fun {
@@ -1336,7 +1390,7 @@ export default function TheSet(props: Props) {
             z-index: 4;
             color: var(--ts-accent);
             pointer-events: none;
-            animation: tsTwinkle 2.7s ease-in-out infinite;
+            animation: none;
         }
 
         .ts-experience-spark.is-one {
@@ -1838,7 +1892,7 @@ export default function TheSet(props: Props) {
             background: var(--ts-accent);
             opacity: calc(.22 + var(--pick-weight) * .78);
             transform-origin: center;
-            animation: tsWf var(--wdur, 1s) ease-in-out infinite alternate;
+            animation: none;
             transition: height .3s cubic-bezier(.16,1,.3,1), opacity .3s ease;
         }
 
@@ -1888,7 +1942,7 @@ export default function TheSet(props: Props) {
             border-radius: 999px;
             background: currentColor;
             opacity: .7;
-            animation: tsWave 1.2s ease-in-out infinite;
+            animation: none;
         }
 
         .ts-wave i:nth-child(1) {
@@ -2033,7 +2087,7 @@ export default function TheSet(props: Props) {
             font: 600 9px ${MONO};
             white-space: nowrap;
             pointer-events: none;
-            animation: tsDrag 1.8s ease-in-out infinite;
+            animation: none;
         }
 
         .ts-mix-caption {
@@ -2661,7 +2715,10 @@ export default function TheSet(props: Props) {
     return (
         <section
             ref={rootRef}
-            className={"ts" + (seen ? " is-seen" : "")}
+            className={
+                "ts" + (seen ? " is-seen" : "") + (inView ? " is-in-view" : "")
+            }
+            data-db-keep=""
             style={props.style}
             aria-labelledby="theset-title"
         >
@@ -2886,7 +2943,7 @@ export default function TheSet(props: Props) {
                     <span>{ctaText}</span>
 
                     <span className="ts-work-arrow" aria-hidden>
-                        ↗
+                        <DbArrow external={/^https?:\/\//i.test(ctaHref || "")} />
                     </span>
                 </a>
             </div>
@@ -3229,7 +3286,9 @@ export default function TheSet(props: Props) {
                                                                 : 1) *
                                                             (1 - item.weight) *
                                                             12
-                                                        ).toFixed(1)}px) scale(${(
+                                                        ).toFixed(
+                                                            1
+                                                        )}px) scale(${(
                                                             0.88 +
                                                             item.weight * 0.12
                                                         ).toFixed(3)})`,

@@ -1,5 +1,5 @@
 import { addPropertyControls, ControlType } from "framer"
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react"
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react"
 
 /**
  * ConnectBand — the closing "let's talk" section at the very end of Home (before the footer).
@@ -12,6 +12,10 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from "react"
  *  • A Figma-style "dhwani" cursor tag floats gently near the headline (accent coloured).
  * Reduced motion: no breathing, no floating. The decorative layers never catch clicks.
  * Oct 10: the section carries id="hiring" (Anchor ID) so the nav's "connect" (/#hiring) lands here.
+ * Oct 11 (perf pass): the glow blobs no longer use filter: blur(60–70px) (a big per-frame raster
+ * while they breathe). Each blob is drawn 60–70px larger with a softer gradient instead, which
+ * reads the same through the edge mask. Breathing/floating pause while the band is off screen or
+ * the tab is hidden.
  *
  * @framerIntrinsicWidth 1200
  * @framerSupportedLayoutWidth any-prefer-fixed
@@ -67,6 +71,34 @@ function isExternal(url: string) {
     return /^https?:\/\//i.test(url)
 }
 
+// Shared link arrow (one look across Dhwani's components, Oct 22): 14px, 1.5px stroke, round
+// caps, currentColor. "ne" (↗) for links that leave the site, "e" (→) for links inside it.
+// Hover/focus nudges it 2px (ARROW_CSS); reduced motion keeps it still.
+function DbArrow({ external = false }: { external?: boolean }) {
+    return (
+        <svg
+            className="db-arrow"
+            data-dir={external ? "ne" : "e"}
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+        >
+            {external ? <path d="M5 11 11 5M6 5h5v5" /> : <path d="M3 8h10M9 4l4 4-4 4" />}
+        </svg>
+    )
+}
+const ARROW_CSS = `.db-arrow{flex-shrink:0;display:inline-block;vertical-align:-.125em;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+a:hover .db-arrow[data-dir=e],a:focus-visible .db-arrow[data-dir=e]{transform:translateX(2px)}
+a:hover .db-arrow[data-dir=ne],a:focus-visible .db-arrow[data-dir=ne]{transform:translate(2px,-2px)}
+@media (prefers-reduced-motion:reduce){.db-arrow{transition:none !important;transform:none !important}}`
+
 export default function ConnectBand(props: Props) {
     const {
         eyebrow = "CONNECT",
@@ -92,6 +124,34 @@ export default function ConnectBand(props: Props) {
         return () => mq.removeEventListener("change", read)
     }, [])
 
+    // Only animate while the band is (nearly) on screen and the tab is visible.
+    const rootRef = useRef<HTMLElement | null>(null)
+    const [live, setLive] = useState(false)
+    useEffect(() => {
+        const el = rootRef.current
+        if (!el || typeof window === "undefined") return
+        let near = false
+        const sync = () => setLive(near && !document.hidden)
+        if (typeof IntersectionObserver === "undefined") near = true
+        const io =
+            typeof IntersectionObserver !== "undefined"
+                ? new IntersectionObserver(
+                      ([e]) => {
+                          near = !!e?.isIntersecting
+                          sync()
+                      },
+                      { rootMargin: "120px 0px" }
+                  )
+                : null
+        io?.observe(el)
+        sync()
+        document.addEventListener("visibilitychange", sync)
+        return () => {
+            io?.disconnect()
+            document.removeEventListener("visibilitychange", sync)
+        }
+    }, [])
+
     const g = Math.max(0, Math.min(1.5, Number.isFinite(glow) ? glow : 1))
     const blobA = `var(--vibe-a, color-mix(in srgb, ${ACCENT} 38%, transparent))`
     const blobB = `var(--vibe-b, color-mix(in srgb, ${ACCENT} 48%, transparent))`
@@ -112,11 +172,11 @@ export default function ConnectBand(props: Props) {
         .cb-btn:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 3px; }
         .cb-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 34px -14px ${ACCENT}; }
         .cb-secondary:hover { background: var(--db-line, rgba(255,255,255,.1)); border-color: color-mix(in srgb, ${ACCENT} 40%, var(--db-line, rgba(255,255,255,.14))); }
-        .cb-btn:hover .cb-arrow { transform: translate(2px,-2px); }
-        .cb-arrow { display: inline-block; transition: transform .2s ease; }
+        ${ARROW_CSS}
+        .cb-paused .cb-anim { animation-play-state: paused !important; }
         @media (prefers-reduced-motion: reduce) {
-            .cb-btn, .cb-arrow { transition: none !important; }
-            .cb-primary:hover, .cb-btn:hover .cb-arrow { transform: none; }
+            .cb-btn { transition: none !important; }
+            .cb-primary:hover { transform: none; }
         }
     `
 
@@ -140,7 +200,8 @@ export default function ConnectBand(props: Props) {
 
     return (
         <section
-            className="cb-root"
+            ref={rootRef as any}
+            className={`cb-root${live ? "" : " cb-paused"}`}
             id={anchorId ? anchorId : undefined}
             aria-labelledby="cb-heading"
             style={{
@@ -175,31 +236,31 @@ export default function ConnectBand(props: Props) {
                 } as CSSProperties}
             >
                 <div
+                    className="cb-anim"
                     style={{
                         position: "absolute",
-                        left: "-12%",
-                        top: "-18%",
-                        width: "68%",
-                        height: "92%",
+                        left: "calc(-12% - 60px)",
+                        top: "calc(-18% - 60px)",
+                        width: "calc(68% + 120px)",
+                        height: "calc(92% + 120px)",
                         borderRadius: "50%",
-                        background: `radial-gradient(closest-side, ${blobA} 0%, transparent 100%)`,
-                        filter: "blur(60px)",
+                        background: `radial-gradient(closest-side, ${blobA} 0%, color-mix(in srgb, ${blobA} 72%, transparent) 38%, color-mix(in srgb, ${blobA} 30%, transparent) 68%, transparent 100%)`,
                         animation: reduced ? "none" : "cb-breathe-a 12s ease-in-out infinite",
-                        willChange: reduced ? "auto" : "transform, opacity",
+                        willChange: reduced || !live ? "auto" : "transform, opacity",
                     }}
                 />
                 <div
+                    className="cb-anim"
                     style={{
                         position: "absolute",
-                        right: "-12%",
-                        bottom: "-20%",
-                        width: "72%",
-                        height: "96%",
+                        right: "calc(-12% - 70px)",
+                        bottom: "calc(-20% - 70px)",
+                        width: "calc(72% + 140px)",
+                        height: "calc(96% + 140px)",
                         borderRadius: "50%",
-                        background: `radial-gradient(closest-side, ${blobB} 0%, transparent 100%)`,
-                        filter: "blur(70px)",
+                        background: `radial-gradient(closest-side, ${blobB} 0%, color-mix(in srgb, ${blobB} 72%, transparent) 38%, color-mix(in srgb, ${blobB} 30%, transparent) 68%, transparent 100%)`,
                         animation: reduced ? "none" : "cb-breathe-b 15s ease-in-out -5s infinite",
-                        willChange: reduced ? "auto" : "transform, opacity",
+                        willChange: reduced || !live ? "auto" : "transform, opacity",
                     }}
                 />
             </div>
@@ -253,6 +314,7 @@ export default function ConnectBand(props: Props) {
                     {showCursor && cursorLabel ? (
                         <span
                             aria-hidden="true"
+                            className="cb-anim"
                             style={{
                                 position: "absolute",
                                 right: "clamp(0px, 4vw, 48px)",
@@ -296,7 +358,7 @@ export default function ConnectBand(props: Props) {
                             style={{ ...btnBase, background: ACCENT, color: "var(--db-on-accent, #0A0A0A)", border: `1px solid ${ACCENT}` }}
                         >
                             {primaryLabel}
-                            <span aria-hidden="true" className="cb-arrow">↗</span>
+                            <DbArrow external={isExternal(primaryUrl)} />
                             {isExternal(primaryUrl) ? <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}> (opens in a new tab)</span> : null}
                         </a>
                     ) : null}
