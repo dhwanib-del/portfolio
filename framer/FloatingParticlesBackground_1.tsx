@@ -3,8 +3,26 @@
 // Oct 4: brand-orange particles follow the vibe accent (--db-accent).
 // Oct 5: never catches clicks — canvas, container and its Framer wrappers are pointer-events:none
 // (mouse tracking already uses a window listener).
-import { useEffect, useRef, useState, useCallback, useMemo, type CSSProperties } from "react"
-import { addPropertyControls, ControlType, useIsStaticRenderer, RenderTarget } from "framer"
+// Oct 11 (perf pass): still retired by default — nothing mounts unless "Enabled" is switched on, so
+// the Home instance stays off. When enabled it is much cheaper than the original:
+//  • canvas pixel ratio capped at 1.5; default count 50 → 30
+//  • draws at ~30fps (the simulation still steps every 1/60s, so speed is unchanged)
+//  • the loop runs only while on screen and the tab is visible, and starts after first paint
+//  • no layout reads per frame (size is cached); reduced motion draws one still frame
+import {
+    useEffect,
+    useRef,
+    useState,
+    useCallback,
+    useMemo,
+    type CSSProperties,
+} from "react"
+import {
+    addPropertyControls,
+    ControlType,
+    useIsStaticRenderer,
+    RenderTarget,
+} from "framer"
 
 interface Particle {
     x: number
@@ -21,6 +39,7 @@ interface Particle {
 }
 
 interface FloatingParticlesBackgroundProps {
+    enabled?: boolean
     particleCount: number
     particleSize: number
     particleOpacity: number
@@ -38,11 +57,31 @@ interface FloatingParticlesBackgroundProps {
 }
 
 // Theme helpers: pure white particles / pure black background follow the site tokens
-const normColor = (c: string) => String(c || "").replace(/\s+/g, "").toLowerCase()
-const isPureWhite = (c: string) => ["#fff", "#ffffff", "#ffffffff", "rgb(255,255,255)", "rgba(255,255,255,1)", "white"].includes(normColor(c))
-const isPureBlack = (c: string) => ["#000", "#000000", "#000000ff", "rgb(0,0,0)", "rgba(0,0,0,1)", "black"].includes(normColor(c))
+const normColor = (c: string) =>
+    String(c || "")
+        .replace(/\s+/g, "")
+        .toLowerCase()
+const isPureWhite = (c: string) =>
+    [
+        "#fff",
+        "#ffffff",
+        "#ffffffff",
+        "rgb(255,255,255)",
+        "rgba(255,255,255,1)",
+        "white",
+    ].includes(normColor(c))
+const isPureBlack = (c: string) =>
+    [
+        "#000",
+        "#000000",
+        "#000000ff",
+        "rgb(0,0,0)",
+        "rgba(0,0,0,1)",
+        "black",
+    ].includes(normColor(c))
 
-const isBrandOrange = (c: string) => ["#f3500f", "rgb(243,80,15)", "rgba(243,80,15,1)"].includes(normColor(c))
+const isBrandOrange = (c: string) =>
+    ["#f3500f", "rgb(243,80,15)", "rgba(243,80,15,1)"].includes(normColor(c))
 
 // Reads a site token (e.g. --db-text, --db-accent) and re-reads it on theme or vibe change
 function useThemeToken(token: string | null): string | null {
@@ -50,7 +89,10 @@ function useThemeToken(token: string | null): string | null {
     useEffect(() => {
         if (!token || typeof window === "undefined") return
         const read = () => {
-            const v = window.getComputedStyle(document.documentElement).getPropertyValue(token).trim()
+            const v = window
+                .getComputedStyle(document.documentElement)
+                .getPropertyValue(token)
+                .trim()
             setVal(v || null)
         }
         read()
@@ -58,7 +100,10 @@ function useThemeToken(token: string | null): string | null {
         window.addEventListener("db-theme", read)
         window.addEventListener("db-vibe", read)
         const mo = new MutationObserver(read)
-        mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-vibe", "data-db-theme", "style", "class"] })
+        mo.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["data-vibe", "data-db-theme", "style", "class"],
+        })
         return () => {
             window.clearTimeout(late)
             window.removeEventListener("db-theme", read)
@@ -73,9 +118,18 @@ function useThemeToken(token: string | null): string | null {
  * @framerSupportedLayoutWidth any
  * @framerSupportedLayoutHeight any
  */
-export default function FloatingParticlesBackground(props: FloatingParticlesBackgroundProps) {
+export default function FloatingParticlesBackground(
+    _props: FloatingParticlesBackgroundProps
+) {
+    // Retired by default: no canvas or animation loop is mounted unless "Enabled" is on.
+    if (!_props.enabled)
+        return <span aria-hidden="true" style={{ display: "none" }} />
+    return <ArchivedParticles {..._props} />
+}
+
+function ArchivedParticles(props: FloatingParticlesBackgroundProps) {
     const {
-        particleCount = 50,
+        particleCount = 30,
         particleSize = 2,
         particleOpacity = 0.6,
         glowIntensity = 10,
@@ -91,10 +145,16 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
     } = props
 
     // Pure white follows the theme text colour; brand orange follows the vibe accent
-    const inkToken = isPureWhite(particleColor) ? "--db-text" : isBrandOrange(particleColor) ? "--db-accent" : null
+    const inkToken = isPureWhite(particleColor)
+        ? "--db-text"
+        : isBrandOrange(particleColor)
+          ? "--db-accent"
+          : null
     const themeInk = useThemeToken(inkToken)
     const inkColor = themeInk || particleColor
-    const bgColor = isPureBlack(backgroundColor) ? "var(--db-bg, #000000)" : backgroundColor
+    const bgColor = isPureBlack(backgroundColor)
+        ? "var(--db-bg, #000000)"
+        : backgroundColor
 
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const animationRef = useRef<number>()
@@ -103,211 +163,330 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
     const isStatic = useIsStaticRenderer()
     const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 })
     const containerRef = useRef<HTMLDivElement>(null)
+    const sizeRef = useRef({ w: 800, h: 600 })
+    const liveRef = useRef(false)
+    const [live, setLive] = useState(false)
+    const [started, setStarted] = useState(false)
+    const [reducedMotion, setReducedMotion] = useState(false)
 
-    const initializeParticles = useCallback((width: number, height: number) => {
-        return Array.from({ length: particleCount }, (_, index) => ({
-            x: Math.random() * width,
-            y: Math.random() * height,
-            vx: (Math.random() - 0.5) * movementSpeed,
-            vy: (Math.random() - 0.5) * movementSpeed,
-            size: Math.random() * particleSize + 1,
-            opacity: particleOpacity,
-            baseOpacity: particleOpacity,
-            mass: Math.random() * 0.5 + 0.5,
-            id: index,
-        }))
-    }, [particleCount, particleSize, particleOpacity, movementSpeed])
-
-    const redistributeParticles = useCallback((width: number, height: number) => {
-        particlesRef.current.forEach((particle) => {
-            // Redistribute particles proportionally across the new dimensions
-            particle.x = Math.random() * width
-            particle.y = Math.random() * height
-        })
+    // Reduced motion → one still frame
+    useEffect(() => {
+        if (typeof window === "undefined") return
+        const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
+        const read = () => setReducedMotion(mq.matches)
+        read()
+        mq.addEventListener("change", read)
+        return () => mq.removeEventListener("change", read)
     }, [])
 
-    const updateParticles = useCallback((canvas: HTMLCanvasElement) => {
-        const rect = canvas.getBoundingClientRect()
-        const mouse = mouseRef.current
+    // Start after first paint
+    useEffect(() => {
+        if (typeof window === "undefined" || isStatic) return
+        const w = window as any
+        let idle = 0
+        let t = 0
+        if (typeof w.requestIdleCallback === "function")
+            idle = w.requestIdleCallback(() => setStarted(true), {
+                timeout: 1200,
+            })
+        else t = window.setTimeout(() => setStarted(true), 300)
+        return () => {
+            if (idle && typeof w.cancelIdleCallback === "function")
+                w.cancelIdleCallback(idle)
+            window.clearTimeout(t)
+        }
+    }, [isStatic])
 
-        particlesRef.current.forEach((particle, index) => {
-            // Calculate distance to mouse
-            const dx = mouse.x - particle.x
-            const dy = mouse.y - particle.y
-            const distance = Math.sqrt(dx * dx + dy * dy)
+    // On screen + tab visible
+    useEffect(() => {
+        const el = containerRef.current
+        if (!el || typeof window === "undefined" || isStatic) return
+        let near = false
+        const sync = () => {
+            liveRef.current = near && !document.hidden
+            setLive(liveRef.current)
+        }
+        const io =
+            typeof IntersectionObserver !== "undefined"
+                ? new IntersectionObserver(
+                      ([e]) => {
+                          near = !!e?.isIntersecting
+                          sync()
+                      },
+                      { rootMargin: "60px" }
+                  )
+                : null
+        if (io) io.observe(el)
+        else near = true
+        sync()
+        document.addEventListener("visibilitychange", sync)
+        return () => {
+            io?.disconnect()
+            document.removeEventListener("visibilitychange", sync)
+        }
+    }, [isStatic])
 
-            // Mouse influence and gravity
-            if (distance < mouseInfluence && distance > 0) {
-                const force = (mouseInfluence - distance) / mouseInfluence
-                const normalizedDx = dx / distance
-                const normalizedDy = dy / distance
-                const gravityForce = force * (gravityStrength * 0.001)
-                
-                // Apply gravity effect based on mouseGravity setting
-                if (mouseGravity === "attract") {
-                    particle.vx += normalizedDx * gravityForce
-                    particle.vy += normalizedDy * gravityForce
-                } else if (mouseGravity === "repel") {
-                    particle.vx -= normalizedDx * gravityForce
-                    particle.vy -= normalizedDy * gravityForce
+    const initializeParticles = useCallback(
+        (width: number, height: number) => {
+            return Array.from({ length: particleCount }, (_, index) => ({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * movementSpeed,
+                vy: (Math.random() - 0.5) * movementSpeed,
+                size: Math.random() * particleSize + 1,
+                opacity: particleOpacity,
+                baseOpacity: particleOpacity,
+                mass: Math.random() * 0.5 + 0.5,
+                id: index,
+            }))
+        },
+        [particleCount, particleSize, particleOpacity, movementSpeed]
+    )
+
+    const redistributeParticles = useCallback(
+        (width: number, height: number) => {
+            particlesRef.current.forEach((particle) => {
+                // Redistribute particles proportionally across the new dimensions
+                particle.x = Math.random() * width
+                particle.y = Math.random() * height
+            })
+        },
+        []
+    )
+
+    const updateParticles = useCallback(
+        (canvas: HTMLCanvasElement) => {
+            const rect = { width: sizeRef.current.w, height: sizeRef.current.h }
+            const mouse = mouseRef.current
+
+            particlesRef.current.forEach((particle, index) => {
+                // Calculate distance to mouse
+                const dx = mouse.x - particle.x
+                const dy = mouse.y - particle.y
+                const distance = Math.sqrt(dx * dx + dy * dy)
+
+                // Mouse influence and gravity
+                if (distance < mouseInfluence && distance > 0) {
+                    const force = (mouseInfluence - distance) / mouseInfluence
+                    const normalizedDx = dx / distance
+                    const normalizedDy = dy / distance
+                    const gravityForce = force * (gravityStrength * 0.001)
+
+                    // Apply gravity effect based on mouseGravity setting
+                    if (mouseGravity === "attract") {
+                        particle.vx += normalizedDx * gravityForce
+                        particle.vy += normalizedDy * gravityForce
+                    } else if (mouseGravity === "repel") {
+                        particle.vx -= normalizedDx * gravityForce
+                        particle.vy -= normalizedDy * gravityForce
+                    }
+
+                    particle.opacity = Math.min(
+                        1,
+                        particle.baseOpacity + force * 0.4
+                    )
+
+                    // Apply glow animation based on type
+                    const targetGlow = 1 + force * 2
+                    const currentGlow = particle.glowMultiplier || 1
+
+                    if (glowAnimation === "instant") {
+                        particle.glowMultiplier = targetGlow
+                    } else if (glowAnimation === "ease") {
+                        // Ease in-out animation
+                        const easeSpeed = 0.15
+                        particle.glowMultiplier =
+                            currentGlow + (targetGlow - currentGlow) * easeSpeed
+                    } else if (glowAnimation === "spring") {
+                        // Spring animation with overshoot
+                        const springForce = (targetGlow - currentGlow) * 0.2
+                        const damping = 0.85
+                        particle.glowVelocity =
+                            (particle.glowVelocity || 0) * damping + springForce
+                        particle.glowMultiplier =
+                            currentGlow + particle.glowVelocity
+                    }
+                } else {
+                    particle.opacity = Math.max(
+                        particle.baseOpacity * 0.3,
+                        particle.opacity - 0.02
+                    )
+
+                    // Return glow to normal based on animation type
+                    const targetGlow = 1
+                    const currentGlow = particle.glowMultiplier || 1
+
+                    if (glowAnimation === "instant") {
+                        particle.glowMultiplier = targetGlow
+                    } else if (glowAnimation === "ease") {
+                        const easeSpeed = 0.08
+                        particle.glowMultiplier = Math.max(
+                            1,
+                            currentGlow + (targetGlow - currentGlow) * easeSpeed
+                        )
+                    } else if (glowAnimation === "spring") {
+                        const springForce = (targetGlow - currentGlow) * 0.15
+                        const damping = 0.9
+                        particle.glowVelocity =
+                            (particle.glowVelocity || 0) * damping + springForce
+                        particle.glowMultiplier = Math.max(
+                            1,
+                            currentGlow + particle.glowVelocity
+                        )
+                    }
                 }
-                
-                particle.opacity = Math.min(1, particle.baseOpacity + force * 0.4)
-                
-                // Apply glow animation based on type
-                const targetGlow = 1 + force * 2
-                const currentGlow = particle.glowMultiplier || 1
-                
-                if (glowAnimation === "instant") {
-                    particle.glowMultiplier = targetGlow
-                } else if (glowAnimation === "ease") {
-                    // Ease in-out animation
-                    const easeSpeed = 0.15
-                    particle.glowMultiplier = currentGlow + (targetGlow - currentGlow) * easeSpeed
-                } else if (glowAnimation === "spring") {
-                    // Spring animation with overshoot
-                    const springForce = (targetGlow - currentGlow) * 0.2
-                    const damping = 0.85
-                    particle.glowVelocity = (particle.glowVelocity || 0) * damping + springForce
-                    particle.glowMultiplier = currentGlow + particle.glowVelocity
-                }
-            } else {
-                particle.opacity = Math.max(particle.baseOpacity * 0.3, particle.opacity - 0.02)
-                
-                // Return glow to normal based on animation type
-                const targetGlow = 1
-                const currentGlow = particle.glowMultiplier || 1
-                
-                if (glowAnimation === "instant") {
-                    particle.glowMultiplier = targetGlow
-                } else if (glowAnimation === "ease") {
-                    const easeSpeed = 0.08
-                    particle.glowMultiplier = Math.max(1, currentGlow + (targetGlow - currentGlow) * easeSpeed)
-                } else if (glowAnimation === "spring") {
-                    const springForce = (targetGlow - currentGlow) * 0.15
-                    const damping = 0.9
-                    particle.glowVelocity = (particle.glowVelocity || 0) * damping + springForce
-                    particle.glowMultiplier = Math.max(1, currentGlow + particle.glowVelocity)
-                }
-            }
 
-            // Particle interaction
-            if (particleInteraction) {
-                for (let j = index + 1; j < particlesRef.current.length; j++) {
-                    const other = particlesRef.current[j]
-                    const dx = other.x - particle.x
-                    const dy = other.y - particle.y
-                    const distance = Math.sqrt(dx * dx + dy * dy)
-                    const minDistance = particle.size + other.size + 5
+                // Particle interaction
+                if (particleInteraction) {
+                    for (
+                        let j = index + 1;
+                        j < particlesRef.current.length;
+                        j++
+                    ) {
+                        const other = particlesRef.current[j]
+                        const dx = other.x - particle.x
+                        const dy = other.y - particle.y
+                        const distance = Math.sqrt(dx * dx + dy * dy)
+                        const minDistance = particle.size + other.size + 5
 
-                    if (distance < minDistance && distance > 0) {
-                        if (interactionType === "bounce") {
-                            // Elastic collision
-                            const normalX = dx / distance
-                            const normalY = dy / distance
-                            
-                            // Relative velocity
-                            const relativeVx = particle.vx - other.vx
-                            const relativeVy = particle.vy - other.vy
-                            
-                            // Relative velocity in collision normal direction
-                            const speed = relativeVx * normalX + relativeVy * normalY
-                            
-                            // Only resolve if velocities are separating
-                            if (speed < 0) return
-                            
-                            // Collision impulse
-                            const impulse = 2 * speed / (particle.mass + other.mass)
-                            
-                            // Update velocities
-                            particle.vx -= impulse * other.mass * normalX
-                            particle.vy -= impulse * other.mass * normalY
-                            other.vx += impulse * particle.mass * normalX
-                            other.vy += impulse * particle.mass * normalY
-                            
-                            // Separate particles to prevent overlap
-                            const overlap = minDistance - distance
-                            const separationX = normalX * overlap * 0.5
-                            const separationY = normalY * overlap * 0.5
-                            
-                            particle.x -= separationX
-                            particle.y -= separationY
-                            other.x += separationX
-                            other.y += separationY
-                        } else if (interactionType === "merge") {
-                            // Temporary merge effect - increase glow and size
-                            const mergeForce = (minDistance - distance) / minDistance
-                            particle.glowMultiplier = (particle.glowMultiplier || 1) + mergeForce * 0.5
-                            other.glowMultiplier = (other.glowMultiplier || 1) + mergeForce * 0.5
-                            
-                            // Attract particles slightly
-                            const attractForce = mergeForce * 0.01
-                            particle.vx += dx * attractForce
-                            particle.vy += dy * attractForce
-                            other.vx -= dx * attractForce
-                            other.vy -= dy * attractForce
+                        if (distance < minDistance && distance > 0) {
+                            if (interactionType === "bounce") {
+                                // Elastic collision
+                                const normalX = dx / distance
+                                const normalY = dy / distance
+
+                                // Relative velocity
+                                const relativeVx = particle.vx - other.vx
+                                const relativeVy = particle.vy - other.vy
+
+                                // Relative velocity in collision normal direction
+                                const speed =
+                                    relativeVx * normalX + relativeVy * normalY
+
+                                // Only resolve if velocities are separating
+                                if (speed < 0) return
+
+                                // Collision impulse
+                                const impulse =
+                                    (2 * speed) / (particle.mass + other.mass)
+
+                                // Update velocities
+                                particle.vx -= impulse * other.mass * normalX
+                                particle.vy -= impulse * other.mass * normalY
+                                other.vx += impulse * particle.mass * normalX
+                                other.vy += impulse * particle.mass * normalY
+
+                                // Separate particles to prevent overlap
+                                const overlap = minDistance - distance
+                                const separationX = normalX * overlap * 0.5
+                                const separationY = normalY * overlap * 0.5
+
+                                particle.x -= separationX
+                                particle.y -= separationY
+                                other.x += separationX
+                                other.y += separationY
+                            } else if (interactionType === "merge") {
+                                // Temporary merge effect - increase glow and size
+                                const mergeForce =
+                                    (minDistance - distance) / minDistance
+                                particle.glowMultiplier =
+                                    (particle.glowMultiplier || 1) +
+                                    mergeForce * 0.5
+                                other.glowMultiplier =
+                                    (other.glowMultiplier || 1) +
+                                    mergeForce * 0.5
+
+                                // Attract particles slightly
+                                const attractForce = mergeForce * 0.01
+                                particle.vx += dx * attractForce
+                                particle.vy += dy * attractForce
+                                other.vx -= dx * attractForce
+                                other.vy -= dy * attractForce
+                            }
                         }
                     }
                 }
+
+                // Update position
+                particle.x += particle.vx
+                particle.y += particle.vy
+
+                // Add subtle random movement
+                particle.vx += (Math.random() - 0.5) * 0.001
+                particle.vy += (Math.random() - 0.5) * 0.001
+
+                // Damping
+                particle.vx *= 0.999
+                particle.vy *= 0.999
+
+                // Boundary wrapping
+                if (particle.x < 0) particle.x = rect.width
+                if (particle.x > rect.width) particle.x = 0
+                if (particle.y < 0) particle.y = rect.height
+                if (particle.y > rect.height) particle.y = 0
+            })
+        },
+        [
+            mouseInfluence,
+            mouseGravity,
+            gravityStrength,
+            glowAnimation,
+            particleInteraction,
+            interactionType,
+        ]
+    )
+
+    const drawParticles = useCallback(
+        (ctx: CanvasRenderingContext2D) => {
+            ctx.clearRect(0, 0, sizeRef.current.w, sizeRef.current.h)
+
+            particlesRef.current.forEach((particle) => {
+                ctx.save()
+
+                // Create glow effect with enhanced blur based on interaction
+                const currentGlowMultiplier = particle.glowMultiplier || 1
+                ctx.shadowColor = inkColor
+                ctx.shadowBlur = glowIntensity * currentGlowMultiplier * 2
+                ctx.globalAlpha = particle.opacity
+
+                ctx.fillStyle = inkColor
+                ctx.beginPath()
+                ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
+                ctx.fill()
+
+                ctx.restore()
+            })
+        },
+        [inkColor, glowIntensity]
+    )
+
+    // ~30fps draws; the simulation catches up in 1/60s steps so motion speed is unchanged
+    const lastFrameRef = useRef(0)
+    const animate = useCallback(
+        (now?: number) => {
+            const canvas = canvasRef.current
+            if (!canvas) return
+
+            const ctx = canvas.getContext("2d")
+            if (!ctx) return
+
+            const t = typeof now === "number" ? now : performance.now()
+            const elapsed = lastFrameRef.current ? t - lastFrameRef.current : 33
+            if (elapsed >= 30) {
+                const steps = Math.min(4, Math.max(1, Math.round(elapsed / 16.67)))
+                for (let k = 0; k < steps; k++) updateParticles(canvas)
+                drawParticles(ctx)
+                lastFrameRef.current = t
             }
 
-            // Update position
-            particle.x += particle.vx
-            particle.y += particle.vy
-
-            // Add subtle random movement
-            particle.vx += (Math.random() - 0.5) * 0.001
-            particle.vy += (Math.random() - 0.5) * 0.001
-
-            // Damping
-            particle.vx *= 0.999
-            particle.vy *= 0.999
-
-            // Boundary wrapping
-            if (particle.x < 0) particle.x = rect.width
-            if (particle.x > rect.width) particle.x = 0
-            if (particle.y < 0) particle.y = rect.height
-            if (particle.y > rect.height) particle.y = 0
-        })
-    }, [mouseInfluence, mouseGravity, gravityStrength, glowAnimation, particleInteraction, interactionType])
-
-    const drawParticles = useCallback((ctx: CanvasRenderingContext2D) => {
-        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-
-        particlesRef.current.forEach((particle) => {
-            ctx.save()
-            
-            // Create glow effect with enhanced blur based on interaction
-            const currentGlowMultiplier = particle.glowMultiplier || 1
-            ctx.shadowColor = inkColor
-            ctx.shadowBlur = glowIntensity * currentGlowMultiplier * 2
-            ctx.globalAlpha = particle.opacity
-
-            ctx.fillStyle = inkColor
-            ctx.beginPath()
-            ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
-            ctx.fill()
-
-            ctx.restore()
-        })
-    }, [inkColor, glowIntensity])
-
-    const animate = useCallback(() => {
-        const canvas = canvasRef.current
-        if (!canvas) return
-
-        const ctx = canvas.getContext("2d")
-        if (!ctx) return
-
-        updateParticles(canvas)
-        drawParticles(ctx)
-
-        animationRef.current = requestAnimationFrame(animate)
-    }, [updateParticles, drawParticles])
+            animationRef.current = requestAnimationFrame(animate)
+        },
+        [updateParticles, drawParticles]
+    )
 
     const handleMouseMove = useCallback((e: MouseEvent) => {
         const canvas = canvasRef.current
-        if (!canvas) return
+        if (!canvas || !liveRef.current) return
 
         const rect = canvas.getBoundingClientRect()
         mouseRef.current = {
@@ -324,13 +503,18 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
         const rect = container.getBoundingClientRect()
         const newWidth = rect.width
         const newHeight = rect.height
-        
-        canvas.width = newWidth
-        canvas.height = newHeight
-        
+
+        // Pixel ratio capped at 1.5
+        const dpr = Math.min(1.5, window.devicePixelRatio || 1)
+        canvas.width = Math.round(newWidth * dpr)
+        canvas.height = Math.round(newHeight * dpr)
+        sizeRef.current = { w: newWidth, h: newHeight }
+        const ctx = canvas.getContext("2d")
+        if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
         // Update canvas size state and redistribute particles
         setCanvasSize({ width: newWidth, height: newHeight })
-        
+
         // Only redistribute if particles exist and size changed significantly
         if (particlesRef.current.length > 0) {
             redistributeParticles(newWidth, newHeight)
@@ -339,14 +523,23 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
 
     // Click-through: the decorative layer and its single-child Framer wrappers never catch the pointer
     useEffect(() => {
-        if (typeof window === "undefined" || RenderTarget.current() === RenderTarget.canvas) return
+        if (
+            typeof window === "undefined" ||
+            RenderTarget.current() === RenderTarget.canvas
+        )
+            return
         let el: HTMLElement | null = containerRef.current
         for (let i = 0; el && i < 5; i++) {
             el.style.pointerEvents = "none"
             if (window.getComputedStyle(el).position === "fixed") break
             const up: HTMLElement | null = el.parentElement
             if (!up || up === document.body || up.id === "main") break
-            if (Array.from(up.children).filter((c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName)).length !== 1) break
+            if (
+                Array.from(up.children).filter(
+                    (c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName)
+                ).length !== 1
+            )
+                break
             el = up
         }
     }, [isStatic])
@@ -354,22 +547,27 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
     // Effect to reinitialize particles when particle count changes
     useEffect(() => {
         if (isStatic) return
-        
+
         const canvas = canvasRef.current
         if (!canvas) return
-        
-        particlesRef.current = initializeParticles(canvas.width || canvasSize.width, canvas.height || canvasSize.height)
+
+        particlesRef.current = initializeParticles(
+            sizeRef.current.w || canvasSize.width,
+            sizeRef.current.h || canvasSize.height
+        )
     }, [particleCount, initializeParticles, isStatic, canvasSize])
 
     // Effect to update particle properties when they change
     useEffect(() => {
         if (isStatic) return
-        
+
         particlesRef.current.forEach((particle) => {
             particle.baseOpacity = particleOpacity
             particle.opacity = particleOpacity
             // Update velocity based on new movement speed
-            const currentSpeed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
+            const currentSpeed = Math.sqrt(
+                particle.vx * particle.vx + particle.vy * particle.vy
+            )
             if (currentSpeed > 0) {
                 const ratio = movementSpeed / currentSpeed
                 particle.vx *= ratio
@@ -394,7 +592,7 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
                 resizeCanvas()
             })
             resizeObserver.observe(containerRef.current)
-            
+
             return () => {
                 resizeObserver.disconnect()
                 if (typeof window !== "undefined") {
@@ -413,8 +611,18 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
     }, [handleMouseMove, resizeCanvas, isStatic])
 
     useEffect(() => {
-        if (isStatic) return
+        if (isStatic || !started) return
 
+        if (reducedMotion) {
+            // One still frame
+            const canvas = canvasRef.current
+            const ctx = canvas?.getContext("2d")
+            if (ctx) drawParticles(ctx)
+            return
+        }
+        if (!live) return
+
+        lastFrameRef.current = 0
         animate()
 
         return () => {
@@ -422,10 +630,14 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
                 cancelAnimationFrame(animationRef.current)
             }
         }
-    }, [animate, isStatic])
+    }, [animate, drawParticles, isStatic, started, live, reducedMotion])
 
     if (isStatic) {
-        const staticInk = isPureWhite(particleColor) ? "var(--db-text, #FFFFFF)" : isBrandOrange(particleColor) ? "var(--db-accent, #F3500F)" : particleColor
+        const staticInk = isPureWhite(particleColor)
+            ? "var(--db-text, #FFFFFF)"
+            : isBrandOrange(particleColor)
+              ? "var(--db-accent, #F3500F)"
+              : particleColor
         return (
             <div
                 style={{
@@ -437,22 +649,24 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
                     pointerEvents: "none",
                 }}
             >
-                {Array.from({ length: Math.min(particleCount, 20) }).map((_, i) => (
-                    <div
-                        key={i}
-                        style={{
-                            position: "absolute",
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            width: `${particleSize}px`,
-                            height: `${particleSize}px`,
-                            backgroundColor: staticInk,
-                            borderRadius: "50%",
-                            opacity: particleOpacity,
-                            boxShadow: `0 0 ${glowIntensity}px ${staticInk}`,
-                        }}
-                    />
-                ))}
+                {Array.from({ length: Math.min(particleCount, 20) }).map(
+                    (_, i) => (
+                        <div
+                            key={i}
+                            style={{
+                                position: "absolute",
+                                left: `${Math.random() * 100}%`,
+                                top: `${Math.random() * 100}%`,
+                                width: `${particleSize}px`,
+                                height: `${particleSize}px`,
+                                backgroundColor: staticInk,
+                                borderRadius: "50%",
+                                opacity: particleOpacity,
+                                boxShadow: `0 0 ${glowIntensity}px ${staticInk}`,
+                            }}
+                        />
+                    )
+                )}
             </div>
         )
     }
@@ -484,10 +698,17 @@ export default function FloatingParticlesBackground(props: FloatingParticlesBack
 }
 
 addPropertyControls(FloatingParticlesBackground, {
+    enabled: {
+        type: ControlType.Boolean,
+        title: "Enabled",
+        defaultValue: false,
+        description:
+            "Off by default for a faster site. Turn on to show the particles.",
+    },
     particleCount: {
         type: ControlType.Number,
         title: "Particle Count",
-        defaultValue: 50,
+        defaultValue: 30,
         min: 10,
         max: 1000,
         step: 1,

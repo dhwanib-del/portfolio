@@ -13,48 +13,13 @@ import { startTransition } from "react"
 import { RenderTarget } from "framer"
 
 const TOUR = [
-    {
-        title: "Hey, I'm Dhwani 👋",
-        text: "Product and UX designer at UMSI, graduating May 2027. Open to product, UX and experience design roles. Want the 60-second tour?",
-        label: "",
-        href: "",
-    },
-    {
-        title: "BRIEFS",
-        text: "Getting campus dispatchers a building's details mid-call.",
-        label: "Open BRIEFS",
-        href: "/work/briefs",
-    },
-    {
-        title: "Intel workspace",
-        text: "A workspace the DPSS Intelligence Group uses instead of spreadsheets.",
-        label: "Open Intel",
-        href: "/work/intel",
-    },
-    {
-        title: "GM Convoy",
-        text: "HVAC and in-vehicle prototyping, tested in a 3D-printed truck cab.",
-        label: "Open Convoy",
-        href: "/work/general-motors",
-    },
-    {
-        title: "Open Library",
-        text: "Research that changed how Open Library explains international books.",
-        label: "Open Open Library",
-        href: "/work/openlibrary",
-    },
-    {
-        title: "BudgetCart",
-        text: "Showing shoppers what fits the budget before checkout.",
-        label: "Open BudgetCart",
-        href: "/work/budgetcart",
-    },
-    {
-        title: "Prime Video (NDA)",
-        text: "Current capstone with Prime Video. Under NDA, so ask me about it.",
-        label: "",
-        href: "",
-    },
+    { title: "Hey, I'm Dhwani 👋", text: "Product and UX designer at UMSI, graduating May 2027. Open to product, UX and experience design roles. Want the 60-second tour?", label: "", href: "" },
+    { title: "BRIEFS", text: "Getting campus dispatchers a building's details mid-call.", label: "Open BRIEFS ↗", href: "/work/briefs" },
+    { title: "Intel workspace", text: "A workspace the DPSS Intelligence Group uses instead of spreadsheets.", label: "Open Intel ↗", href: "/work/intel" },
+    { title: "GM Convoy", text: "HVAC and in-vehicle prototyping, tested in a 3D-printed truck cab.", label: "Open Convoy ↗", href: "/work/general-motors" },
+    { title: "Open Library", text: "Research that changed how Open Library explains international books.", label: "Open Open Library ↗", href: "/work/openlibrary" },
+    { title: "BudgetCart", text: "Showing shoppers what fits the budget before checkout.", label: "Open BudgetCart ↗", href: "/work/budgetcart" },
+    { title: "Prime Video (NDA)", text: "Current capstone with Prime Video. Under NDA, so ask me about it.", label: "", href: "" },
 ]
 
 const HINTS: Record<string, string> = {
@@ -65,46 +30,11 @@ const HINTS: Record<string, string> = {
     "/work/budgetcart": "the moment before checkout →",
     "/work/prime-video": "NDA 🔒 ask me about this one",
 }
-const GREETING =
-    "hey, talk to me 👋 i've worked on a lot of things: research, design, prototyping."
-
-// Shared link arrow (one look across Dhwani's components, Oct 22): 14px, 1.5px stroke, round
-// caps, currentColor. "ne" (↗) for links that leave the site, "e" (→) for links inside it.
-// Hover/focus nudges it 2px (ARROW_CSS); reduced motion keeps it still.
-function DbArrow({ external = false }: { external?: boolean }) {
-    return (
-        <svg
-            className="db-arrow"
-            data-dir={external ? "ne" : "e"}
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            focusable="false"
-        >
-            {external ? <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /> : <path d="M3 8h10M9 4l4 4-4 4" />}
-        </svg>
-    )
-}
-const ARROW_CSS = `.db-arrow{flex-shrink:0;display:inline-block;vertical-align:-.125em;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
-a:hover .db-arrow[data-dir=e],a:focus-visible .db-arrow[data-dir=e]{transform:translateX(2px)}
-a:hover .db-arrow[data-dir=ne],a:focus-visible .db-arrow[data-dir=ne]{transform:translate(2px,-2px)}
-@media (prefers-reduced-motion:reduce){.db-arrow{transition:none !important;transform:none !important}}`
+const GREETING = "hey, talk to me 👋 i've worked on a lot of things: research, design, prototyping."
 
 function etTime() {
     try {
-        return new Intl.DateTimeFormat("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            timeZone: "America/Detroit",
-        })
-            .format(new Date())
-            .toLowerCase()
+        return new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/Detroit" }).format(new Date()).toLowerCase()
     } catch {
         return ""
     }
@@ -137,27 +67,18 @@ export default function TalkingCursor() {
             if (window.getComputedStyle(el).position === "fixed") break
             const up: HTMLElement | null = el.parentElement
             if (!up || up === document.body || up.id === "main") break
-            if (
-                Array.from(up.children).filter(
-                    (c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName)
-                ).length !== 1
-            )
-                break
+            if (Array.from(up.children).filter((c) => !/^(STYLE|LINK|SCRIPT|TEMPLATE)$/.test(c.tagName)).length !== 1) break
             el = up
         }
     }, [])
     const headingRef = React.useRef<HTMLHeadingElement>(null)
 
     React.useEffect(() => {
-        const pointerQuery = window.matchMedia(
-            "(hover: hover) and (pointer: fine)"
-        )
-        const motionQuery = window.matchMedia(
-            "(prefers-reduced-motion: reduce)"
-        )
+        const pointerQuery = window.matchMedia("(hover: hover) and (pointer: fine)")
+        const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
         const update = () =>
             startTransition(() => {
-                setFinePointer(false)
+                setFinePointer(pointerQuery.matches)
                 setReducedMotion(motionQuery.matches)
                 setViewport({ w: window.innerWidth, h: window.innerHeight })
             })
@@ -166,10 +87,7 @@ export default function TalkingCursor() {
         motionQuery.addEventListener("change", update)
         window.addEventListener("resize", update)
         startTransition(() => setTime(etTime()))
-        const clock = window.setInterval(
-            () => startTransition(() => setTime(etTime())),
-            30000
-        )
+        const clock = window.setInterval(() => startTransition(() => setTime(etTime())), 30000)
         let seen = false
         try {
             seen = !!sessionStorage.getItem("dhwani-greet-seen")
@@ -178,10 +96,7 @@ export default function TalkingCursor() {
         let g = 0
         if (!seen) {
             startTransition(() => setGreet(true))
-            g = window.setTimeout(
-                () => startTransition(() => setGreet(false)),
-                7000
-            )
+            g = window.setTimeout(() => startTransition(() => setGreet(false)), 7000)
         }
         return () => {
             pointerQuery.removeEventListener("change", update)
@@ -209,9 +124,7 @@ export default function TalkingCursor() {
                 })
             )
             const target = event.target instanceof Element ? event.target : null
-            const nda =
-                target?.closest("[data-nda], [data-framer-name*='NDA' i]") ??
-                null
+            const nda = target?.closest("[data-nda], [data-framer-name*='NDA' i]") ?? null
             const link = nda || target?.closest("a[href]") || null
             if (link === active) return
             active = link
@@ -222,30 +135,13 @@ export default function TalkingCursor() {
             if (nda) message = HINTS["/work/prime-video"]
             else {
                 try {
-                    message =
-                        HINTS[
-                            new URL(
-                                link.getAttribute("href") || "",
-                                window.location.href
-                            ).pathname.replace(/\/$/, "")
-                        ] || ""
+                    message = HINTS[new URL(link.getAttribute("href") || "", window.location.href).pathname.replace(/\/$/, "")] || ""
                 } catch {}
             }
-            if (message)
-                timer = window.setTimeout(
-                    () =>
-                        startTransition(() => {
-                            setGreet(false)
-                            setHint(message)
-                        }),
-                    350
-                )
+            if (message) timer = window.setTimeout(() => startTransition(() => { setGreet(false); setHint(message) }), 350)
         }
         const leave = () => {
-            startTransition(() => {
-                setTracking(false)
-                setHint("")
-            })
+            startTransition(() => { setTracking(false); setHint("") })
             active = null
             window.clearTimeout(timer)
         }
@@ -286,79 +182,25 @@ export default function TalkingCursor() {
                 .dg button, .dg a { font: inherit; }
                 .dg button { cursor: pointer; }
                 .dg button:focus-visible, .dg a:focus-visible { outline: 2px solid var(--db-accent, #F3500F); outline-offset: 3px; }
-                .dg-card { background: var(--db-glass, rgba(18,18,18,.92)); border: 1px solid var(--db-glass-line, rgba(255,255,255,.12)); box-shadow: var(--db-shadow, 0 16px 50px rgba(0,0,0,.5)); backdrop-filter: none; -webkit-backdrop-filter: none; }
-                .dg-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 14px; border-radius: 12px; text-decoration: none; border: 0; }
+                .dg-card { background: var(--db-glass, rgba(18,18,18,.92)); border: 1px solid var(--db-glass-line, rgba(255,255,255,.12)); box-shadow: var(--db-shadow, 0 16px 50px rgba(0,0,0,.5)); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+                .dg-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 14px; border-radius: 12px; text-decoration: none; border: 0; }
                 .dg-primary { background: var(--db-accent, #F3500F); color: var(--db-on-accent, #0A0A0A); font-weight: 600; }
                 .dg-secondary { background: var(--db-line, rgba(255,255,255,.1)); color: var(--db-text, #fff); }
                 .dg-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
-                ${ARROW_CSS}
                 @keyframes dgIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
                 @keyframes dgPulse { 0%,100% { opacity: 1 } 50% { opacity: .45 } }
             `}</style>
             <div ref={rootRef} className="dg" style={{ pointerEvents: "none" }}>
                 {tracking && (
-                    <div
-                        aria-hidden="true"
-                        style={{
-                            position: "fixed",
-                            left: 0,
-                            top: 0,
-                            transform: `translate(${cx}px, ${cy}px)`,
-                            transition:
-                                "transform 380ms cubic-bezier(.2,.8,.2,1)",
-                            pointerEvents: "none",
-                            zIndex: 9998,
-                            display: "flex",
-                            alignItems: "flex-start",
-                            gap: 2,
-                        }}
-                    >
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 16 16"
-                            style={{ color: "var(--db-accent, #F3500F)" }}
-                        >
-                            <path
-                                d="M1 1l5.5 13 2-5.5L14 6.5z"
-                                fill="currentColor"
-                                stroke="var(--db-bg, #000)"
-                                strokeWidth="1"
-                            />
+                    <div aria-hidden="true" style={{ position: "fixed", left: 0, top: 0, transform: `translate(${cx}px, ${cy}px)`, transition: "transform 380ms cubic-bezier(.2,.8,.2,1)", pointerEvents: "none", zIndex: 9998, display: "flex", alignItems: "flex-start", gap: 2 }}>
+                        <svg width="16" height="16" viewBox="0 0 16 16" style={{ color: "var(--db-accent, #F3500F)" }}>
+                            <path d="M1 1l5.5 13 2-5.5L14 6.5z" fill="currentColor" stroke="var(--db-bg, #000)" strokeWidth="1" />
                         </svg>
-                        <span
-                            style={{
-                                marginTop: 12,
-                                padding: "2px 8px",
-                                borderRadius: 999,
-                                background: "var(--db-accent, #F3500F)",
-                                color: "var(--db-on-accent, #0A0A0A)",
-                                fontSize: 11,
-                                fontWeight: 600,
-                            }}
-                        >
-                            dhwani
-                        </span>
+                        <span style={{ marginTop: 12, padding: "2px 8px", borderRadius: 999, background: "var(--db-accent, #F3500F)", color: "var(--db-on-accent, #0A0A0A)", fontSize: 11, fontWeight: 600 }}>dhwani</span>
                     </div>
                 )}
                 {tracking && say && (
-                    <div
-                        aria-hidden="true"
-                        className="dg-card"
-                        style={{
-                            position: "fixed",
-                            left,
-                            top,
-                            width: bubbleWidth,
-                            padding: "10px 14px",
-                            borderRadius: "6px 16px 16px 16px",
-                            fontSize: 13,
-                            lineHeight: 1.5,
-                            pointerEvents: "none",
-                            zIndex: 9999,
-                            animation: "dgIn 160ms ease-out",
-                        }}
-                    >
+                    <div aria-hidden="true" className="dg-card" style={{ position: "fixed", left, top, width: bubbleWidth, padding: "10px 14px", borderRadius: "6px 16px 16px 16px", fontSize: 13, lineHeight: 1.5, pointerEvents: "none", zIndex: 9999, animation: "dgIn 160ms ease-out" }}>
                         {say}
                     </div>
                 )}
@@ -371,181 +213,31 @@ export default function TalkingCursor() {
                         aria-controls="dg-panel"
                         aria-label={`Open to work. Ann Arbor, ${time} Eastern. Open a quick tour of Dhwani's work`}
                         onClick={() => {
-                            startTransition(() => {
-                                setStep(0)
-                                setOpen(true)
-                            })
-                            window.setTimeout(
-                                () => headingRef.current?.focus(),
-                                0
-                            )
+                            startTransition(() => { setStep(0); setOpen(true) })
+                            window.setTimeout(() => headingRef.current?.focus(), 0)
                         }}
-                        style={{
-                            position: "fixed",
-                            right: 20,
-                            bottom: 20,
-                            minHeight: 44,
-                            padding: "10px 16px",
-                            borderRadius: 999,
-                            color: "var(--db-text, #fff)",
-                            zIndex: 10000,
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 8,
-                            fontSize: 13,
-                            pointerEvents: "auto",
-                        }}
+                        style={{ position: "fixed", right: 20, bottom: 20, minHeight: 44, padding: "10px 16px", borderRadius: 999, color: "var(--db-text, #fff)", zIndex: 10000, display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, pointerEvents: "auto" }}
                     >
-                        <span
-                            aria-hidden
-                            style={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: 4,
-                                background: "#1BC47D",
-                                boxShadow: "0 0 0 3px rgba(27,196,125,.25)",
-                                animation: reducedMotion
-                                    ? "none"
-                                    : "dgPulse 2.4s ease-in-out infinite",
-                            }}
-                        />
-                        <span aria-hidden>
-                            open to work · ann arbor {time} ET
-                        </span>
+                        <span aria-hidden style={{ width: 8, height: 8, borderRadius: 4, background: "#1BC47D", boxShadow: "0 0 0 3px rgba(27,196,125,.25)", animation: reducedMotion ? "none" : "dgPulse 2.4s ease-in-out infinite" }} />
+                        <span aria-hidden>open to work · ann arbor {time} ET</span>
                     </button>
                 )}
 
                 {open && (
-                    <div
-                        id="dg-panel"
-                        role="dialog"
-                        aria-modal="false"
-                        aria-labelledby="dg-heading"
-                        className="dg-card"
-                        onKeyDown={(e) => {
-                            if (e.key === "Escape") dismiss()
-                        }}
-                        style={{
-                            position: "fixed",
-                            right: 20,
-                            bottom: 20,
-                            width: "min(340px, calc(100vw - 40px))",
-                            maxHeight: "calc(100dvh - 40px)",
-                            overflowY: "auto",
-                            padding: 20,
-                            borderRadius: 20,
-                            zIndex: 10000,
-                            pointerEvents: "auto",
-                            animation: reducedMotion
-                                ? "none"
-                                : "dgIn 180ms ease-out",
-                        }}
-                    >
-                        <div
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                            }}
-                        >
-                            <span
-                                style={{
-                                    color: "var(--db-text-2)",
-                                    fontSize: 12,
-                                    letterSpacing: "0.06em",
-                                }}
-                            >
-                                open to work · ann arbor {time} ET
-                            </span>
-                            <button
-                                aria-label="Close tour"
-                                onClick={dismiss}
-                                className="dg-btn"
-                                style={{
-                                    width: 44,
-                                    padding: 0,
-                                    background: "transparent",
-                                    color: "var(--db-text)",
-                                    fontSize: 22,
-                                }}
-                            >
-                                ×
-                            </button>
+                    <div id="dg-panel" role="dialog" aria-modal="false" aria-labelledby="dg-heading" className="dg-card" onKeyDown={(e) => { if (e.key === "Escape") dismiss() }} style={{ position: "fixed", right: 20, bottom: 20, width: "min(340px, calc(100vw - 40px))", maxHeight: "calc(100dvh - 40px)", overflowY: "auto", padding: 20, borderRadius: 20, zIndex: 10000, pointerEvents: "auto", animation: reducedMotion ? "none" : "dgIn 180ms ease-out" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                            <span style={{ color: "var(--db-text-2)", fontSize: 12, letterSpacing: "0.06em" }}>open to work · ann arbor {time} ET</span>
+                            <button aria-label="Close tour" onClick={dismiss} className="dg-btn" style={{ width: 44, padding: 0, background: "transparent", color: "var(--db-text)", fontSize: 22 }}>×</button>
                         </div>
-                        <h2
-                            id="dg-heading"
-                            ref={headingRef}
-                            tabIndex={-1}
-                            style={{
-                                margin: "8px 0",
-                                fontSize: 21,
-                                lineHeight: 1.25,
-                            }}
-                        >
-                            {current.title}
-                        </h2>
-                        <p
-                            style={{
-                                margin: "0 0 18px",
-                                color: "var(--db-text-2)",
-                                fontSize: 15,
-                                lineHeight: 1.55,
-                            }}
-                        >
-                            {current.text}
-                        </p>
-                        <div
-                            style={{
-                                display: "flex",
-                                gap: 8,
-                                flexWrap: "wrap",
-                            }}
-                        >
-                            {current.href && (
-                                <a
-                                    className="dg-btn dg-primary"
-                                    href={current.href}
-                                >
-                                    {current.label}
-                                    <DbArrow external={/^https?:\/\//i.test(current.href)} />
-                                </a>
-                            )}
-                            {step === 0 && (
-                                <button
-                                    className="dg-btn dg-primary"
-                                    onClick={() => go(1)}
-                                >
-                                    Show me
-                                </button>
-                            )}
-                            {step > 0 && step < TOUR.length - 1 && (
-                                <button
-                                    className="dg-btn dg-secondary"
-                                    onClick={() => go(step + 1)}
-                                >
-                                    Next →
-                                </button>
-                            )}
-                            {(step === 0 || step === TOUR.length - 1) && (
-                                <button
-                                    className="dg-btn dg-secondary"
-                                    onClick={dismiss}
-                                >
-                                    {step === 0 ? "Just browsing" : "Done"}
-                                </button>
-                            )}
+                        <h2 id="dg-heading" ref={headingRef} tabIndex={-1} style={{ margin: "8px 0", fontSize: 21, lineHeight: 1.25 }}>{current.title}</h2>
+                        <p style={{ margin: "0 0 18px", color: "var(--db-text-2)", fontSize: 15, lineHeight: 1.55 }}>{current.text}</p>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                            {current.href && <a className="dg-btn dg-primary" href={current.href}>{current.label}</a>}
+                            {step === 0 && <button className="dg-btn dg-primary" onClick={() => go(1)}>Show me</button>}
+                            {step > 0 && step < TOUR.length - 1 && <button className="dg-btn dg-secondary" onClick={() => go(step + 1)}>Next →</button>}
+                            {(step === 0 || step === TOUR.length - 1) && <button className="dg-btn dg-secondary" onClick={dismiss}>{step === 0 ? "Just browsing" : "Done"}</button>}
                         </div>
-                        {step > 0 && (
-                            <p
-                                style={{
-                                    margin: "14px 0 0",
-                                    color: "var(--db-text-2)",
-                                    fontSize: 12,
-                                }}
-                            >
-                                {step} of {TOUR.length - 1}
-                            </p>
-                        )}
+                        {step > 0 && <p style={{ margin: "14px 0 0", color: "var(--db-text-2)", fontSize: 12 }}>{step} of {TOUR.length - 1}</p>}
                     </div>
                 )}
             </div>

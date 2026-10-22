@@ -4,9 +4,10 @@
 //  • Colors come from the site tokens (--db-*, set by PortfolioNav).
 //  • Screen readers get every line once (visually hidden list); the rotating bubble is aria-hidden.
 //  • Pauses on hover; doesn't rotate under reduced motion (WCAG 2.2.2).
+//  • Oct 11 (perf pass): also stops rotating while scrolled off screen or the tab is hidden.
 import { addPropertyControls, ControlType } from "framer"
 import { motion, AnimatePresence } from "framer-motion"
-import { useState, useEffect, startTransition } from "react"
+import { useState, useEffect, useRef, startTransition } from "react"
 
 const DEFAULT_LINES = [
     "hi, i'm dhwani 👋",
@@ -38,6 +39,31 @@ export default function MessageBubble(props: Props) {
     const [typing, setTyping] = useState(false)
     const [paused, setPaused] = useState(false)
     const [reduced, setReduced] = useState(false)
+    const [live, setLive] = useState(true)
+    const wrapRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const el = wrapRef.current
+        if (!el || typeof window === "undefined") return
+        let near = true
+        const sync = () => startTransition(() => setLive(near && !document.hidden))
+        const io =
+            typeof IntersectionObserver !== "undefined"
+                ? new IntersectionObserver(
+                      ([e]) => {
+                          near = !!e?.isIntersecting
+                          sync()
+                      },
+                      { rootMargin: "80px 0px" }
+                  )
+                : null
+        io?.observe(el)
+        document.addEventListener("visibilitychange", sync)
+        return () => {
+            io?.disconnect()
+            document.removeEventListener("visibilitychange", sync)
+        }
+    }, [])
 
     useEffect(() => {
         if (typeof window === "undefined") return
@@ -45,7 +71,7 @@ export default function MessageBubble(props: Props) {
     }, [])
 
     useEffect(() => {
-        if (paused || reduced) return
+        if (paused || reduced || !live) return
         let t = 0
         const id = window.setInterval(() => {
             startTransition(() => setTyping(true))
@@ -60,12 +86,12 @@ export default function MessageBubble(props: Props) {
             window.clearInterval(id)
             window.clearTimeout(t)
         }
-    }, [list, intervalSeconds, paused, reduced])
+    }, [list, intervalSeconds, paused, reduced, live])
 
     return (
         <>
             <style>{css}</style>
-            <div className="mbubble-wrap" onMouseEnter={() => startTransition(() => setPaused(true))} onMouseLeave={() => startTransition(() => setPaused(false))}>
+            <div ref={wrapRef} className="mbubble-wrap" onMouseEnter={() => startTransition(() => setPaused(true))} onMouseLeave={() => startTransition(() => setPaused(false))}>
                 <ul className="mbubble-sr">
                     {list.map((m, i) => (
                         <li key={i}>{m}</li>

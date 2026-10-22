@@ -72,34 +72,6 @@ function useDbLight(): boolean {
     return light
 }
 
-// Shared link arrow (one look across Dhwani's components, Oct 22): 14px, 1.5px stroke, round
-// caps, currentColor. "ne" (↗) for links that leave the site, "e" (→) for links inside it.
-// Hover/focus nudges it 2px (ARROW_CSS); reduced motion keeps it still.
-function DbArrow({ external = false }: { external?: boolean }) {
-    return (
-        <svg
-            className="db-arrow"
-            data-dir={external ? "ne" : "e"}
-            width="14"
-            height="14"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            focusable="false"
-        >
-            {external ? <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /> : <path d="M3 8h10M9 4l4 4-4 4" />}
-        </svg>
-    )
-}
-const ARROW_CSS = `.db-arrow{flex-shrink:0;display:inline-block;vertical-align:-.125em;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
-a:hover .db-arrow[data-dir=e],a:focus-visible .db-arrow[data-dir=e]{transform:translateX(2px)}
-a:hover .db-arrow[data-dir=ne],a:focus-visible .db-arrow[data-dir=ne]{transform:translate(2px,-2px)}
-@media (prefers-reduced-motion:reduce){.db-arrow{transition:none !important;transform:none !important}}`
-
 export default function LabCard(props) {
     const {
         title,
@@ -357,9 +329,21 @@ export default function LabCard(props) {
                     open {slug}
                 </span>
 
-                <span style={{ flexShrink: 0, display: "inline-flex", color: accentText }}>
-                    <style>{ARROW_CSS}</style>
-                    <DbArrow external={/^https?:\/\//i.test(link || "")} />
+                <span
+                    aria-hidden="true"
+                    style={{
+                        flexShrink: 0,
+                        color: accentText,
+                        transform:
+                            active && !reducedMotion
+                                ? "translateX(4px)"
+                                : "translateX(0px)",
+                        transition: reducedMotion
+                            ? "none"
+                            : "transform 0.2s ease",
+                    }}
+                >
+                    →
                 </span>
             </div>
         </a>

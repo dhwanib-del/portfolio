@@ -2,10 +2,12 @@
 // About-me: draggable gallery wall with illustrated polaroids, pinned stickies, stamps, vinyl, playlist, field note, matcha doodle
 // Oct 4: blends with the page in light + dark (transparent board, --db-* tokens for the grid and page text;
 // the physical objects keep their own paper colours). *word* in the header is set in Pinyon Script.
+// Oct 11 (perf pass): the playlist equalizer bars animate transform (scaleY) in CSS instead of
+// animating height every frame in JS; they pause off screen and are still under reduced motion.
 
 import { addPropertyControls, ControlType } from "framer"
 import { motion } from "framer-motion"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 interface GalleryItem {
     id: string
@@ -350,10 +352,9 @@ function PlaylistCard() {
                         {i === 0 && (
                             <div style={{ display: "flex", gap: 2, alignItems: "flex-end", flexShrink: 0 }}>
                                 {[8, 12, 6, 10].map((h, bi) => (
-                                    <motion.div key={bi}
-                                        animate={{ height: [h, h * 0.35, h] }}
-                                        transition={{ duration: 0.55 + bi * 0.15, repeat: Infinity, ease: "easeInOut", delay: bi * 0.1 }}
-                                        style={{ width: 2, background: "#F3500F", borderRadius: 1 }}
+                                    <div key={bi}
+                                        className="gw-eq"
+                                        style={{ width: 2, height: h, background: "#F3500F", borderRadius: 1, animationDuration: `${0.55 + bi * 0.15}s`, animationDelay: `${bi * 0.1}s` }}
                                     />
                                 ))}
                             </div>
@@ -535,11 +536,37 @@ export default function GalleryWall({
     boardHeight?: number
 }) {
     const [activeId, setActiveId] = useState<string | null>(null)
+    const rootRef = useRef<HTMLDivElement>(null)
+    const [live, setLive] = useState(true)
+
+    useEffect(() => {
+        const el = rootRef.current
+        if (!el || typeof window === "undefined") return
+        let near = true
+        const sync = () => setLive(near && !document.hidden)
+        const io =
+            typeof IntersectionObserver !== "undefined"
+                ? new IntersectionObserver(([e]) => {
+                      near = !!e?.isIntersecting
+                      sync()
+                  })
+                : null
+        io?.observe(el)
+        document.addEventListener("visibilitychange", sync)
+        return () => {
+            io?.disconnect()
+            document.removeEventListener("visibilitychange", sync)
+        }
+    }, [])
 
     return (
-        <div style={{ background: "transparent", minHeight: "100%", display: "flex", flexDirection: "column" }}>
+        <div ref={rootRef} className={live ? "" : "gw-paused"} style={{ background: "transparent", minHeight: "100%", display: "flex", flexDirection: "column" }}>
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Patrick+Hand&family=Pinyon+Script&display=swap');
+                @keyframes gwEq { 0%, 100% { transform: scaleY(1) } 50% { transform: scaleY(.35) } }
+                .gw-eq { transform-origin: 50% 100%; animation-name: gwEq; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+                .gw-paused .gw-eq { animation-play-state: paused; }
+                @media (prefers-reduced-motion: reduce) { .gw-eq { animation: none; } }
             `}</style>
 
             <GalleryHeader title={header} />
