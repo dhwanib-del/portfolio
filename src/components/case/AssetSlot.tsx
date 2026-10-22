@@ -13,7 +13,7 @@ export function AssetSlot({ slot, compact = false }: { slot: Slot; compact?: boo
   return (
     <figure className={s.slot} data-reason={slot.reason} data-compact={compact ? "true" : "false"} style={{ aspectRatio: compact ? undefined : slot.aspect }}>
       <div className={s.slotBody}>
-        <span className={s.slotBadge}>{slot.reason === "clearance" ? "Withheld pending publication approval" : "Original designs coming soon"}</span>
+        <span className={s.slotBadge}>{slot.reason === "clearance" ? "Private work · walkthrough on request" : "Walkthrough on request"}</span>
         <p className={s.slotLabel}>{slot.label}</p>
         {internal && <p className={s.slotNote}>{slot.note}</p>}
       </div>
