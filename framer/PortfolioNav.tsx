@@ -21,7 +21,14 @@
 // Sections are found by layer name OR heading text ("connect" finds "Send a signal.").
 // Oct 4: light mode also darkens very light, low-saturation logo images (layer or alt named
 // "logo", e.g. the white GM mark) so they don't vanish on the light background.
+// v15 (Oct 22): same v13 look and structure, slimmer (14px text, 34px tabs, tighter padding) with
+// the Apple-style glass back on the bar only (translucent theme tint + blur(20px) saturate(180%),
+// hairline border, soft inner highlight). Theme switching is attribute-based: Framer token values,
+// hand-colored layer fixes and the logo fix are stylesheet rules scoped to data-db-theme on <html>,
+// so a toggle flips one attribute (no inline color restore, no full-page rescan per toggle).
+// Also adds Tablet/Phone sizes for every project text style (see typeScale).
 import * as React from "react"
+import CaseStudyNav from "https://framer.com/m/CaseStudyNav-l846rG.js"
 import {
     startTransition,
     useEffect,
@@ -46,6 +53,7 @@ interface Props {
     fontSize: number
     tabHeight: number
     tabPadding: number
+    responsiveType: boolean
     style?: CSSProperties
 }
 
@@ -70,15 +78,15 @@ function upgradeTab(t: Tab): Tab {
     return t
 }
 // Scroll targets sit under the fixed nav pill: leave room for it.
-const HEADER_OFFSET = { wide: 96, narrow: 80 }
+const HEADER_OFFSET = { wide: 96, narrow: 96 }
 const SECTION_TEXT: Record<string, string[]> = {
     contact: ["send a signal.", "send a signal"],
     hiring: ["hiring for product, ux or experience design"],
     work: ["selected work"],
 }
 
-const LIGHT = `--db-bg:#FFFFFF;--db-surface:#EEEEEE;--db-surface-2:#E0E0E0;--db-text:#0A0A0A;--db-text-2:rgba(0,0,0,0.62);--db-line:rgba(0,0,0,0.12);--db-glass:rgba(255,255,255,0.86);--db-glass-line:rgba(0,0,0,0.10);--db-shadow:0 18px 40px -22px rgba(0,0,0,0.35);--db-accent:#C23D08;--db-on-accent:#FFFFFF;--db-glow-blend:multiply;--db-glow-opacity:0.22;--db-aurora-opacity:0.55;color-scheme:light;`
-const DARK = `--db-bg:#000000;--db-surface:#111111;--db-surface-2:#1F1F1F;--db-text:#FFFFFF;--db-text-2:rgba(255,255,255,0.6);--db-line:rgba(255,255,255,0.1);--db-glass:rgba(18,18,18,0.82);--db-glass-line:rgba(255,255,255,0.10);--db-shadow:0 18px 40px -18px rgba(0,0,0,0.9);--db-accent:var(--vibe-accent,#F3500F);--db-on-accent:#0A0A0A;--db-glow-blend:screen;--db-glow-opacity:0.55;--db-aurora-opacity:1;color-scheme:dark;`
+const LIGHT = `--db-bg:#FFFFFF;--db-surface:#EEEEEE;--db-surface-2:#E0E0E0;--db-text:#0A0A0A;--db-text-2:#4A4A4A;--db-line:rgba(0,0,0,0.12);--db-glass:rgba(255,255,255,0.86);--db-glass-line:rgba(0,0,0,0.10);--db-shadow:0 18px 40px -22px rgba(0,0,0,0.35);--db-accent:#C23D08;--db-on-accent:#FFFFFF;--db-glow-blend:multiply;--db-glow-opacity:0.22;--db-aurora-opacity:0.55;--db-nav-glass:rgba(255,255,255,0.6);--db-nav-line:rgba(0,0,0,0.08);--db-nav-shadow:0 8px 24px -16px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.75);color-scheme:light;`
+const DARK = `--db-bg:#000000;--db-surface:#111111;--db-surface-2:#1F1F1F;--db-text:#FFFFFF;--db-text-2:#C5C5C5;--db-line:rgba(255,255,255,0.1);--db-glass:rgba(18,18,18,0.82);--db-glass-line:rgba(255,255,255,0.10);--db-shadow:0 18px 40px -18px rgba(0,0,0,0.9);--db-accent:var(--vibe-accent,#F3500F);--db-on-accent:#0A0A0A;--db-glow-blend:screen;--db-glow-opacity:0.55;--db-aurora-opacity:0.65;--db-nav-glass:rgba(18,18,20,0.55);--db-nav-line:rgba(255,255,255,0.12);--db-nav-shadow:0 8px 24px -14px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.08);color-scheme:dark;`
 const LIGHT_VIBES = `[data-vibe="goblue"]{--db-accent:#0369A1}[data-vibe="nightshift"]{--db-accent:#5B3FD6}[data-vibe="afterhours"]{--db-accent:#C2185B}[data-vibe="greenroom"]{--db-accent:#854D0E}`
 const L = `:root[data-db-theme="light"]`
 const whiteSel = [
@@ -99,12 +107,16 @@ section:has(> .sp-shell){--sp-text:var(--db-text) !important;--sp-map-line:var(-
 ${L} .sp-feedback.tone-warm > span{color:#B23A0F !important}
 ${L} .sp-feedback.tone-cold > span{color:#2D52CC !important}
 `
+// Light-mode logo fix (keyed by attribute, so dark mode just stops matching).
+const LOGO_CSS = `${L} [data-db-logo]{filter:brightness(0) saturate(100%) !important;opacity:.86 !important}`
 const THEME_CSS = `
 :root{${DARK}}
 ${L}, ${L} body, ${L} #main{background:var(--db-bg) !important}
 :root[data-db-theme="light"]{${LIGHT}}
 :root[data-db-theme="light"]${LIGHT_VIBES.replace(/\}\[/g, '}:root[data-db-theme="light"][')}
 ${FIXES}
+${LOGO_CSS}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){[data-dbnav]{--db-nav-glass:var(--db-glass)}}
 `
 const ACCENT = "var(--db-accent, #F3500F)"
 
@@ -129,7 +141,7 @@ type TokenSet = {
     light: Record<string, string>
     dark: Record<string, string>
 }
-const OWN = ["db-theme-pin", "db-auto-theme"]
+const OWN = ["db-theme-pin", "db-auto-theme", "db-flip-css", "db-type-scale"]
 function eachRule(fn: (rule: CSSStyleRule, mode: Theme | null) => void) {
     if (typeof document === "undefined") return
     const walk = (rules: CSSRuleList, mode: Theme | null) => {
@@ -196,16 +208,56 @@ function styleTag(id: string, css: string) {
     }
     if (el.textContent !== css) el.textContent = css
 }
-function pinTokens(theme: Theme) {
+// v15: both value sets are pinned once, scoped by the <html data-db-theme> attribute, so a toggle
+// only flips that attribute. The stylesheets are re-read only when Framer adds or removes CSS.
+function scopeSel(sel: string, mode: Theme) {
+    const root = `:root[data-db-theme="${mode}"]`
+    if (sel === ":root" || sel === "html") return root
+    if (/^(:root|html)\b/.test(sel)) return sel.replace(/^(:root|html)/, root)
+    return `${root} ${sel}`
+}
+function pinTokens() {
     if (typeof document === "undefined") return
     const t = readTokens()
-    const vals = theme === "dark" ? { ...t.light, ...t.dark } : t.light
-    const keys = Object.keys(vals)
-    if (!keys.length) return
-    const body = keys.map((k) => `${k}:${vals[k]} !important;`).join("")
+    const dark = { ...t.light, ...t.dark }
+    const decl = (vals: Record<string, string>) =>
+        Object.keys(vals)
+            .map((k) => `${k}:${vals[k]} !important;`)
+            .join("")
+    if (!Object.keys(dark).length) return
     const sels = Array.from(t.sel)
     if (!sels.includes("body")) sels.push("body")
-    styleTag("db-theme-pin", `${sels.join(",")}{${body}}`)
+    const block = (mode: Theme, vals: Record<string, string>) =>
+        `${sels.map((s) => scopeSel(s, mode)).join(",")}{${decl(vals)}}`
+    styleTag(
+        "db-theme-pin",
+        `${block("light", t.light)}\n${block("dark", dark)}`
+    )
+}
+function sheetSignature(): string {
+    if (typeof document === "undefined") return ""
+    const sheets = document.styleSheets
+    let n = 0
+    for (let i = 0; i < sheets.length; i++) {
+        const sh = sheets[i]
+        const id = sh.ownerNode && (sh.ownerNode as HTMLElement).id
+        if (id && OWN.indexOf(id) !== -1) continue
+        try {
+            n += sh.cssRules.length
+        } catch {}
+    }
+    return `${sheets.length}:${n}`
+}
+let sheetSig = ""
+// Re-read Framer's CSS (token values, hand-colored layers, text presets) only when it changed.
+function refreshThemeCss(force = false) {
+    if (typeof document === "undefined") return
+    const sig = sheetSignature()
+    if (!force && sig === sheetSig) return
+    sheetSig = sig
+    pinTokens()
+    autoTheme()
+    typeScale()
 }
 
 // ---- Auto-theme: remap hand-picked dark-mode colors on Framer layers for light mode ----
@@ -317,121 +369,193 @@ function autoTheme() {
     styleTag("db-auto-theme", css)
 }
 
-// ---- v12 DOM pass: flip what is actually painted, independent of stylesheet access ----
+// ---- v15 responsive type: Tablet/Phone sizes for every project text style ----
+// Framer's MCP can't set per-breakpoint sizes on text styles, so the nav (on every page) reads the
+// text-style rules (framer-styles-preset-*) and adds Tablet (810–1199) and Phone (<810) sizes on one
+// consistent scale. Desktop is untouched. Styles that already have their own breakpoint sizes, and
+// per-layer overrides set in Framer, keep winning. Line height only scales when it is in px.
+const TYPE_MAP: Record<number, [number, number]> = {
+    50: [40, 32],
+    48: [40, 32],
+    32: [28, 24],
+    24: [22, 20],
+    18: [17, 16],
+    16: [16, 15],
+}
+function scaleSize(px: number): [number, number] | null {
+    if (px < 16) return null
+    const m = TYPE_MAP[px]
+    const tab = m ? m[0] : Math.round(px * 0.706 + 4.7)
+    const ph = m ? m[1] : Math.round(px * 0.5 + 7)
+    return [Math.min(px, tab), Math.min(px, ph)]
+}
+let typeOn = true
+function typeScale() {
+    if (typeof document === "undefined") return
+    if (!typeOn) return styleTag("db-type-scale", "")
+    const base: Array<{ sel: string; size: number; lh: number | null }> = []
+    const responsive = new Set<string>()
+    const presetOf = (sel: string) =>
+        (sel.match(/framer-styles-preset-[\w-]+/) || [""])[0]
+    const walk = (rules: CSSRuleList, inBp: boolean) => {
+        for (let i = 0; i < rules.length; i++) {
+            const r = rules[i] as any
+            if (r.type === 1) {
+                const sel: string = r.selectorText || ""
+                const preset = presetOf(sel)
+                if (!preset) continue
+                const fs = String(r.style.getPropertyValue("--framer-font-size")).trim()
+                if (!fs) continue
+                if (inBp) {
+                    responsive.add(preset)
+                    continue
+                }
+                const m = fs.match(/^(\d+(?:\.\d+)?)px$/)
+                if (!m) continue
+                const lhv = String(r.style.getPropertyValue("--framer-line-height")).trim()
+                const lm = lhv.match(/^(\d+(?:\.\d+)?)px$/)
+                base.push({ sel, size: +m[1], lh: lm ? +lm[1] : null })
+            } else if (r.type === 4) {
+                const c = String(r.conditionText || (r.media && r.media.mediaText) || "")
+                walk(r.cssRules, inBp || /(max|min)-width/.test(c))
+            } else if (r.cssRules) walk(r.cssRules, inBp)
+        }
+    }
+    const sheets = document.styleSheets
+    for (let i = 0; i < sheets.length; i++) {
+        const sh = sheets[i]
+        const id = sh.ownerNode && (sh.ownerNode as HTMLElement).id
+        if (id && OWN.indexOf(id) !== -1) continue
+        try {
+            walk(sh.cssRules, false)
+        } catch {}
+    }
+    const tab: string[] = []
+    const ph: string[] = []
+    for (const b of base) {
+        if (responsive.has(presetOf(b.sel))) continue
+        const s = scaleSize(b.size)
+        if (!s) continue
+        // "html " lifts the rule over Framer's own preset rule without !important,
+        // so inline per-layer sizes set in Framer still win.
+        const sel = b.sel
+            .split(",")
+            .map((x) => `html ${x.trim()}`)
+            .join(",")
+        const rule = (size: number) => {
+            let d = `--framer-font-size:${size}px;`
+            if (b.lh) d += `--framer-line-height:${Math.round((b.lh * size) / b.size)}px;`
+            return `${sel}{${d}}`
+        }
+        if (s[0] !== b.size) tab.push(rule(s[0]))
+        if (s[1] !== b.size) ph.push(rule(s[1]))
+    }
+    styleTag(
+        "db-type-scale",
+        `@media (min-width:810px) and (max-width:1199.98px){${tab.join("")}}\n@media (max-width:809.98px){${ph.join("")}}`
+    )
+}
+
+// ---- v12 DOM pass, v15 attribute-based: flip what is actually painted ----
+// Light mode checks what the browser paints: near-black backgrounds and near-white text on Framer
+// layers get a data-db-fb / data-db-ft key. The colors live in one stylesheet scoped to
+// :root[data-db-theme="light"], so dark mode needs no restore step (v13 wrote inline !important
+// colors and restored saved copies, which went stale and glitched on light→dark). Each element is
+// flagged once; a toggle never rescans the page. New layers are picked up by a childList observer
+// that only ever sees nodes Framer adds (this code writes attributes, never children).
 const SKIP =
     "img,video,canvas,svg,picture,iframe,[data-dbnav],[data-dbnav] *,[data-db-keep],[data-db-keep] *"
 function rgbaOf(v: string): RGBA | null {
     if (!v || v === "transparent") return null
     return parseColor(v)
 }
-const flipOriginals = new WeakMap<
-    HTMLElement,
-    Record<string, [string, string]>
->()
-function rememberFlip(el: HTMLElement, props: string[]) {
-    const original = flipOriginals.get(el) || {}
-    for (const p of props) {
-        if (!(p in original))
-            original[p] = [
-                el.style.getPropertyValue(p),
-                el.style.getPropertyPriority(p),
-            ]
+const flipKeys: Record<string, string> = {}
+const flipRules: string[] = []
+function flipKey(kind: "b" | "t", value: string): string {
+    const id = kind + "|" + value
+    let k = flipKeys[id]
+    if (!k) {
+        k = kind + Object.keys(flipKeys).length.toString(36)
+        flipKeys[id] = k
+        flipRules.push(
+            kind === "b"
+                ? `${L} [data-db-fb="${k}"]{background-color:${value} !important}`
+                : `${L} [data-db-ft="${k}"]{color:${value} !important;--framer-text-color:${value} !important}`
+        )
+        styleTag("db-flip-css", flipRules.join("\n"))
     }
-    flipOriginals.set(el, original)
+    return k
 }
-function unflip() {
-    if (typeof document === "undefined") return
-    document.querySelectorAll<HTMLElement>("[data-db-flip]").forEach((el) => {
-        const k = el.getAttribute("data-db-flip") || ""
-        const original = flipOriginals.get(el)
-        const props = [
-            ...(k.includes("b") ? ["background-color"] : []),
-            ...(k.includes("t") ? ["color", "--framer-text-color"] : []),
-        ]
-        for (const p of props) {
-            const saved = original?.[p]
-            if (saved?.[0]) el.style.setProperty(p, saved[0], saved[1])
-            else el.style.removeProperty(p)
-        }
-        flipOriginals.delete(el)
-        el.removeAttribute("data-db-flip")
-    })
-}
-function domFlip() {
-    if (typeof document === "undefined") return
-    if (document.documentElement.getAttribute("data-db-theme") !== "light")
-        return
-    const root = document.getElementById("main") || document.body
-    // Only remap legacy Framer layers; code components own their theme colors.
-    const all = root.querySelectorAll<HTMLElement>(
-        '[class*="framer-"], [style*="--framer-text-color"]'
+const FLIP_SEL = '[class*="framer-"], [style*="--framer-text-color"]'
+function flipOne(el: HTMLElement) {
+    if (
+        el.hasAttribute("data-db-fb") ||
+        el.hasAttribute("data-db-ft") ||
+        el.matches(SKIP)
     )
-    for (let i = 0; i < all.length; i++) {
-        const el = all[i]
-        if (el.hasAttribute("data-db-flip") || el.matches(SKIP)) continue
-        // Components already using theme variables must keep their reactive styles.
-        if (/var\(--(?:db|g|vibe)-/.test(el.getAttribute("style") || ""))
-            continue
-        const cs = getComputedStyle(el)
-        let k = ""
-        const bg = rgbaOf(cs.backgroundColor)
-        if (bg) {
-            const m = mapBg(bg)
-            if (m) {
-                rememberFlip(el, ["background-color"])
-                el.style.setProperty("background-color", m, "important")
-                k += "b"
-            }
-        }
-        const tc = rgbaOf(cs.color)
-        if (tc && isWhiteish(tc) && el.childNodes.length) {
-            let hasText = false
-            for (let j = 0; j < el.childNodes.length; j++)
-                if (
-                    el.childNodes[j].nodeType === 3 &&
-                    (el.childNodes[j].textContent || "").trim()
-                )
-                    hasText = true
+        return
+    // Components already using theme variables must keep their reactive styles.
+    if (/var\(--(?:db|g|vibe)-/.test(el.getAttribute("style") || "")) return
+    const cs = getComputedStyle(el)
+    const bg = rgbaOf(cs.backgroundColor)
+    if (bg) {
+        const m = mapBg(bg)
+        if (m) el.setAttribute("data-db-fb", flipKey("b", m))
+    }
+    const tc = rgbaOf(cs.color)
+    if (tc && isWhiteish(tc) && el.childNodes.length) {
+        let hasText = false
+        for (let j = 0; j < el.childNodes.length; j++)
             if (
-                hasText ||
-                /^(H[1-6]|P|SPAN|A|LI|BUTTON|LABEL)$/.test(el.tagName)
-            ) {
-                const m = mapText(tc)
-                if (m) {
-                    rememberFlip(el, ["color", "--framer-text-color"])
-                    el.style.setProperty("color", m, "important")
-                    el.style.setProperty("--framer-text-color", m, "important")
-                    k += "t"
-                }
-            }
+                el.childNodes[j].nodeType === 3 &&
+                (el.childNodes[j].textContent || "").trim()
+            )
+                hasText = true
+        if (hasText || /^(H[1-6]|P|SPAN|A|LI|BUTTON|LABEL)$/.test(el.tagName)) {
+            const m = mapText(tc)
+            if (m) el.setAttribute("data-db-ft", flipKey("t", m))
         }
-        if (k) el.setAttribute("data-db-flip", k)
     }
 }
+function flipIn(root: Element) {
+    if (root instanceof HTMLElement && root.matches(FLIP_SEL)) flipOne(root)
+    const all = root.querySelectorAll<HTMLElement>(FLIP_SEL)
+    for (let i = 0; i < all.length; i++) flipOne(all[i])
+}
+function isLight() {
+    return document.documentElement.getAttribute("data-db-theme") === "light"
+}
+const pendingRoots = new Set<Element>()
 let flipObs: MutationObserver | null = null
 let flipTimer = 0
-function watchFlip(on: boolean) {
-    if (typeof window === "undefined") return
-    if (!on) {
-        if (flipTimer) window.clearTimeout(flipTimer)
-        flipTimer = 0
-        if (flipObs) flipObs.disconnect()
-        flipObs = null
-        return
-    }
-    if (flipObs) return
-    flipObs = new MutationObserver(() => {
-        if (flipTimer) return
-        flipTimer = window.setTimeout(() => {
-            flipTimer = 0
-            if (
-                document.documentElement.getAttribute("data-db-theme") !==
-                "light"
-            )
-                return
-            domFlip()
-            logoFix()
-        }, 400)
+let fullPassAt = 0
+// Whole-page pass: on the first light render and while Framer is still loading the page.
+function flipPage() {
+    if (typeof document === "undefined" || !isLight()) return
+    pendingRoots.clear()
+    const root = document.getElementById("main") || document.body
+    flipIn(root)
+    logoFix([root])
+    fullPassAt = Date.now()
+}
+function flipPending() {
+    flipTimer = 0
+    if (!isLight() || !pendingRoots.size) return
+    const roots = Array.from(pendingRoots).filter((r) => r.isConnected)
+    pendingRoots.clear()
+    roots.forEach(flipIn)
+    logoFix(roots)
+}
+function watchFlip() {
+    if (typeof window === "undefined" || flipObs) return
+    flipObs = new MutationObserver((records) => {
+        for (const r of records)
+            r.addedNodes.forEach((n) => {
+                if (n.nodeType === 1 && !(n as Element).closest("[data-dbnav]"))
+                    pendingRoots.add(n as Element)
+            })
+        if (!pendingRoots.size || !isLight() || flipTimer) return
+        flipTimer = window.setTimeout(flipPending, 300)
     })
     flipObs.observe(document.getElementById("main") || document.body, {
         childList: true,
@@ -445,6 +569,7 @@ function watchFlip(on: boolean) {
 // whose alt contains "logo", are sampled once via an offscreen canvas. Very light (mean luminance
 // > 0.82), low-saturation (< 0.18) marks with some transparency get darkened with a filter; dark
 // mode puts them back. Results are cached per src; tainted or failed samples are skipped. Never throws.
+// v15: the darkening is a light-scoped CSS rule keyed on data-db-logo (no inline filter to restore).
 const LOGO_ATTR = "data-db-logo"
 const logoCache: Record<string, boolean | "pending"> = {}
 function isLogoEl(el: HTMLElement): boolean {
@@ -505,108 +630,83 @@ function sampleLogo(src: string, done: (light: boolean) => void) {
         done(false)
     }
 }
-function logoOn(el: HTMLElement, src: string) {
-    if (el.getAttribute(LOGO_ATTR) === src) return
-    if (!el.hasAttribute(LOGO_ATTR)) {
-        el.setAttribute("data-db-logo-f", el.style.getPropertyValue("filter"))
-        el.setAttribute("data-db-logo-o", el.style.getPropertyValue("opacity"))
-    }
-    el.setAttribute(LOGO_ATTR, src)
-    el.style.setProperty("filter", "brightness(0) saturate(100%)", "important")
-    el.style.setProperty("opacity", "0.86", "important")
-}
-function logoOff(el: HTMLElement) {
-    const f = el.getAttribute("data-db-logo-f") || ""
-    const o = el.getAttribute("data-db-logo-o") || ""
-    if (f) el.style.setProperty("filter", f)
-    else el.style.removeProperty("filter")
-    if (o) el.style.setProperty("opacity", o)
-    else el.style.removeProperty("opacity")
-    el.removeAttribute(LOGO_ATTR)
-    el.removeAttribute("data-db-logo-f")
-    el.removeAttribute("data-db-logo-o")
-}
-function logoUnfix() {
+function logoFix(roots: Element[]) {
     if (typeof document === "undefined") return
     try {
-        document
-            .querySelectorAll<HTMLElement>(`[${LOGO_ATTR}]`)
-            .forEach(logoOff)
-    } catch {}
-}
-function logoFix() {
-    if (typeof document === "undefined") return
-    try {
-        if (document.documentElement.getAttribute("data-db-theme") !== "light")
-            return
-        const root = document.getElementById("main") || document.body
+        if (!isLight()) return
         const found: Array<[HTMLElement, string]> = []
-        root.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
-            if (img.closest("[data-dbnav]") || !isLogoEl(img)) return
-            const src = img.currentSrc || img.src
-            if (src) found.push([img, src])
-        })
-        root.querySelectorAll<HTMLElement>("[data-framer-name]").forEach(
-            (named) => {
-                if (!/logo/i.test(named.getAttribute("data-framer-name") || ""))
+        const scan = (root: Element) => {
+            const imgs = Array.from(root.querySelectorAll<HTMLImageElement>("img"))
+            if (root instanceof HTMLImageElement) imgs.push(root)
+            imgs.forEach((img) => {
+                if (img.closest("[data-dbnav]") || !isLogoEl(img)) return
+                const src = img.currentSrc || img.src
+                if (src) found.push([img, src])
+            })
+            const named = Array.from(
+                root.querySelectorAll<HTMLElement>("[data-framer-name]")
+            )
+            if (root instanceof HTMLElement && root.hasAttribute("data-framer-name"))
+                named.push(root)
+            named.forEach((n) => {
+                if (!/logo/i.test(n.getAttribute("data-framer-name") || ""))
                     return
                 const els = [
-                    named,
+                    n,
                     ...Array.from(
-                        named.querySelectorAll<HTMLElement>(
-                            "div, span, a, figure"
-                        )
+                        n.querySelectorAll<HTMLElement>("div, span, a, figure")
                     ).slice(0, 24),
                 ]
                 els.forEach((el) => {
                     const src = bgUrlOf(el)
                     if (src) found.push([el, src])
                 })
-            }
-        )
+            })
+        }
+        roots.forEach(scan)
         found.forEach(([el, src]) => {
             const hit = logoCache[src]
-            if (hit === true) return logoOn(el, src)
-            if (
-                el.hasAttribute(LOGO_ATTR) &&
-                el.getAttribute(LOGO_ATTR) !== src
-            )
-                logoOff(el)
+            if (hit === true) return el.setAttribute(LOGO_ATTR, src)
+            if (el.hasAttribute(LOGO_ATTR) && el.getAttribute(LOGO_ATTR) !== src)
+                el.removeAttribute(LOGO_ATTR)
             if (hit === false || hit === "pending") return
             logoCache[src] = "pending"
             sampleLogo(src, (light) => {
                 logoCache[src] = light
-                if (light) logoFix()
+                if (light && el.isConnected) el.setAttribute(LOGO_ATTR, src)
             })
         })
     } catch {}
 }
+
 
 function applyTheme(t: Theme | null) {
     if (typeof document === "undefined") return
     const resolved: Theme = t || systemTheme()
     const html = document.documentElement
     html.setAttribute("data-db-theme", resolved)
-    document.body.setAttribute("data-framer-theme", resolved)
+    if (document.body.getAttribute("data-framer-theme") !== resolved)
+        document.body.setAttribute("data-framer-theme", resolved)
     html.style.colorScheme = resolved
-    pinTokens(resolved)
-    autoTheme()
+    refreshThemeCss()
+    watchFlip()
     if (resolved === "light") {
-        window.requestAnimationFrame(() => {
-            domFlip()
-            logoFix()
-        })
-        watchFlip(true)
-    } else {
-        watchFlip(false)
-        unflip()
-        logoUnfix()
+        // First light render (or while the page is still loading): one whole-page pass.
+        // After that, only layers Framer added since are checked.
+        if (!fullPassAt) window.requestAnimationFrame(flipPage)
+        else if (pendingRoots.size) window.requestAnimationFrame(flipPending)
     }
     try {
         window.dispatchEvent(
             new CustomEvent("db-theme", { detail: { theme: resolved } })
         )
     } catch {}
+}
+// Framer adds stylesheets and layers as the page loads: re-apply the saved theme and catch up.
+function settleTheme() {
+    if (typeof document === "undefined") return
+    applyTheme(savedTheme())
+    if (isLight()) window.requestAnimationFrame(flipPage)
 }
 
 function splitHref(href: string) {
@@ -737,9 +837,10 @@ export default function PortfolioNav(props: Props) {
         showTheme = true,
         brand = "dhwani",
         vibeGlow: _vibeGlow = false,
-        fontSize = 15,
-        tabHeight = 40,
-        tabPadding = 16,
+        fontSize = 14,
+        tabHeight = 34,
+        tabPadding = 13,
+        responsiveType = true,
     } = props
     const showLights = false
     const vibeGlow = false
@@ -758,6 +859,7 @@ export default function PortfolioNav(props: Props) {
     const [chatReady, setChatReady] = useState(false)
     const [reduced, setReduced] = useState(false)
     const [theme, setTheme] = useState<Theme>("dark")
+    const [isCasePage, setIsCasePage] = useState(false)
     const hostRef = useRef<HTMLDivElement | null>(null)
     const btnRef = useRef<HTMLButtonElement | null>(null)
     const sheetRef = useRef<HTMLDivElement | null>(null)
@@ -795,12 +897,14 @@ export default function PortfolioNav(props: Props) {
         const saved = savedTheme()
         const timers: number[] = []
         if (!onCanvas && active) {
+            if (typeOn !== responsiveType) {
+                typeOn = responsiveType
+                sheetSig = ""
+            }
             applyTheme(saved)
-            // Framer adds stylesheets as the page loads; pin again once they're in.
+            // Framer adds stylesheets and layers as the page loads; catch up once they're in.
             ;[250, 1200, 3000].forEach((ms) =>
-                timers.push(
-                    window.setTimeout(() => applyTheme(savedTheme()), ms)
-                )
+                timers.push(window.setTimeout(settleTheme, ms))
             )
         }
         const onReady = () => {
@@ -852,7 +956,7 @@ export default function PortfolioNav(props: Props) {
             sys.removeEventListener("change", onSys)
             window.removeEventListener("db-chat-ready", onReady)
         }
-    }, [breakpoint, onCanvas, active])
+    }, [breakpoint, onCanvas, active, responsiveType])
 
     useEffect(() => {
         if (!mounted || !active || typeof window === "undefined") return
@@ -1010,12 +1114,77 @@ export default function PortfolioNav(props: Props) {
         } catch {}
     }
 
+    useEffect(() => {
+        if (typeof document === "undefined" || onCanvas || !active) return
+        const syncCase = () => {
+            const title =
+                document.querySelector("h1")?.textContent?.trim() || ""
+            const isCase =
+                /\/(work|projects)\/(briefs|intel|general-motors|openlibrary|budgetcart)/.test(
+                    window.location.pathname
+                ) ||
+                /^(BRIEFS|Convoy|BudgetCart|Open Library|Intel workspace|Intelligence Hub)/i.test(
+                    title
+                )
+            document.documentElement.toggleAttribute("data-db-case", isCase)
+            setIsCasePage(isCase)
+            if (!isCase) return
+            document
+                .querySelectorAll<HTMLParagraphElement>("p.framer-text")
+                .forEach((p) => {
+                    if (/^\d{2}\s*[·.]/.test(p.textContent?.trim() || "")) {
+                        p.classList.add("db-section-label")
+                        const wrap = p.closest(
+                            '[data-framer-component-type="RichTextContainer"]'
+                        )
+                        const title =
+                            wrap?.nextElementSibling?.querySelector(
+                                "p.framer-text"
+                            )
+                        if (title && (title.textContent?.length || 0) < 180) {
+                            title.classList.add("db-section-title")
+                            title.setAttribute("role", "heading")
+                            title.setAttribute("aria-level", "2")
+                        }
+                    }
+                })
+            document
+                .querySelectorAll<HTMLAnchorElement>("a")
+                .forEach((link) => {
+                    if (link.closest("[data-dbnav]")) return
+                    const text = link.textContent?.trim() || ""
+                    if (
+                        /^(Open the live prototype|Open the prototype|View prototype|Back to work|All projects)/i.test(
+                            text
+                        )
+                    ) {
+                        link.classList.add("db-case-cta")
+                        link.querySelectorAll("p").forEach((p) => {
+                            if (/[↗↖←→]/.test(p.textContent || ""))
+                                p.textContent = (p.textContent || "")
+                                    .replace(/[↗↖←→]/g, "")
+                                    .trim()
+                        })
+                    }
+                })
+        }
+        syncCase()
+        const timer = window.setTimeout(syncCase, 800)
+        return () => window.clearTimeout(timer)
+    }, [active, onCanvas, path])
+
+    // Apple-style glass on the bar itself only (never on big page layers, so scrolling stays fast).
     const glass: CSSProperties = {
+        background: "var(--db-nav-glass)",
+        backdropFilter: "blur(20px) saturate(180%)",
+        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        border: "0.5px solid var(--db-nav-line)",
+        boxShadow: "var(--db-nav-shadow)",
+    }
+    // The open phone menu reads over page text, so it keeps the denser glass tint.
+    const sheetGlass: CSSProperties = {
+        ...glass,
         background: "var(--db-glass)",
-        backdropFilter: "none",
-        WebkitBackdropFilter: "none",
-        border: "1px solid var(--db-glass-line)",
-        boxShadow: "var(--db-shadow)",
     }
     const ease = reduced ? "none" : "background .2s, color .2s"
     const themeLabel =
@@ -1024,12 +1193,76 @@ export default function PortfolioNav(props: Props) {
     const css = (
         <style>{`
             ${THEME_CSS}
+:root[data-db-case] [data-framer-component-type="RichTextContainer"] {opacity:1 !important;}
+:root[data-db-case],:root[data-db-case] body {overflow-x:clip !important;}
+@media(max-width:809px){:root[data-db-case]{scroll-padding-top:96px;}}
+
+:root[data-db-case] :is(h1,h2,h3).framer-text { font-family:'Poppins','Inter',sans-serif !important; --framer-font-family:'Poppins','Inter',sans-serif !important; }
+:root[data-db-case] :is([data-framer-name="Case study story"],[data-framer-name="Revise Case Study Design"],[data-framer-name="§article"],[data-framer-name="Main case study narrative"]) { height:auto !important; flex:0 0 auto !important; }
+:root[data-db-case] .db-section-label.framer-text { font-size:16px !important; font-weight:600 !important; letter-spacing:.08em !important; color:var(--db-accent) !important; }
+:root[data-db-case] .db-section-title.framer-text { font-size:clamp(28px,3.3vw,42px) !important; font-weight:600 !important; line-height:1.22 !important; color:var(--db-text) !important; --framer-text-color:var(--db-text) !important; }
+
+            
+/* Case study system — shared with Framer stacks and code components. */
+:root[data-db-case] { scroll-padding-top: 112px; }
+:root[data-db-case] .framer-text { overflow-wrap: break-word; }
+:root[data-db-case] h1.framer-text { font-size: clamp(40px,6vw,76px) !important; line-height: 1.08 !important; letter-spacing: -.045em !important; --framer-text-color:var(--db-text) !important; color:var(--db-text) !important; }
+:root[data-db-case] h2.framer-text { font-size: clamp(28px,3.5vw,44px) !important; line-height:1.2 !important; --framer-text-color:var(--db-text) !important; color:var(--db-text) !important; }
+:root[data-db-case] h3.framer-text { font-size:clamp(23px,2.5vw,30px) !important; line-height:1.3 !important; color:var(--db-text) !important; }
+:root[data-db-case] :is([data-framer-name="Case study story"],[data-framer-name="Revise Case Study Design"],[data-framer-name="§article"]) { width:100% !important; max-width:1120px !important; min-width:0 !important; margin-inline:auto !important; display:flex !important; flex-direction:column !important; align-items:stretch !important; gap:64px !important; }
+:root[data-db-case] [data-framer-name="Main case study narrative"] { width:100% !important; max-width:880px !important; min-width:0 !important; margin-inline:auto !important; }
+:root[data-db-case] :is([data-framer-name="Quick facts sidebar"],[data-framer-name="Quick Facts"],[data-framer-name="Quick facts"],.cs-stats,.cs-meta) { display:none !important; }
+:root[data-db-case] [data-framer-name^="§ "] { width:100% !important; max-width:880px !important; min-width:0 !important; margin-inline:auto !important; scroll-margin-top:112px !important; }
+:root[data-db-case] :is(a,button,input,select,textarea):focus-visible { outline:3px solid var(--db-accent) !important; outline-offset:5px !important; }
+:root[data-db-case] a { text-underline-offset:5px; }
+:root[data-db-case] .db-case-cta { display:flex !important; flex-wrap:wrap !important; align-items:center !important; justify-content:space-between !important; gap:20px !important; min-height:64px !important; padding:16px 24px !important; width:100% !important; max-width:880px !important; color:var(--db-text) !important; background:var(--db-surface) !important; border:1px solid var(--db-glass-line) !important; border-radius:24px !important; text-decoration:none !important; }
+:root[data-db-case] .db-case-cta p.framer-text { color:var(--db-text) !important; --framer-text-color:var(--db-text) !important; font-size:clamp(20px,2.5vw,28px) !important; }
+:root[data-db-case] .db-case-cta svg { color:var(--db-text) !important; width:28px !important; height:28px !important; flex-shrink:0 !important; }
+:root[data-db-case] img { max-width:100%; }
+:root[data-db-case] video { max-width:100%; }
+:root[data-db-case] [data-framer-name="StickyNote"] { max-width:100% !important; }
+[data-dbnav] .dbnav-tab { color:var(--db-text) !important; }
+@media(max-width:809px) { :root[data-db-case] :is([data-framer-name="Case study story"],[data-framer-name="§article"]) { gap:40px !important; } }
+@media(prefers-reduced-motion:reduce) { :root[data-db-case] *, :root[data-db-case] *::before, :root[data-db-case] *::after { scroll-behavior:auto !important; } }
+
             [data-dbnav] a:focus-visible, [data-dbnav] button:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 2px; }
             [data-dbnav] .dbnav-tab:hover, [data-dbnav] .dbnav-icon:hover { color: var(--db-text); background: var(--db-line); }
             [data-dbnav] .dbnav-skip { position: fixed; left: 12px; top: -80px; z-index: 2147483001; padding: 12px 16px; border-radius: 12px; background: var(--db-text); color: var(--db-bg); font: 600 14px ${FONT}; text-decoration: none; }
             [data-dbnav] .dbnav-skip:focus { top: 12px; }
             @keyframes dbnav-breathe { 0%,100% { transform: scale(1); opacity: .35 } 50% { transform: scale(1.12); opacity: .55 } }
             @keyframes dbnav-in { from { opacity: 0; transform: translateY(-6px) } to { opacity: 1; transform: none } }
+
+/* Shared case-study reading layout: keep display typography outside the story intact. */
+:root[data-db-case]{--db-page-gutter:clamp(24px,6vw,88px);scroll-padding-top:112px;}
+:root[data-db-case] :is([data-framer-name="Case study story"],[data-framer-name="Revise Case Study Design"],[data-framer-name="§article"]){width:calc(100% - 2 * var(--db-page-gutter)) !important;max-width:1120px !important;box-sizing:border-box !important;}
+:root[data-db-case] :is([data-framer-name="§article"],[data-framer-name="Main case study narrative"],[data-framer-name="Case study story"],[data-framer-name="Revise Case Study Design"]) p.framer-text:not(.db-section-title):not(.db-section-label){font-size:clamp(18px,1.7vw,21px) !important;line-height:1.65 !important;color:var(--db-text-2) !important;--framer-text-color:var(--db-text-2) !important;}
+:root[data-db-case] .db-section-label.framer-text{font-size:16px !important;line-height:1.4 !important;color:var(--db-accent) !important;--framer-text-color:var(--db-accent) !important;}
+:root[data-db-case] .db-section-title.framer-text{font-size:clamp(30px,3.4vw,44px) !important;line-height:1.2 !important;font-weight:600 !important;letter-spacing:-.025em !important;max-width:26ch !important;text-wrap:balance;}
+:root[data-db-case] [data-framer-name="Start"]{padding-inline:var(--db-page-gutter) !important;padding-top:144px !important;box-sizing:border-box !important;}
+:root[data-db-case] div:has(> .db-ipad-video){width:100% !important;height:auto !important;min-height:0 !important;flex:0 0 auto !important;}
+:root[data-db-case] .db-ipad-video{width:100% !important;height:auto !important;max-width:100% !important;}
+:root[data-db-case] :is(.framer-13d26mx,.framer-18698lh,.framer-1ltynz0,.framer-1xvnkh8,.framer-1eey8mo){height:auto !important;min-height:0 !important;box-sizing:border-box !important;padding:24px !important;border:1px solid var(--db-glass-line) !important;border-radius:32px !important;background:var(--db-glass) !important;}
+:root[data-db-case] .framer-1eey8mo{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;align-items:start !important;gap:24px !important;}
+:root[data-db-case] :is(.framer-13d26mx,.framer-18698lh,.framer-1ltynz0,.framer-1xvnkh8,.framer-1eey8mo) > div{height:auto !important;min-height:0 !important;max-width:100% !important;}
+:root[data-db-case] .framer-em3pas{width:100% !important;max-width:100% !important;padding:0 !important;gap:24px !important;}
+:root[data-db-case] .framer-1pnfx6n{width:100% !important;height:auto !important;padding:24px !important;box-sizing:border-box !important;border:1px solid var(--db-glass-line) !important;border-radius:32px !important;background:var(--db-glass) !important;}
+:root[data-db-case] .framer-1a78em4{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;align-items:stretch !important;width:100% !important;height:auto !important;gap:24px !important;}
+:root[data-db-case] :is(.framer-bz269q,.framer-hkx8wh,.framer-9adq4z){width:100% !important;height:auto !important;min-width:0 !important;align-self:stretch !important;padding:24px !important;box-sizing:border-box !important;border:1px solid var(--db-line) !important;border-radius:24px !important;background:var(--db-surface) !important;box-shadow:none !important;gap:16px !important;}
+:root[data-db-case] :is(.framer-bz269q,.framer-hkx8wh,.framer-9adq4z) > div{width:100% !important;max-width:100% !important;}
+:root[data-db-case] :is(.framer-bz269q,.framer-hkx8wh,.framer-9adq4z) > div[class$="-container"]{display:none !important;}
+:root[data-db-case] :is(.framer-bz269q,.framer-hkx8wh,.framer-9adq4z) [data-framer-name="Header 2"]:first-child p{font-size:22px !important;font-weight:600 !important;color:var(--db-text) !important;--framer-text-color:var(--db-text) !important;}
+@media(max-width:999px){:root[data-db-case] .framer-1a78em4{grid-template-columns:minmax(0,1fr) !important;}}
+@media(max-width:809px){:root[data-db-case]{--db-page-gutter:24px;scroll-padding-top:104px;}:root[data-db-case] [data-framer-name="Start"]{padding-top:120px !important;}:root[data-db-case] .framer-1eey8mo{grid-template-columns:minmax(0,1fr) !important;}:root[data-db-case] :is(.framer-13d26mx,.framer-18698lh,.framer-1ltynz0,.framer-1xvnkh8,.framer-1eey8mo,.framer-1pnfx6n){padding:16px !important;border-radius:24px !important;}}
+
+
+:root[data-db-case] .db-ipad-video{max-width:var(--db-media-max,100%) !important;margin-inline:auto !important;}
+:root[data-db-case] :is(.framer-bz269q,.framer-hkx8wh,.framer-9adq4z)>[data-framer-name="Ellipse 2779"]{width:44px !important;height:44px !important;min-height:44px !important;flex:0 0 44px !important;border-radius:50% !important;background:var(--db-surface-2) !important;border:1px solid var(--db-line) !important;align-self:flex-start !important;}
+:root[data-db-case] :is(.framer-bz269q,.framer-hkx8wh,.framer-9adq4z)>[data-framer-name="Ellipse 2779"] p{color:var(--db-text) !important;--framer-text-color:var(--db-text) !important;}
+
+
+:root[data-db-case] nav[aria-label="On this page"], :root[data-db-case] div[class$="-container"]:has(nav[aria-label="On this page"]){display:none !important;}
+:root[data-db-case] body{padding-bottom:104px !important;}
+
         `}</style>
     )
 
@@ -1067,8 +1300,8 @@ export default function PortfolioNav(props: Props) {
                 ...glass,
                 display: "flex",
                 alignItems: "center",
-                gap: 6,
-                padding: "6px 8px 6px 14px",
+                gap: 2,
+                padding: 4,
                 borderRadius: 999,
                 fontFamily: FONT,
             }}
@@ -1131,7 +1364,7 @@ export default function PortfolioNav(props: Props) {
                                         style={{
                                             position: "absolute",
                                             left: "50%",
-                                            bottom: 5,
+                                            bottom: 3,
                                             width: 4,
                                             height: 4,
                                             marginLeft: -2,
@@ -1150,7 +1383,7 @@ export default function PortfolioNav(props: Props) {
                     aria-hidden
                     style={{
                         width: 1,
-                        height: 18,
+                        height: 16,
                         background: "var(--db-line)",
                         margin: "0 2px",
                     }}
@@ -1174,7 +1407,7 @@ export default function PortfolioNav(props: Props) {
             data-dbnav=""
             style={{
                 position: "fixed",
-                top: 20,
+                top: 14,
                 left: "50%",
                 transform: "translateX(-50%)",
                 zIndex: 2147480000,
@@ -1189,9 +1422,9 @@ export default function PortfolioNav(props: Props) {
             data-dbnav=""
             style={{
                 position: "fixed",
-                top: 12,
-                left: 12,
-                right: 12,
+                top: 10,
+                left: 10,
+                right: 10,
                 zIndex: 2147480000,
                 fontFamily: FONT,
             }}
@@ -1216,8 +1449,9 @@ export default function PortfolioNav(props: Props) {
                     alignItems: "center",
                     justifyContent: "space-between",
                     gap: 8,
-                    minHeight: 52,
-                    padding: "4px 4px 4px 16px",
+                    boxSizing: "border-box",
+                    minHeight: 48,
+                    padding: "3px 3px 3px 14px",
                     borderRadius: 999,
                 }}
             >
@@ -1235,7 +1469,7 @@ export default function PortfolioNav(props: Props) {
                         style={{
                             color: "var(--db-text)",
                             textDecoration: "none",
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: 500,
                             whiteSpace: "nowrap",
                             padding: "10px 4px",
@@ -1251,7 +1485,7 @@ export default function PortfolioNav(props: Props) {
                         gap: 4,
                     }}
                 >
-                    {themeBtn(44)}
+                    {themeBtn(40)}
                     <button
                         ref={btnRef}
                         type="button"
@@ -1266,9 +1500,9 @@ export default function PortfolioNav(props: Props) {
                             display: "inline-flex",
                             alignItems: "center",
                             gap: 8,
-                            minHeight: 44,
-                            minWidth: 44,
-                            padding: "0 16px",
+                            minHeight: 40,
+                            minWidth: 40,
+                            padding: "0 14px",
                             borderRadius: 999,
                             border: "1px solid var(--db-glass-line)",
                             background: open ? "var(--db-line)" : "transparent",
@@ -1323,11 +1557,11 @@ export default function PortfolioNav(props: Props) {
                     id="dbnav-sheet"
                     ref={sheetRef}
                     style={{
-                        ...glass,
+                        ...sheetGlass,
                         marginTop: 8,
-                        borderRadius: 24,
-                        padding: 8,
-                        maxHeight: "calc(100vh - 92px)",
+                        borderRadius: 22,
+                        padding: 6,
+                        maxHeight: "calc(100vh - 84px)",
                         overflowY: "auto",
                         animation: reduced ? "none" : "dbnav-in .22s ease both",
                     }}
@@ -1353,7 +1587,7 @@ export default function PortfolioNav(props: Props) {
                                                 display: "flex",
                                                 alignItems: "center",
                                                 justifyContent: "space-between",
-                                                minHeight: 56,
+                                                minHeight: 50,
                                                 padding: "0 16px",
                                                 borderRadius: 16,
                                                 color: cur
@@ -1363,7 +1597,7 @@ export default function PortfolioNav(props: Props) {
                                                     ? "var(--db-line)"
                                                     : "transparent",
                                                 textDecoration: "none",
-                                                fontSize: 22,
+                                                fontSize: 19,
                                                 fontWeight: cur ? 500 : 400,
                                             }}
                                         >
@@ -1405,7 +1639,7 @@ export default function PortfolioNav(props: Props) {
                                 display: "flex",
                                 alignItems: "center",
                                 gap: 10,
-                                minHeight: 56,
+                                minHeight: 50,
                                 padding: "0 16px",
                                 borderRadius: 16,
                                 border: `1px solid ${ACCENT}`,
@@ -1491,6 +1725,16 @@ export default function PortfolioNav(props: Props) {
                     skip to content
                 </a>
             </div>
+            {isCasePage && (
+                <CaseStudyNav
+                    shared={true}
+                    placement="responsive"
+                    sideMinWidth={1100}
+                    offsetX={16}
+                    fluidType={false}
+                    projectTitle="In this story"
+                />
+            )}
             {narrow ? phone : desktop}
         </>
     )
@@ -1530,7 +1774,7 @@ addPropertyControls(PortfolioNav, {
         min: 12,
         max: 20,
         step: 1,
-        defaultValue: 15,
+        defaultValue: 14,
         unit: "px",
     },
     tabHeight: {
@@ -1539,7 +1783,7 @@ addPropertyControls(PortfolioNav, {
         min: 28,
         max: 52,
         step: 2,
-        defaultValue: 40,
+        defaultValue: 34,
         unit: "px",
     },
     tabPadding: {
@@ -1548,8 +1792,14 @@ addPropertyControls(PortfolioNav, {
         min: 6,
         max: 24,
         step: 1,
-        defaultValue: 16,
+        defaultValue: 13,
         unit: "px",
+    },
+    responsiveType: {
+        type: ControlType.Boolean,
+        title: "Responsive type",
+        defaultValue: true,
+        description: "Tablet/Phone sizes for all text styles. Desktop unchanged.",
     },
     showTheme: {
         type: ControlType.Boolean,
