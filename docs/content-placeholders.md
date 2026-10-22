@@ -32,3 +32,9 @@ These AssetSlot frames still render as labeled empty boxes until the file is dro
 ## Not in use
 
 - `src/components/case/FigmaListeningRoom.tsx` "AWAITING PROTOTYPE": component isn't mounted on any page.
+
+## Framer (Oct 22)
+
+- `/work/general-motors` ChatSequence `doTWM0jyW`, `Ub0Y1H6Ko`: props `message1-3` still hold template copy ("FlowDesk keeps tasks, chat, and files together…"). The component renders from its `messages` list ("Weekend Trail Run - Who's in?"…), so these look unused. Clear them or confirm in Framer.
+- Text layers on all eight case pages came back empty and "Node not found" when edited (pages not loaded in the MCP session). Their copy still needs the same pass once the pages are open in Framer.
+- StickyNote and TypedConversation `font` props still use Inter; Framer ignored font-prop updates through MCP. Change them by hand in the property panel.
