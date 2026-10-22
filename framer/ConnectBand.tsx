@@ -71,6 +71,34 @@ function isExternal(url: string) {
     return /^https?:\/\//i.test(url)
 }
 
+// Shared link arrow (one look across Dhwani's components, Oct 22): 14px, 1.5px stroke, round
+// caps, currentColor. "ne" (↗) for links that leave the site, "e" (→) for links inside it.
+// Hover/focus nudges it 2px (ARROW_CSS); reduced motion keeps it still.
+function DbArrow({ external = false }: { external?: boolean }) {
+    return (
+        <svg
+            className="db-arrow"
+            data-dir={external ? "ne" : "e"}
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+        >
+            {external ? <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /> : <path d="M3 8h10M9 4l4 4-4 4" />}
+        </svg>
+    )
+}
+const ARROW_CSS = `.db-arrow{flex-shrink:0;display:inline-block;vertical-align:-.125em;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+a:hover .db-arrow[data-dir=e],a:focus-visible .db-arrow[data-dir=e]{transform:translateX(2px)}
+a:hover .db-arrow[data-dir=ne],a:focus-visible .db-arrow[data-dir=ne]{transform:translate(2px,-2px)}
+@media (prefers-reduced-motion:reduce){.db-arrow{transition:none !important;transform:none !important}}`
+
 export default function ConnectBand(props: Props) {
     const {
         eyebrow = "CONNECT",
@@ -144,12 +172,11 @@ export default function ConnectBand(props: Props) {
         .cb-btn:focus-visible { outline: 2px solid ${ACCENT}; outline-offset: 3px; }
         .cb-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 34px -14px ${ACCENT}; }
         .cb-secondary:hover { background: var(--db-line, rgba(255,255,255,.1)); border-color: color-mix(in srgb, ${ACCENT} 40%, var(--db-line, rgba(255,255,255,.14))); }
-        .cb-btn:hover .cb-arrow { transform: translate(2px,-2px); }
-        .cb-arrow { display: inline-block; transition: transform .2s ease; }
+        ${ARROW_CSS}
         .cb-paused .cb-anim { animation-play-state: paused !important; }
         @media (prefers-reduced-motion: reduce) {
-            .cb-btn, .cb-arrow { transition: none !important; }
-            .cb-primary:hover, .cb-btn:hover .cb-arrow { transform: none; }
+            .cb-btn { transition: none !important; }
+            .cb-primary:hover { transform: none; }
         }
     `
 
@@ -331,7 +358,7 @@ export default function ConnectBand(props: Props) {
                             style={{ ...btnBase, background: ACCENT, color: "var(--db-on-accent, #0A0A0A)", border: `1px solid ${ACCENT}` }}
                         >
                             {primaryLabel}
-                            <span aria-hidden="true" className="cb-arrow">↗</span>
+                            <DbArrow external={isExternal(primaryUrl)} />
                             {isExternal(primaryUrl) ? <span style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap" }}> (opens in a new tab)</span> : null}
                         </a>
                     ) : null}

@@ -14,8 +14,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, 
  * Reduced motion: no drifting, no typing, no caret blink; everything is shown at once.
  * Colors come from the site tokens (--db-*) so it reads in light and dark mode.
  * "Use site accent" (on by default) follows the vibe; turn it off to use the color you pick.
- * Oct 11 (perf pass, same look): typing writes characters straight to the DOM instead of re-rendering
- * the card ~200 times, and claude's chip tour pauses while the card is off screen or the tab is hidden.
  *
  * @framerSupportedLayoutWidth any
  * @framerSupportedLayoutHeight any
@@ -104,6 +102,34 @@ function CursorTag({ name, bg, fg }: { name: string; bg: string; fg: string }) {
     )
 }
 
+// Shared link arrow (one look across Dhwani's components, Oct 22): 14px, 1.5px stroke, round
+// caps, currentColor. "ne" (↗) for links that leave the site, "e" (→) for links inside it.
+// Hover/focus nudges it 2px (ARROW_CSS); reduced motion keeps it still.
+function DbArrow({ external = false }: { external?: boolean }) {
+    return (
+        <svg
+            className="db-arrow"
+            data-dir={external ? "ne" : "e"}
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            focusable="false"
+        >
+            {external ? <path d="M4.5 11.5 11.5 4.5M5.5 4.5h6v6" /> : <path d="M3 8h10M9 4l4 4-4 4" />}
+        </svg>
+    )
+}
+const ARROW_CSS = `.db-arrow{flex-shrink:0;display:inline-block;vertical-align:-.125em;transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+a:hover .db-arrow[data-dir=e],a:focus-visible .db-arrow[data-dir=e]{transform:translateX(2px)}
+a:hover .db-arrow[data-dir=ne],a:focus-visible .db-arrow[data-dir=ne]{transform:translate(2px,-2px)}
+@media (prefers-reduced-motion:reduce){.db-arrow{transition:none !important;transform:none !important}}`
+
 export default function BuiltWithAI(props: Props) {
     const {
         label,
@@ -131,7 +157,6 @@ export default function BuiltWithAI(props: Props) {
     const rootRef = useRef<HTMLDivElement>(null)
     const chipRefs = useRef<(HTMLButtonElement | null)[]>([])
     const meRef = useRef<HTMLDivElement>(null)
-    const textRef = useRef<HTMLSpanElement>(null)
 
     const [reduced, setReduced] = useState(false)
     const [fine, setFine] = useState(false)
@@ -143,7 +168,6 @@ export default function BuiltWithAI(props: Props) {
     const [claudeAt, setClaudeAt] = useState<{ x: number; y: number } | null>(null)
     const [meOn, setMeOn] = useState(false)
     const [linkHover, setLinkHover] = useState(false)
-    const [live, setLive] = useState(false)
 
     const line = lines[take % lines.length] || ""
     const done = typed >= line.length
@@ -190,41 +214,6 @@ export default function BuiltWithAI(props: Props) {
         return () => io.disconnect()
     }, [onCanvas])
 
-    // On screen + tab visible (drives claude's tour)
-    useEffect(() => {
-        if (onCanvas) {
-            setLive(true)
-            return
-        }
-        const el = rootRef.current
-        if (!el || typeof window === "undefined") return
-        let near = false
-        const sync = () => setLive(near && !document.hidden)
-        const io =
-            typeof IntersectionObserver !== "undefined"
-                ? new IntersectionObserver(
-                      ([e]) => {
-                          near = !!e?.isIntersecting
-                          sync()
-                      },
-                      { rootMargin: "60px 0px" }
-                  )
-                : null
-        if (io) io.observe(el)
-        else near = true
-        sync()
-        document.addEventListener("visibilitychange", sync)
-        return () => {
-            io?.disconnect()
-            document.removeEventListener("visibilitychange", sync)
-        }
-    }, [onCanvas])
-
-    // The typed text is owned by this effect (not React children), so typing doesn't re-render the card.
-    useEffect(() => {
-        if (textRef.current) textRef.current.textContent = line.slice(0, typed)
-    }, [line, typed])
-
     useEffect(() => {
         if (!seen) return
         if (reduced || onCanvas) {
@@ -235,22 +224,19 @@ export default function BuiltWithAI(props: Props) {
         let i = 0
         const id = window.setInterval(() => {
             i += 1
-            if (textRef.current) textRef.current.textContent = line.slice(0, i)
-            if (i >= line.length) {
-                window.clearInterval(id)
-                setTyped(line.length)
-            }
+            setTyped(i)
+            if (i >= line.length) window.clearInterval(id)
         }, TYPE_MS)
         return () => window.clearInterval(id)
     }, [seen, take, line, reduced, onCanvas])
 
     // Claude's auto-tour across the chips
     useEffect(() => {
-        if (!seen || !live || reduced || onCanvas || userDriving || !toolList.length) return
+        if (!seen || reduced || onCanvas || userDriving || !toolList.length) return
         const id = window.setInterval(() => setActive((a) => (a + 1) % toolList.length), TOUR_MS)
         if (active < 0) setActive(0)
         return () => window.clearInterval(id)
-    }, [seen, live, reduced, onCanvas, userDriving, toolList.length]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [seen, reduced, onCanvas, userDriving, toolList.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Where the claude cursor should sit (bottom-right of the active chip)
     const place = useCallback(() => {
@@ -307,6 +293,7 @@ export default function BuiltWithAI(props: Props) {
         @keyframes bwa-blink { 50% { opacity: 0 } }
         @keyframes bwa-note { from { opacity: 0; transform: translateY(3px) } to { opacity: 1; transform: none } }
         .bwa-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+        ${ARROW_CSS}
         @media (prefers-reduced-motion: reduce) { .bwa-chip, .bwa-btn, .bwa-spin { transition: none !important; } .bwa-btn:hover .bwa-spin { transform: none; } }
     `
 
@@ -385,7 +372,7 @@ export default function BuiltWithAI(props: Props) {
                 <span aria-hidden="true">
                     <span style={{ color: tint, fontWeight: 600 }}>dhwani@portfolio</span>
                     <span style={{ color: "var(--db-text-2, rgba(255,255,255,.6))" }}> ~ % </span>
-                    <span ref={textRef} />
+                    {line.slice(0, typed)}
                     <span
                         style={{
                             display: "inline-block",
@@ -498,7 +485,7 @@ export default function BuiltWithAI(props: Props) {
                     }}
                 >
                     {linkText}
-                    <span aria-hidden="true" style={{ transform: linkHover ? "translateX(3px)" : "none", transition: "transform 0.2s ease" }}>→</span>
+                    <DbArrow external={/^https?:\/\//i.test(linkUrl)} />
                 </a>
             ) : null}
 
