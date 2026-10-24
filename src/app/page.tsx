@@ -26,7 +26,7 @@ export default function Home() {
       </section>
 
 
-      <WorkReel projects={projects} eyebrow="selected projects · 2025–2026" heading="The work, and what went into it." />
+      <WorkReel projects={projects} eyebrow="selected projects · 2025–2026" heading="The work behind the work." />
 
       <section className="section"><div className="container"><TheSet roles={experience.map((r) => ({ ...r, skills: ({
             "Adobe": "workshops, content, campus events",
