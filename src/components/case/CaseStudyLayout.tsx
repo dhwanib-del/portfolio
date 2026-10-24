@@ -173,7 +173,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
 
       <section className={s.impact} aria-label="Impact and learning">
         <span className={s.kicker}>Where it landed</span>
-        <h2>What changed. What stayed with me.</h2>
+        <h2>The result, and what I learned.</h2>
         <div className={s.impactGrid}>
           <div><span>THE OUTCOME</span><p>{study.outcome.confirmed}</p><small>{study.outcome.limitation}</small></div>
           <div><span>WHAT I LEARNED</span><p>{narrative?.takeaway || study.evaluation.learned[0]}</p><small>{study.outcome.next}</small></div>
@@ -186,7 +186,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
       </section>
 
       <details className={s.deepDive}>
-        <summary><span><small>WANT THE LONGER VERSION?</small><strong>Research notes, decisions & process</strong></span><span aria-hidden="true">+</span></summary>
+        <summary><span><small>THE LONGER VERSION</small><strong>The research and decisions</strong></span><span aria-hidden="true">+</span></summary>
         <div className={s.deepContent}>
           {caseSignals[study.slug] && <div className={s.receipt}><EvidenceTurntable project={study.name} signals={caseSignals[study.slug]} /></div>}
           <nav className={s.toc} aria-label="Deeper project sections">
