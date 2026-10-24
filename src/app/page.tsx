@@ -3,6 +3,7 @@ import styles from "./home.module.css"
 import { Bubble } from "@/components/Bubble"
 import { WelcomeChat } from "@/components/WelcomeChat"
 import { WorkReel } from "@/components/WorkReel"
+import { SideQuests } from "@/components/SideQuests"
 import TheSet from "@/components/ExperienceMixer"
 import { bubbleLines, experience, person, projects } from "@/content/site"
 
@@ -27,6 +28,8 @@ export default function Home() {
 
 
       <WorkReel projects={projects} eyebrow="selected projects · 2025–2026" heading="The work behind the work." />
+
+      <SideQuests />
 
       <section className="section"><div className="container"><TheSet roles={experience.map((r) => ({ ...r, skills: ({
             "Adobe": "workshops, content, campus events",
