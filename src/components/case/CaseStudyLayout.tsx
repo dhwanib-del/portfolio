@@ -5,13 +5,15 @@ import { AssetSlot } from "./AssetSlot"
 import { BeforeAfter } from "./BeforeAfter"
 import { OwnerTag } from "./OwnerTag"
 import { PrototypeEmbed } from "./PrototypeEmbed"
-import { CinematicDeviceReveal } from "./CinematicDeviceReveal"
 import { DecisionStudio } from "./DecisionStudio"
-import { CaseChapterRail } from "./CaseChapterRail"
 import { EvidenceTurntable } from "./EvidenceTurntable"
 import { caseSignals } from "@/content/caseSignals"
 import { CaseMediaWall } from "./CaseMediaWall"
 import { caseMedia } from "@/content/caseMedia"
+import { caseNarratives } from "@/content/caseNarratives"
+import { CaseStory } from "./CaseStory"
+import { CaseFeatureShowcase } from "./CaseFeatureShowcase"
+import { caseFeatures } from "@/content/caseFeatures"
 import { ScreenViewer } from "./ScreenViewer"
 import s from "./CaseStudyLayout.module.css"
 
@@ -40,6 +42,9 @@ function estimatedReadingTime(study: CaseStudy) {
  */
 export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { slug: string; name: string; product: string } }) {
   const sections: { id: string; title: string; body: React.ReactNode }[] = []
+  const narrative = caseNarratives[study.slug]
+  const media = caseMedia[study.slug] || []
+  const features = caseFeatures[study.slug] || []
 
   sections.push({
     id: "context",
@@ -139,6 +144,9 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
         </ol>
       </section>
 
+      {narrative && <div className={s.storySection}><CaseStory opening={narrative.opening} beats={narrative.beats} media={media}/></div>}
+      {features.length > 0 && <div className={s.featureSection}><CaseFeatureShowcase features={features} media={media}/></div>}
+
       {caseMedia[study.slug]?.length ? (
         <div className={s.featureMedia}>
           <CaseMediaWall project={study.name} items={caseMedia[study.slug]} />
@@ -154,9 +162,6 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
           <div><strong>{study.hero.slot.reason === "clearance" ? "Visuals are not cleared for publication." : "Original project visuals are being sourced."}</strong><p>{study.hero.slot.note}</p></div>
         </div>
       )}
-      {caseSignals[study.slug] && <div className={s.receipt}><EvidenceTurntable project={study.name} signals={caseSignals[study.slug]} /></div>}
-
-      {study.slug === "general-motors" && study.prototype?.url && <CinematicDeviceReveal initialUrl={study.prototype.url} />}
 
       <section className={s.part} aria-labelledby="my-part">
         <h2 id="my-part" className={s.kicker}>My part</h2>
@@ -166,18 +171,35 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
         </div>
       </section>
 
-      <CaseChapterRail chapters={sections.map(sec=>({id:sec.id,label:sec.title}))} />
+      <section className={s.impact} aria-label="Impact and learning">
+        <span className={s.kicker}>Where it landed</span>
+        <h2>What changed. What stayed with me.</h2>
+        <div className={s.impactGrid}>
+          <div><span>THE OUTCOME</span><p>{study.outcome.confirmed}</p><small>{study.outcome.limitation}</small></div>
+          <div><span>WHAT I LEARNED</span><p>{narrative?.takeaway || study.evaluation.learned[0]}</p><small>{study.outcome.next}</small></div>
+        </div>
+        {study.links?.length ? <div className={s.sources}>{study.links.map(l=><a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}</div> : null}
+        {study.slug === "openlibrary" ? <div className={s.sources}>
+          <a href="https://www.figma.com/design/5AjVejCj7Sop89BgPiFsmo/Dhwani-Project-Pitch-Decks?node-id=0-1" target="_blank" rel="noopener noreferrer">View the Open Library presentation ↗</a>
+          <a href="https://www.figma.com/design/MiY6DwZ3NfAFvWSrZhA8w6/Dhwani-Case-stories---working-boards?node-id=2-2" target="_blank" rel="noopener noreferrer">Explore the working storyboards ↗</a>
+        </div> : null}
+      </section>
 
-      <nav className={s.toc} aria-label="On this page">
-        {sections.map((sec, i) => <a key={sec.id} href={`#${sec.id}`}><span>{String(i + 1).padStart(2, "0")}</span>{sec.title}</a>)}
-      </nav>
-
-      {sections.map((sec, i) => (
-        <section key={sec.id} id={sec.id} className={s.section} aria-labelledby={`${sec.id}-h`}>
-          <h2 id={`${sec.id}-h`} className={s.sectionTitle}><span>{String(i + 1).padStart(2, "0")}</span>{sec.title}</h2>
-          {sec.body}
-        </section>
-      ))}
+      <details className={s.deepDive}>
+        <summary><span><small>WANT THE LONGER VERSION?</small><strong>Research notes, decisions & process</strong></span><span aria-hidden="true">+</span></summary>
+        <div className={s.deepContent}>
+          {caseSignals[study.slug] && <div className={s.receipt}><EvidenceTurntable project={study.name} signals={caseSignals[study.slug]} /></div>}
+          <nav className={s.toc} aria-label="Deeper project sections">
+            {sections.filter(sec=>sec.id!=="outcome").map((sec,i)=><a key={sec.id} href={`#${sec.id}`}><span>{String(i+1).padStart(2,"0")}</span>{sec.title}</a>)}
+          </nav>
+          {sections.filter(sec=>sec.id!=="outcome").map((sec,i)=>(
+            <section key={sec.id} id={sec.id} className={s.section} aria-labelledby={`${sec.id}-h`}>
+              <h2 id={`${sec.id}-h`} className={s.sectionTitle}><span>{String(i+1).padStart(2,"0")}</span>{sec.title}</h2>
+              {sec.body}
+            </section>
+          ))}
+        </div>
+      </details>
 
       {next && (
         <nav className={s.next} aria-label="Next case study">
