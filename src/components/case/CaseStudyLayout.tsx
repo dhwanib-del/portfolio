@@ -6,8 +6,18 @@ import { BeforeAfter } from "./BeforeAfter"
 import { OwnerTag } from "./OwnerTag"
 import { PrototypeEmbed } from "./PrototypeEmbed"
 import { CinematicDeviceReveal } from "./CinematicDeviceReveal"
+import { DecisionStudio } from "./DecisionStudio"
+import { CaseChapterRail } from "./CaseChapterRail"
 import { ScreenViewer } from "./ScreenViewer"
 import s from "./CaseStudyLayout.module.css"
+
+const OPENING_LINES: Record<string,string> = {
+  "general-motors": "Four weeks in, I challenged the brief.",
+  briefs: "The hazard shouldn't be three screens down.",
+  intel: "A case shouldn't live across a dozen tabs.",
+  budgetcart: "A simpler screen hid the clues shoppers needed.",
+  openlibrary: "Readers had the tools. Switching was the problem.",
+}
 
 /**
  * One framework for every case study:
@@ -26,25 +36,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
   sections.push({
     id: "decisions",
     title: study.slug === "general-motors" ? "The interface choices" : "Decisions that shaped the work",
-    body: (
-      <ol className={s.decisions}>
-        {study.decisions.map((d, i) => (
-          <li key={d.title} className={s.decision}>
-            <div className={s.decisionHead}>
-              <span className={s.decisionNum}>{String(i + 1).padStart(2, "0")}</span>
-              <h3>{d.title}</h3>
-              <OwnerTag owner={d.owner} />
-            </div>
-            <dl className={s.decisionBody}>
-              <div><dt>What we designed</dt><dd>{d.chose}</dd></div>
-              <div><dt>Alternative</dt><dd>{d.over}</dd></div>
-              <div><dt>Why</dt><dd>{d.because}</dd></div>
-              <div><dt>What supports this</dt><dd className={s.evidence}>{d.evidence}</dd></div>
-            </dl>
-          </li>
-        ))}
-      </ol>
-    ),
+    body: <DecisionStudio project={study.name} decisions={study.decisions} />,
   })
 
   const hasProduct = study.experience || study.prototype || study.slots?.length
@@ -114,6 +106,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
         <Link href="/#work" className={s.back}>← All work</Link>
         <p className={s.org}>{study.org}</p>
         <h1 className={s.name}>{study.name}<span className={s.dot} aria-hidden="true">.</span></h1>
+        <p className={s.storyHook}>{OPENING_LINES[study.slug] ?? study.challenge ?? study.product}</p>
         <p className={s.product}>{study.product}</p>
         <dl className={s.meta}>
           <div><dt>My role</dt><dd>{study.role}</dd></div>
@@ -122,6 +115,15 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
           <div><dt>Status</dt><dd>{study.status}</dd></div>
         </dl>
       </header>
+
+      <section className={s.atGlance} aria-label="Case study at a glance">
+        <div className={s.glanceHeading}><span className={s.kicker}>The short version</span><span className={s.glanceHint}>30-second read <span aria-hidden="true">↘</span></span></div>
+        <ol className={s.glanceItems}>
+          <li><span>01 / The challenge</span><strong>{study.challenge ?? study.context[0]}</strong></li>
+          <li><span>02 / The decision</span><strong>{study.decisions[0]?.chose}</strong></li>
+          <li><span>03 / Where it landed</span><strong>{study.outcome.confirmed}</strong></li>
+        </ol>
+      </section>
 
       <section className={s.hero} aria-label="Project work">
         {study.hero.type === "screens" ? (
@@ -134,15 +136,6 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
         )}
       </section>
 
-      <section className={s.atGlance} aria-label="Case study at a glance">
-        <span className={s.kicker}>The short version</span>
-        <ol className={s.glanceItems}>
-          <li><span>01 / The challenge</span><strong>{study.challenge ?? study.context[0]}</strong></li>
-          <li><span>02 / What changed</span><strong>{study.decisions[0]?.chose}</strong></li>
-          <li><span>03 / What we made</span><strong>{study.outcome.confirmed}</strong></li>
-        </ol>
-      </section>
-
       {study.slug === "general-motors" && <CinematicDeviceReveal />}
 
       <section className={s.part} aria-labelledby="my-part">
@@ -152,6 +145,8 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
           {study.contributions.team?.length ? <div><h3>What the team did</h3><ul>{study.contributions.team.map((c) => <li key={c}>{c}</li>)}</ul></div> : null}
         </div>
       </section>
+
+      <CaseChapterRail chapters={sections.map(sec=>({id:sec.id,label:sec.title}))} />
 
       <nav className={s.toc} aria-label="On this page">
         {sections.map((sec, i) => <a key={sec.id} href={`#${sec.id}`}><span>{String(i + 1).padStart(2, "0")}</span>{sec.title}</a>)}
