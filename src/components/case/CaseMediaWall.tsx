@@ -22,7 +22,7 @@ export function CaseMediaWall({ project, items }: { project: string; items: Case
 
   return <section className={s.mediaWall} aria-label={project+" project screen and video gallery"}>
     <header className={s.heading}>
-      <div><span className={s.dot} aria-hidden="true"/> SELECTED ARTIFACTS <span className={s.muted}>/ ACTUAL PROJECT MEDIA</span></div>
+      <div><span className={s.dot} aria-hidden="true"/> Project gallery <span className={s.muted}>/ photos & screens</span></div>
       <span>{films.length ? films.length+" clips · " : ""}{items.length} pieces</span>
     </header>
 
@@ -68,7 +68,7 @@ export function CaseMediaWall({ project, items }: { project: string; items: Case
       </div>
     </div>
 
-    <div className={s.reelLabel}><span>THE CONTACT STRIP</span><span>SELECT A FRAME TO EXPLORE <span aria-hidden="true">↙</span></span></div>
+    <div className={s.reelLabel}><span>More from the project</span><span>CHOOSE A FRAME <span aria-hidden="true">↙</span></span></div>
     <div className={s.filmstrip} role="group" aria-label="Select an artifact">
       {items.map((item,i)=><button
         type="button" className={s.thumb} data-selected={i===active} aria-pressed={i===active}
@@ -85,7 +85,7 @@ export function CaseMediaWall({ project, items }: { project: string; items: Case
     </div>
 
     {phones.length>=3 && <div className={s.phoneSection}>
-      <div className={s.subhead}><span>THE SCREENS / ALL TOGETHER</span><span>{phones.length} REAL PHONE SCREENS</span></div>
+      <div className={s.subhead}><span>All the screens</span><span>{phones.length} PHONE SCREENS</span></div>
       <div className={s.phoneGrid}>
         {phones.map(({item,i})=><button type="button" className={s.phoneCard} key={item.url} onClick={()=>setActive(i)} aria-label={"Inspect "+item.title}>
           <span className={s.phoneCardDevice}>
@@ -99,7 +99,7 @@ export function CaseMediaWall({ project, items }: { project: string; items: Case
     </div>}
 
     {stills.length>0 && <div className={s.stillSection}>
-      <div className={s.subhead}><span>MORE FROM THE PROJECT</span><span>{stills.length} PUBLISHED STILLS</span></div>
+      <div className={s.subhead}><span>More to explore</span><span>{stills.length} IMAGES</span></div>
       <div className={s.stillGrid}>
         {stills.map(({item,i})=><button type="button" className={s.stillCard} key={item.url} onClick={()=>setActive(i)} aria-label={"Inspect "+item.title}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -108,6 +108,6 @@ export function CaseMediaWall({ project, items }: { project: string; items: Case
         </button>)}
       </div>
     </div>}
-    <p className={s.footerNote}>Original project media from the published portfolio. Concept work and research footage are not evidence of a live product launch.</p>
+    <p className={s.footerNote}>Screens and footage from the original projects. Prototypes are concepts, not launched products.</p>
   </section>
 }
