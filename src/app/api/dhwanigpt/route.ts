@@ -1,8 +1,7 @@
 // DhwaniGPT backend for the Framer code component (framer/DhwaniGPT.tsx, prop "API URL").
 // POST { messages: [{ role, content }] } -> { reply, followUps? }. Grounded only in the repo's
-// reviewed content (cases.ts, caseStories.ts, site.ts, about.ts). Case links use /work/<slug>. Prime Video stays under NDA. No key in code: set ANTHROPIC_API_KEY on Vercel.
-import { cases } from "@/content/cases"
-import { caseStories } from "@/content/caseStories"
+// reviewed content (caseStudies.ts, site.ts, about.ts). Case links use /work/<slug>. Prime Video stays under NDA. No key in code: set ANTHROPIC_API_KEY on Vercel.
+import { caseStudies, caseStudyText } from "@/content/caseStudies"
 import { experience, person } from "@/content/site"
 import { who, principles, opinions, offClock, hiring } from "@/content/about"
 
@@ -41,29 +40,10 @@ function json(req: Request, body: unknown, status = 200) {
 }
 
 // ── Facts block (built from the reviewed copy in src/content/*) ─────────────────
-// BudgetCart contribution split, confirmed by Dhwani (not in cases.ts copy).
-const BUDGETCART_SPLIT =
-  "Dhwani owned the AI interaction (the AI cart builder) and the Budget Calendar. Anne led buying and checkout. Tunisia led onboarding and account screens."
-
 function facts(): string {
-  const c = cases
-    .filter((x) => x.slug !== "prime-video")
-    .map((x) => {
-      const st = caseStories[x.slug]
-      return [
-        "## " + x.org + " | link: /work/" + x.slug,
-        x.headline + " " + x.hook,
-        x.meta.filter((m) => m.label !== "Read").map((m) => m.label + ": " + m.value).join("; "),
-        x.stats?.length ? "Numbers (only these): " + x.stats.map((n) => (n.prefix || "") + n.value + (n.suffix || "") + " " + n.label).join("; ") : "",
-        x.sections.map((s) => s.heading + " " + s.body.join(" ")).join("\n"),
-        x.decision ? "Key decision: " + x.decision.decision + " Why: " + x.decision.why + " Rejected: " + x.decision.rejected : "",
-        st ? "Finding: " + st.finding + " Her call: " + st.call + " Result: " + st.result : "",
-        x.ai ? "AI: " + x.ai : "",
-        x.slug === "budgetcart" ? "Contribution split: " + BUDGETCART_SPLIT : "",
-        "Status: " + x.status,
-        "Open question: " + x.next,
-      ].filter(Boolean).join("\n")
-    })
+  // The BudgetCart contribution split Dhwani confirmed now lives in caseStudies.ts.
+  const c = caseStudies
+    .map(caseStudyText)
     .join("\n\n")
   const e = experience.map((r) => "- " + r.dates + ": " + r.role + ", " + r.org + ". " + r.summary).join("\n")
   const a = [

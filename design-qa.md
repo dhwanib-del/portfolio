@@ -1,5 +1,20 @@
 # Live portfolio replication QA
 
+## October 12: Case-study rebuild (branch portfolio-case-study-refinement-2026)
+
+- [x] `npm ci` + `npm run build` pass. Vercel preview for 32e8198 reported "Deployment has completed" (the GMRebuild `*` selector fix held).
+- [x] Fixed: every page requested missing `/fonts/Satoshi-Variable.woff2` (404). Removed the dead @font-face; Poppins is bundled.
+- [x] Fixed: vibe picker set `--accent` inline, overriding the light-mode accent (3.5:1 on white) and chose white text on orange (3.52:1). Ported PortfolioNav's ink approach.
+- [x] Fixed: light tokens differed between OS-light and toggle-light and from PortfolioNav v14.
+- [x] Fixed: AnnotatedScreen pin click toggled itself off (focus fired first).
+- [x] One CaseStudyLayout + caseStudies.ts for all five case pages and both chat APIs.
+- [x] `scripts/check-routes.mjs`: 8 routes × 1440/820/390, no console errors, broken media or overflow.
+- [x] `scripts/check-case-components.mjs`: 31/31 — viewer keyboard/zoom/focus return, pins ↔ list, prototype click-to-load, phone stacking, axe WCAG 2.2 AA on all case pages in dark and light.
+- [x] Framer ScreenViewer / PrototypeEmbed / BeforeAfter type-check against a Framer API stub. Not yet pasted into the Framer project.
+- [ ] Not loaded in a browser from here: the sandbox can't reach vercel.app. Verified by Vercel's deployment status only.
+- [ ] Lint: pre-existing errors remain in files not touched by this pass (play components, Chat, Companion, Intro effects). Changed files lint clean.
+- [ ] Missing assets and clearance: see docs/case-study-assets.md.
+
 ## October 10: Restore About gallery movement
 
 - [x] Added slow automatic horizontal drift with gentle direction reversal at the ends; all 15 originals remain interactive without duplicate tiles.

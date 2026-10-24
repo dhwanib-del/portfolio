@@ -1,0 +1,36 @@
+/* A small opt-in accent switcher. No page overlay, no intro animation. */
+.switcher {
+  position:fixed; left:clamp(12px,2vw,20px); bottom:clamp(12px,2vw,20px);
+  z-index:51; font-family:var(--font-nav),Poppins,sans-serif;
+}
+.chip {
+  display:inline-flex;align-items:center;gap:9px;min-height:44px;
+  padding:0 14px;border-radius:999px;border:1px solid var(--line-strong);
+  background:var(--glass);color:var(--text);backdrop-filter:blur(18px) saturate(125%);
+  box-shadow:var(--shadow);font:500 12px/1 var(--font-nav),sans-serif;
+  cursor:pointer;
+}
+.chip > span {flex:none;width:12px;height:12px;border-radius:50%;border:1px solid var(--line-strong)}
+.popover {
+  position:absolute;left:0;bottom:calc(100% + 12px);
+  width:min(310px,calc(100vw - 24px));
+  padding:16px;background:var(--surface);color:var(--text);
+  border:1px solid var(--line-strong);border-radius:16px;
+  box-shadow:var(--shadow);
+}
+.popTitle{font:600 13px/1.5 var(--font-nav),sans-serif;margin-bottom:12px}
+.menuSwatches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.swatch{
+  display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;
+  min-height:44px;border-radius:10px;border:1px solid var(--line);
+  padding:6px 10px;background:transparent;color:var(--text);
+  font:500 12px/1.2 var(--font-nav),sans-serif;cursor:pointer;
+}
+.swatch[data-active="true"],.swatch:hover{border-color:var(--accent);background:var(--card-hover)}
+.swatch span{flex:none;display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid rgba(128,128,128,.32)}
+.custom{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.custom label{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font:500 11px var(--font-nav),sans-serif}
+.custom input{width:28px;height:30px;border:0;padding:0;background:transparent;cursor:pointer}
+.custom button{min-height:36px;padding:0 11px;color:var(--text);background:transparent;border:1px solid var(--line-strong);border-radius:999px;font:500 11px var(--font-nav),sans-serif;cursor:pointer}
+.chip:focus-visible,.swatch:focus-visible,.custom button:focus-visible,.custom input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(max-width:390px){.popover{width:min(292px,calc(100vw - 24px))}.swatch{padding:6px 8px}}
