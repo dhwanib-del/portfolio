@@ -14,7 +14,7 @@ import s from "./CaseStudyLayout.module.css"
 const OPENING_LINES: Record<string,string> = {
   "general-motors": "Four weeks in, I challenged the brief.",
   briefs: "The hazard shouldn't be three screens down.",
-  intel: "A case shouldn't live across a dozen tabs.",
+  intel: "Case history belongs in one shared workspace.",
   budgetcart: "A simpler screen hid the clues shoppers needed.",
   openlibrary: "Readers had the tools. Switching was the problem.",
 }
@@ -136,7 +136,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
         )}
       </section>
 
-      {study.slug === "general-motors" && <CinematicDeviceReveal />}
+      {study.slug === "general-motors" && study.prototype?.url && <CinematicDeviceReveal initialUrl={study.prototype.url} />}
 
       <section className={s.part} aria-labelledby="my-part">
         <h2 id="my-part" className={s.kicker}>My part</h2>
