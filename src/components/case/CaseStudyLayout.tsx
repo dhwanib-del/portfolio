@@ -8,15 +8,27 @@ import { PrototypeEmbed } from "./PrototypeEmbed"
 import { CinematicDeviceReveal } from "./CinematicDeviceReveal"
 import { DecisionStudio } from "./DecisionStudio"
 import { CaseChapterRail } from "./CaseChapterRail"
+import { EvidenceTurntable } from "./EvidenceTurntable"
+import { caseSignals } from "@/content/caseSignals"
 import { ScreenViewer } from "./ScreenViewer"
 import s from "./CaseStudyLayout.module.css"
 
 const OPENING_LINES: Record<string,string> = {
-  "general-motors": "Four weeks in, I challenged the brief.",
-  briefs: "The hazard shouldn't be three screens down.",
-  intel: "Case history belongs in one shared workspace.",
-  budgetcart: "A simpler screen hid the clues shoppers needed.",
-  openlibrary: "Readers had the tools. Switching was the problem.",
+  "general-motors": "One conversation changed the entire concept.",
+  briefs: "A single building lookup crossed ten tools.",
+  intel: "The case history was split across systems.",
+  budgetcart: "A cleaner browse screen hid the clues shoppers needed.",
+  openlibrary: "The problem wasn’t missing tools. It was switching between them.",
+}
+
+function estimatedReadingTime(study: CaseStudy) {
+  const text = [
+    study.product, study.challenge, study.context.join(" "),
+    ...study.decisions.flatMap(d=>[d.title,d.chose,d.over,d.because,d.evidence]),
+    ...study.contributions.mine, ...study.evaluation.learned,
+    study.outcome.confirmed, study.outcome.limitation,
+  ].filter(Boolean).join(" ")
+  return Math.max(2,Math.ceil(text.trim().split(/\\s+/).length/200))
 }
 
 /**
@@ -104,7 +116,7 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
     <article className={s.page}>
       <header className={s.intro}>
         <Link href="/#work" className={s.back}>← All work</Link>
-        <p className={s.org}>{study.org}</p>
+        <div className={s.projectLine}><p className={s.org}>{study.org}</p><span className={s.readTime}>About {estimatedReadingTime(study)} min · a project story</span></div>
         <h1 className={s.name}>{study.name}<span className={s.dot} aria-hidden="true">.</span></h1>
         <p className={s.storyHook}>{OPENING_LINES[study.slug] ?? study.challenge ?? study.product}</p>
         <p className={s.product}>{study.product}</p>
@@ -125,16 +137,18 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
         </ol>
       </section>
 
-      <section className={s.hero} aria-label="Project work">
-        {study.hero.type === "screens" ? (
-          <>
-            <ScreenViewer screens={study.hero.screens} label={`${study.name} screens`} />
-            <p className={s.heroCaption}>{study.hero.caption}</p>
-          </>
-        ) : (
-          <AssetSlot slot={study.hero.slot} />
-        )}
-      </section>
+      {study.hero.type === "screens" ? (
+        <section className={s.hero} aria-label="Actual project screens">
+          <ScreenViewer screens={study.hero.screens} label={`${study.name} screens`} />
+          <p className={s.heroCaption}>{study.hero.caption}</p>
+        </section>
+      ) : (
+        <div className={s.artifactNotice}>
+          <span className={s.artifactSymbol} aria-hidden="true">↗</span>
+          <div><strong>{study.hero.slot.reason === "clearance" ? "Visuals are not cleared for publication." : "Original project visuals are being sourced."}</strong><p>{study.hero.slot.note}</p></div>
+        </div>
+      )}
+      {caseSignals[study.slug] && <div className={s.receipt}><EvidenceTurntable project={study.name} signals={caseSignals[study.slug]} /></div>}
 
       {study.slug === "general-motors" && study.prototype?.url && <CinematicDeviceReveal initialUrl={study.prototype.url} />}
 
