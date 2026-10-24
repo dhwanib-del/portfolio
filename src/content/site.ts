@@ -41,7 +41,7 @@ export const projects: Project[] = [
   {
     slug: "general-motors",
     title: "Convoy · General Motors",
-    result: "Designing a road-trip experience across phone and truck displays",
+    result: "One interview changed a single-driver idea into a shared road-trip concept",
     tags: ["Automotive UI", "Design system", "Figma prototyping"],
     body: "A GM-sponsored team concept for groups road-tripping in separate cars. We explored interface layouts, built a reusable component library, and made an interactive prototype, then put it through three usability sessions.",
     coverNote: "Concept prototype · three cab tests",
@@ -51,7 +51,7 @@ export const projects: Project[] = [
   {
     slug: "intel",
     title: "Intelligence Hub · UM DPSS",
-    result: "A shared workspace for investigation workflows",
+    result: "Case history, ownership and next actions — brought into one workspace",
     tags: ["Product design", "Complex workflows", "Pilot"],
     body: "Co-led an internal case-management workspace: stakeholder interviews, role-aware navigation, an Apps Script prototype and an internal pilot.",
     coverNote: "Internal pilot · co-led",
@@ -60,7 +60,7 @@ export const projects: Project[] = [
   {
     slug: "briefs",
     title: "BRIEFS · UM DPSS",
-    result: "Helping emergency dispatchers find building information mid-call",
+    result: "One building lookup. More than ten different tools.",
     tags: ["Field research", "Information architecture", "Prototype"],
     body: "I sat in on dispatch shifts to watch the building lookup happen, then designed a prototype and wrote the PRD. Not tested with dispatchers yet.",
     coverNote: "Field research → prototype + PRD",
@@ -70,7 +70,7 @@ export const projects: Project[] = [
   {
     slug: "openlibrary",
     title: "Open Library · Internet Archive",
-    result: "Researching language barriers in digital reading",
+    result: "Readers had translation tools. Switching between them was the friction.",
     tags: ["UX research", "Synthesis", "Accessibility"],
     body: "Interviews, affinity mapping and recommendations to help multilingual readers get language support without leaving the book.",
     coverNote: "8 interviews · 330 data points",
@@ -80,7 +80,7 @@ export const projects: Project[] = [
   {
     slug: "budgetcart",
     title: "BudgetCart · UMSI",
-    result: "A grocery planning concept for shoppers on tight budgets",
+    result: "Designing around budgets, benefits and the details shoppers actually need",
     tags: ["Mobile design", "Grocery", "SNAP / WIC"],
     body: "A student team prototype for comparing groceries, staying on budget and shopping with SNAP/WIC in mind.",
     coverScreens: ["/case-shots/budgetcart/smart-ai.png", "/case-shots/budgetcart/budget-calendar.png"],
