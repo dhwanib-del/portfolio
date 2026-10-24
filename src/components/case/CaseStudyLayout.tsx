@@ -28,7 +28,7 @@ function estimatedReadingTime(study: CaseStudy) {
     ...study.contributions.mine, ...study.evaluation.learned,
     study.outcome.confirmed, study.outcome.limitation,
   ].filter(Boolean).join(" ")
-  return Math.max(2,Math.ceil(text.trim().split(/\\s+/).length/200))
+  return Math.max(2,Math.ceil(text.trim().split(/\s+/).length/200))
 }
 
 /**
