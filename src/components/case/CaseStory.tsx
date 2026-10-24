@@ -35,7 +35,7 @@ export function CaseStory({ opening, beats, media = [] }: { opening: string; bea
   return <section className={s.story} aria-label="The story behind this project">
     <div className={s.topline}><span>THE STORY</span><span>{String(index+1).padStart(2,"0")} / {String(beats.length).padStart(2,"0")}</span></div>
     <div className={s.heading}>
-      <p>How we got here</p>
+      <p>The story behind it</p>
       <h2>{opening}</h2>
     </div>
     <div className={s.frame}>
@@ -58,7 +58,7 @@ export function CaseStory({ opening, beats, media = [] }: { opening: string; bea
         ) : selected?.kind==="film" ? (
           <video src={selected.url} controls muted playsInline preload="metadata" aria-label={selected.title} />
         ) : (
-          <div className={s.typePanel}><span>THE PROCESS, NOT JUST THE PIXELS</span><strong>{String(index+1).padStart(2,"0")}<i>.</i></strong><span>Project notes</span></div>
+          <div className={s.typePanel}><span>FROM THE WORKING NOTES</span><strong>{String(index+1).padStart(2,"0")}<i>.</i></strong><span>Project story</span></div>
         )}
         {selected && <div className={s.visualCaption}><span>{selected.title}</span><span>{selected.kind==="film"?"Clip in the gallery below ↘":"Project artifact ↘"}</span></div>}
       </div>
