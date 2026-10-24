@@ -10,6 +10,8 @@ import { DecisionStudio } from "./DecisionStudio"
 import { CaseChapterRail } from "./CaseChapterRail"
 import { EvidenceTurntable } from "./EvidenceTurntable"
 import { caseSignals } from "@/content/caseSignals"
+import { CaseMediaWall } from "./CaseMediaWall"
+import { caseMedia } from "@/content/caseMedia"
 import { ScreenViewer } from "./ScreenViewer"
 import s from "./CaseStudyLayout.module.css"
 
@@ -137,7 +139,11 @@ export function CaseStudyLayout({ study, next }: { study: CaseStudy; next?: { sl
         </ol>
       </section>
 
-      {study.hero.type === "screens" ? (
+      {caseMedia[study.slug]?.length ? (
+        <div className={s.featureMedia}>
+          <CaseMediaWall project={study.name} items={caseMedia[study.slug]} />
+        </div>
+      ) : study.hero.type === "screens" ? (
         <section className={s.hero} aria-label="Actual project screens">
           <ScreenViewer screens={study.hero.screens} label={`${study.name} screens`} />
           <p className={s.heroCaption}>{study.hero.caption}</p>
