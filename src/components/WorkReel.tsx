@@ -28,6 +28,14 @@ export function WorkReel({ projects, eyebrow, heading }: { projects: Project[]; 
   const grid = useRef<HTMLOListElement>(null)
   const [revealed, setRevealed] = useState<string[]>([])
   const [activeIndex, setActiveIndex] = useState(0)
+  const [reduceMotion, setReduceMotion] = useState(true)
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const update = () => setReduceMotion(query.matches)
+    update()
+    query.addEventListener("change", update)
+    return () => query.removeEventListener("change", update)
+  }, [])
   function move(direction: -1 | 1) {
     const list = grid.current
     if (!list) return
@@ -61,7 +69,7 @@ export function WorkReel({ projects, eyebrow, heading }: { projects: Project[]; 
     const media = project.nda ? (
       <div className="reel-ph reel-ph-nda"><span>Under NDA</span><small>Ask me about the work</small></div>
     ) : project.video ? (
-      <video src={project.video} poster={project.poster} muted loop playsInline autoPlay preload="metadata" aria-hidden="true" />
+      <video src={project.video} poster={project.poster} muted loop playsInline autoPlay={!reduceMotion} preload="metadata" aria-hidden="true" />
     ) : project.image ? (
       // eslint-disable-next-line @next/next/no-img-element -- decorative cover
       <img className="reel-cover-image" src={project.image} alt="" loading="lazy" />
