@@ -173,3 +173,8 @@
 .artifactNotice p{font:400 12px/1.65 var(--font-nav),sans-serif;margin:6px 0 0;max-width:75ch}
 .artifactSymbol{color:var(--text-2);font:400 20px/1 var(--font-story),sans-serif}
 @media(max-width:640px){.projectLine{align-items:flex-start}.readTime{white-space:normal;font-size:10px}.receipt{padding:20px var(--inner)}.artifactNotice{padding-block:17px}}
+
+/* Let published artifacts command the page without breaking the 850px Framer grid. */
+.featureMedia{padding:12px 0 40px;border-bottom:1px solid var(--line);min-width:0}
+.featureMedia + .receipt{border-top:0}
+@media(max-width:700px){.featureMedia{padding-top:0;padding-bottom:28px}}
