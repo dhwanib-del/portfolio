@@ -7,8 +7,8 @@ export function CaseFeatureShowcase({ features, media }: { features: Feature[]; 
   if(!visible.length)return null
   return <section className={s.showcase} aria-label="Features and interface details">
     <header className={s.heading}>
-      <div><span className={s.kicker}>A closer look</span><h2>The details make the difference<span>.</span></h2></div>
-      <p>What we designed, why each part matters, and who made it.</p>
+      <div><span className={s.kicker}>A closer look</span><h2>The features, up close<span>.</span></h2></div>
+      <p>A few screens worth spending time with.</p>
     </header>
     <div className={s.list}>
       {visible.map(({feature,item},index)=>(
